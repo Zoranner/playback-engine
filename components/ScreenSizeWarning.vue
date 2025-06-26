@@ -11,13 +11,13 @@
         <p class="suggestion">请最大化浏览器窗口或使用更大的屏幕以获得最佳体验</p>
       </div>
       <div class="warning-actions">
-        <button class="action-btn primary" @click="checkFullscreen">
+        <Button variant="primary" @click="checkFullscreen">
           <Icon name="heroicons:arrows-pointing-out" />
           尝试全屏
-        </button>
-        <button class="action-btn secondary" @click="forceShow = true">
+        </Button>
+        <Button variant="ghost" @click="forceShow = true">
           仍要继续查看
-        </button>
+        </Button>
       </div>
     </div>
   </div>
@@ -25,6 +25,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import Button from '~/components/ui/Button.vue'
 
 const props = defineProps({
   width: Number,
@@ -117,39 +118,5 @@ watch(forceShow, (value) => {
   flex-wrap: wrap;
 }
 
-.action-btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 140px;
-  justify-content: center;
-}
-
-.action-btn.primary {
-  background: #3b82f6;
-  color: white;
-}
-
-.action-btn.primary:hover {
-  background: #2563eb;
-  transform: translateY(-1px);
-}
-
-.action-btn.secondary {
-  background: #374151;
-  color: #e5e7eb;
-  border: 1px solid #4b5563;
-}
-
-.action-btn.secondary:hover {
-  background: #4b5563;
-  border-color: #60a5fa;
-}
+/* 操作按钮现在使用Button组件 */
 </style> 

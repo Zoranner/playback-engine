@@ -3,12 +3,22 @@
     <div class="controls-container">
       <!-- 播放控制按钮 -->
       <div class="control-buttons">
-        <button class="control-btn play-pause-btn" :class="{ 'playing': isPlaying }" @click="togglePlayPause">
+        <Button 
+          size="small" 
+          square 
+          :variant="isPlaying ? 'success' : 'default'"
+          @click="togglePlayPause"
+        >
           <Icon :name="isPlaying ? 'heroicons:pause' : 'heroicons:play'" />
-        </button>
-        <button class="control-btn stop-btn" @click="stop">
+        </Button>
+        <Button 
+          size="small" 
+          square 
+          variant="danger" 
+          @click="stop"
+        >
           <Icon name="heroicons:stop" />
-        </button>
+        </Button>
       </div>
 
       <!-- 进度条区域 -->
@@ -46,6 +56,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import Button from '~/components/ui/Button.vue'
 
 // 回放状态
 const isPlaying = ref(false)
@@ -100,52 +111,7 @@ const onProgressChange = (event) => {
   gap: var(--spacing-xs);
 }
 
-.control-btn {
-  width: 24px;
-  height: 24px;
-  background: var(--secondary-bg);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-  font-size: 11px;
-}
-
-.control-btn:hover {
-  background: var(--tertiary-bg);
-  border-color: var(--border-color-light);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.control-btn:active {
-  transform: translateY(0);
-  box-shadow: var(--shadow-inset);
-}
-
-.play-pause-btn.playing {
-  background: var(--success-color);
-  border-color: var(--success-color);
-  color: var(--primary-bg);
-}
-
-.play-pause-btn.playing:hover {
-  background: #059669;
-}
-
-.stop-btn {
-  background: var(--danger-color);
-  border-color: var(--danger-color);
-  color: var(--primary-bg);
-}
-
-.stop-btn:hover {
-  background: #dc2626;
-}
+/* 控制按钮现在使用Button组件 */
 
 .progress-section {
   flex: 1;

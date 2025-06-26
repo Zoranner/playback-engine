@@ -40,12 +40,12 @@
         <!-- 全屏模式下的地图内容 -->
         <div class="fullscreen-header">
           <h3 class="text-title">海图全屏显示</h3>
-          <button class="military-button close-btn" @click="exitFullscreen">
+          <Button size="medium" square variant="danger" @click="exitFullscreen">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <line x1="18" y1="6" x2="6" y2="18"/>
               <line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
-          </button>
+          </Button>
         </div>
         <div class="fullscreen-map">
           <!-- 这里可以放置全屏地图内容 -->
@@ -66,6 +66,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, reactive } from 'vue'
+import Button from '~/components/ui/Button.vue'
 import MapTools from './MapTools.vue'
 import MapMainArea from './MapMainArea.vue'
 import MapLegend from './MapLegend.vue'

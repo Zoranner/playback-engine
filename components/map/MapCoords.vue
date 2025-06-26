@@ -50,17 +50,18 @@
     </div>
 
     <!-- 坐标格式切换按钮 -->
-    <button v-if="selectedEquipment" class="format-btn" title="切换坐标格式" @click="switchCoordinateFormat">
+    <Button v-if="selectedEquipment" size="small" square variant="text" title="切换坐标格式" @click="switchCoordinateFormat">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor">
         <polyline points="16 18 22 12 16 6"/>
         <polyline points="8 6 2 12 8 18"/>
       </svg>
-    </button>
+    </Button>
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import Button from '~/components/ui/Button.vue'
 
 // 坐标格式
 const coordinateFormats = ref([
