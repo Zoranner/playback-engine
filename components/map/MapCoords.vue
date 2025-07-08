@@ -40,10 +40,7 @@
     <!-- 无选中时的提示 -->
     <div v-else class="no-selection">
       <div class="no-selection-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-          <circle cx="12" cy="10" r="3"/>
-        </svg>
+        <Icon name="heroicons:map-pin" size="16" />
       </div>
       <div class="no-selection-text">未选中装备</div>
       <div class="no-selection-hint">点击地图上的装备查看详情</div>
@@ -51,10 +48,7 @@
 
     <!-- 坐标格式切换按钮 -->
     <Button v-if="selectedEquipment" size="small" square variant="text" title="切换坐标格式" @click="switchCoordinateFormat">
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <polyline points="16 18 22 12 16 6"/>
-        <polyline points="8 6 2 12 8 18"/>
-      </svg>
+      <Icon name="heroicons:arrows-right-left" size="10" />
     </Button>
   </div>
 </template>

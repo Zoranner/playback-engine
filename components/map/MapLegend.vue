@@ -3,16 +3,11 @@
     <!-- 图例头部 -->
     <div class="legend-header" @click="toggleCollapse">
       <div class="legend-title">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-          <circle cx="12" cy="12" r="1"/>
-        </svg>
+        <Icon name="heroicons:rectangle-stack" size="12" />
         <span>图例</span>
       </div>
       <Button size="small" square variant="text">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" :class="{ 'collapsed': isCollapsed }">
-          <polyline points="6,9 12,15 18,9"/>
-        </svg>
+        <Icon name="heroicons:chevron-down" size="10" :class="{ 'collapsed': isCollapsed }" />
       </Button>
     </div>
 
@@ -21,17 +16,10 @@
       <!-- 快速切换 -->
       <div class="quick-controls">
         <Button size="small" square variant="ghost" title="全部显示" @click="showAll">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <polyline points="9,11 12,14 22,4"/>
-            <path d="M21,12v7a2,2,0,0,1-2,2H5a2,2,0,0,1-2-2V5a2,2,0,0,1,2-2h11"/>
-          </svg>
+          <Icon name="heroicons:check-circle" size="10" />
         </Button>
         <Button size="small" square variant="ghost" title="全部隐藏" @click="hideAll">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            <line x1="9" y1="9" x2="15" y2="15"/>
-            <line x1="15" y1="9" x2="9" y2="15"/>
-          </svg>
+          <Icon name="heroicons:x-circle" size="10" />
         </Button>
       </div>
 
@@ -40,11 +28,7 @@
         <div class="group-header" @click="toggleGroup('targets')">
           <span class="group-title">目标</span>
           <span class="group-count">({{ getVisibleCount('targets') }}/{{ targetTypes.length }})</span>
-          <svg
-            width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-            :class="{ 'rotated': !expandedGroups.targets }">
-            <polyline points="6,9 12,15 18,9"/>
-          </svg>
+          <Icon name="heroicons:chevron-down" size="8" :class="{ 'rotated': !expandedGroups.targets }" />
         </div>
         <div v-if="expandedGroups.targets" class="group-items">
           <div
@@ -65,11 +49,7 @@
         <div class="group-header" @click="toggleGroup('platforms')">
           <span class="group-title">平台</span>
           <span class="group-count">({{ getVisibleCount('platforms') }}/{{ platformTypes.length }})</span>
-          <svg
-            width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-            :class="{ 'rotated': !expandedGroups.platforms }">
-            <polyline points="6,9 12,15 18,9"/>
-          </svg>
+          <Icon name="heroicons:chevron-down" size="8" :class="{ 'rotated': !expandedGroups.platforms }" />
         </div>
         <div v-if="expandedGroups.platforms" class="group-items">
           <div
@@ -90,11 +70,7 @@
         <div class="group-header" @click="toggleGroup('tracks')">
           <span class="group-title">航迹</span>
           <span class="group-count">({{ getVisibleCount('tracks') }}/{{ trackTypes.length }})</span>
-          <svg
-            width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-            :class="{ 'rotated': !expandedGroups.tracks }">
-            <polyline points="6,9 12,15 18,9"/>
-          </svg>
+          <Icon name="heroicons:chevron-down" size="8" :class="{ 'rotated': !expandedGroups.tracks }" />
         </div>
         <div v-if="expandedGroups.tracks" class="group-items">
           <div
@@ -114,11 +90,7 @@
         <div class="group-header" @click="toggleGroup('zones')">
           <span class="group-title">区域</span>
           <span class="group-count">({{ getVisibleCount('zones') }}/{{ zoneTypes.length }})</span>
-          <svg
-            width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-            :class="{ 'rotated': !expandedGroups.zones }">
-            <polyline points="6,9 12,15 18,9"/>
-          </svg>
+          <Icon name="heroicons:chevron-down" size="8" :class="{ 'rotated': !expandedGroups.zones }" />
         </div>
         <div v-if="expandedGroups.zones" class="group-items">
           <div

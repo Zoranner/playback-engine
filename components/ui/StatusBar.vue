@@ -26,9 +26,7 @@
         <span class="text-caption">{{ currentTime }}</span>
       </div>
       <div class="status-item resize-handle">
-        <svg width="12" height="12" viewBox="0 0 12 12">
-          <path d="M12 12H9v-1h2V9h1v3zM12 8H9V7h2V5h1v3zM12 4H9V3h2V1h1v3z" fill="currentColor" opacity="0.5"/>
-        </svg>
+        <Icon name="heroicons:arrows-pointing-in" size="12" />
       </div>
     </div>
   </div>

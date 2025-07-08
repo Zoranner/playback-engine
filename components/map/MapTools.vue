@@ -8,12 +8,7 @@
         title="放大"
         @click="zoomIn"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="21 21l-4.35-4.35"/>
-          <line x1="11" y1="8" x2="11" y2="14"/>
-          <line x1="8" y1="11" x2="14" y2="11"/>
-        </svg>
+        <Icon name="heroicons:magnifying-glass-plus" size="14" />
       </Button>
       
       <Button 
@@ -22,11 +17,7 @@
         title="缩小"
         @click="zoomOut"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="21 21l-4.35-4.35"/>
-          <line x1="8" y1="11" x2="14" y2="11"/>
-        </svg>
+        <Icon name="heroicons:magnifying-glass-minus" size="14" />
       </Button>
       
       <Button 
@@ -35,11 +26,7 @@
         title="重置缩放"
         @click="resetZoom"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-          <line x1="9" y1="9" x2="15" y2="15"/>
-          <line x1="15" y1="9" x2="9" y2="15"/>
-        </svg>
+        <Icon name="heroicons:arrows-pointing-out" size="14" />
       </Button>
     </div>
 
@@ -50,11 +37,7 @@
         :active="activeTool === 'measure-distance'"
         @click="setActiveTool('measure-distance')"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path d="M16 4l4 4-4 4"/>
-          <path d="M20 8H4"/>
-          <path d="M8 20l-4-4 4-4"/>
-        </svg>
+        <Icon name="heroicons:arrows-right-left" size="14" />
         <span class="tool-label">测距</span>
       </Button>
     </div>
@@ -64,7 +47,9 @@
       <div class="measurement-content">
         <div class="measurement-title">{{ measurementResult.type }}</div>
         <div class="measurement-value text-monospace">{{ measurementResult.value }}</div>
-        <Button size="small" square variant="danger" title="清除" @click="clearMeasurement">×</Button>
+        <Button size="small" square variant="danger" title="清除" @click="clearMeasurement">
+          <Icon name="heroicons:x-mark" size="12" />
+        </Button>
       </div>
     </div>
   </div>
