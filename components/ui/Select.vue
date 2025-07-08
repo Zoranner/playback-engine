@@ -37,7 +37,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 
 
 const props = defineProps({
@@ -53,7 +53,7 @@ const props = defineProps({
         typeof option === 'object' && 
         'value' in option && 
         'label' in option
-      )
+      );
     }
   },
   label: {
@@ -78,18 +78,18 @@ const props = defineProps({
     default: 'default',
     validator: (value) => ['default', 'ghost'].includes(value)
   }
-})
+});
 
-const emit = defineEmits(['update:modelValue', 'change'])
+const emit = defineEmits(['update:modelValue', 'change']);
 
-const isOpen = ref(false)
-const dropdownRef = ref(null)
+const isOpen = ref(false);
+const dropdownRef = ref(null);
 
 const containerClass = computed(() => [
   `select-container--${props.size}`,
   `select-container--${props.variant}`,
   { 'select-container--disabled': props.disabled }
-])
+]);
 
 const triggerClass = computed(() => [
   'select-trigger',
@@ -99,49 +99,49 @@ const triggerClass = computed(() => [
     'select-trigger--disabled': props.disabled,
     'select-trigger--open': isOpen.value
   }
-])
+]);
 
 const displayValue = computed(() => {
-  const selected = props.options.find(option => option.value === props.modelValue)
-  return selected?.label || props.placeholder
-})
+  const selected = props.options.find(option => option.value === props.modelValue);
+  return selected?.label || props.placeholder;
+});
 
 const toggleOpen = () => {
-  if (props.disabled) return
-  isOpen.value = !isOpen.value
-}
+  if (props.disabled) return;
+  isOpen.value = !isOpen.value;
+};
 
 const closeSelect = () => {
-  isOpen.value = false
-}
+  isOpen.value = false;
+};
 
 const selectOption = (option) => {
-  if (option.disabled) return
+  if (option.disabled) return;
   
-  emit('update:modelValue', option.value)
-  emit('change', option)
-  closeSelect()
-}
+  emit('update:modelValue', option.value);
+  emit('change', option);
+  closeSelect();
+};
 
 const handleClickOutside = (event) => {
   if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
-    closeSelect()
+    closeSelect();
   }
-}
+};
 
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
+  document.addEventListener('click', handleClickOutside);
+});
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
+  document.removeEventListener('click', handleClickOutside);
+});
 
 watch(isOpen, (newValue) => {
   if (newValue) {
-    document.addEventListener('click', handleClickOutside)
+    document.addEventListener('click', handleClickOutside);
   }
-})
+});
 </script>
 
 <style scoped>

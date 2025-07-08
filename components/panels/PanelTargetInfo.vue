@@ -28,17 +28,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useTargets } from '~/composables/useTargets'
-import GroupBox from '~/components/ui/GroupBox.vue'
+import { ref } from 'vue';
+import { useTargets } from '~/composables/useTargets';
+import GroupBox from '~/components/ui/GroupBox.vue';
 
-const { targets, selectTarget } = useTargets()
-const selectedTarget = ref(null)
+const { targets, selectTarget } = useTargets();
+const selectedTarget = ref(null);
 
 const handleSelectTarget = (target) => {
-  selectedTarget.value = selectedTarget.value === target.id ? null : target.id
-  selectTarget(target)
-}
+  selectedTarget.value = selectedTarget.value === target.id ? null : target.id;
+  selectTarget(target);
+};
 </script>
 
 <style scoped>

@@ -6,8 +6,8 @@
 </template>
 
 <script setup>
-import PanelEventList from './PanelEventList.vue'
-import PanelEnvironmentInfo from './PanelEnvironmentInfo.vue'
+import PanelEventList from './PanelEventList.vue';
+import PanelEnvironmentInfo from './PanelEnvironmentInfo.vue';
 </script>
 
 <style scoped>

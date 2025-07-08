@@ -62,14 +62,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, reactive } from 'vue'
-import Button from '~/components/ui/Button.vue'
-import MapTools from './MapTools.vue'
-import MapMainArea from './MapMainArea.vue'
-import MapLegend from './MapLegend.vue'
+import { ref, onMounted, onUnmounted, reactive } from 'vue';
+import Button from '~/components/ui/Button.vue';
+import MapTools from './MapTools.vue';
+import MapMainArea from './MapMainArea.vue';
+import MapLegend from './MapLegend.vue';
 
 // 响应式数据
-const activeTool = ref('select')
+const activeTool = ref('select');
 const visibleLayers = reactive({
   targets: true,
   platforms: true,
@@ -77,127 +77,127 @@ const visibleLayers = reactive({
   zones: true,
   grid: false,
   terrain: true
-})
+});
 
 // 组件引用
-const mapMainArea = ref(null)
-const mapTools = ref(null)
-const mapLegend = ref(null)
+const mapMainArea = ref(null);
+const mapTools = ref(null);
+const mapLegend = ref(null);
 
 // 状态数据
-const isFullscreen = ref(false)
-const statusMessage = ref('')
-const statusType = ref('info')
+const isFullscreen = ref(false);
+const statusMessage = ref('');
+const statusType = ref('info');
 
 // 当前坐标和视图信息
 const currentCoordinates = ref({
   longitude: 120.5843,
   latitude: 31.2984
-})
-const currentZoom = ref(1.0)
-const currentBearing = ref(0)
+});
+const currentZoom = ref(1.0);
+const currentBearing = ref(0);
 
 // 工具事件处理
 const onToolChanged = (tool) => {
-  activeTool.value = tool
-  showStatus(`已切换到${getToolName(tool)}工具`, 'info')
-}
+  activeTool.value = tool;
+  showStatus(`已切换到${getToolName(tool)}工具`, 'info');
+};
 
 const onResetZoom = () => {
-  currentZoom.value = 1.0
-  showStatus('已重置缩放级别', 'info')
-}
+  currentZoom.value = 1.0;
+  showStatus('已重置缩放级别', 'info');
+};
 
 const onToggleFullscreen = () => {
-  isFullscreen.value = !isFullscreen.value
+  isFullscreen.value = !isFullscreen.value;
   if (isFullscreen.value) {
-    showStatus('已进入全屏模式', 'info')
+    showStatus('已进入全屏模式', 'info');
   }
-}
+};
 
 const onCaptureScreen = () => {
   // 模拟截图功能
-  showStatus('截图已保存', 'success')
-}
+  showStatus('截图已保存', 'success');
+};
 
 const onClearAnnotations = () => {
-  showStatus('已清除所有标注', 'warning')
-}
+  showStatus('已清除所有标注', 'warning');
+};
 
 const onClearMeasurement = () => {
   if (mapTools.value) {
-    mapTools.value.setMeasurementResult(null)
+    mapTools.value.setMeasurementResult(null);
   }
-  showStatus('已清除测量结果', 'info')
-}
+  showStatus('已清除测量结果', 'info');
+};
 
 // 图例事件处理
 const onTargetTypeToggle = ({ id, visible }) => {
-  showStatus(`${visible ? '显示' : '隐藏'}了${id}类型目标`, 'info')
-}
+  showStatus(`${visible ? '显示' : '隐藏'}了${id}类型目标`, 'info');
+};
 
 const onPlatformTypeToggle = ({ id, visible }) => {
-  showStatus(`${visible ? '显示' : '隐藏'}了${id}类型平台`, 'info')
-}
+  showStatus(`${visible ? '显示' : '隐藏'}了${id}类型平台`, 'info');
+};
 
 const onTrackTypeToggle = ({ id, visible }) => {
-  showStatus(`${visible ? '显示' : '隐藏'}了${id}类型航迹`, 'info')
-}
+  showStatus(`${visible ? '显示' : '隐藏'}了${id}类型航迹`, 'info');
+};
 
 const onZoneTypeToggle = ({ id, visible }) => {
-  showStatus(`${visible ? '显示' : '隐藏'}了${id}控制区域`, 'info')
-}
+  showStatus(`${visible ? '显示' : '隐藏'}了${id}控制区域`, 'info');
+};
 
 const onShowAll = () => {
-  showStatus('已显示所有图例项目', 'success')
-}
+  showStatus('已显示所有图例项目', 'success');
+};
 
 const onHideAll = () => {
-  showStatus('已隐藏所有图例项目', 'warning')
-}
+  showStatus('已隐藏所有图例项目', 'warning');
+};
 
 // 坐标和视图更新
 const updateCoordinates = (coords) => {
-  currentCoordinates.value = coords
-}
+  currentCoordinates.value = coords;
+};
 
 const updateZoom = (zoom) => {
-  currentZoom.value = zoom
-}
+  currentZoom.value = zoom;
+};
 
 const updateBearing = (bearing) => {
-  currentBearing.value = bearing
-}
+  currentBearing.value = bearing;
+};
 
 const updateMeasurement = (result) => {
   if (mapTools.value) {
-    mapTools.value.setMeasurementResult(result)
+    mapTools.value.setMeasurementResult(result);
   }
-}
+};
 
 // 全屏相关
 const exitFullscreen = () => {
-  isFullscreen.value = false
-  showStatus('已退出全屏模式', 'info')
-}
+  isFullscreen.value = false;
+  showStatus('已退出全屏模式', 'info');
+};
 
 // 键盘事件处理
 const handleKeydown = (event) => {
   if (event.key === 'Escape' && isFullscreen.value) {
-    exitFullscreen()
+    exitFullscreen();
   }
-}
+};
 
 // 状态消息显示
 const showStatus = (message, type = 'info') => {
-  statusMessage.value = message
-  statusType.value = type
+  statusMessage.value = message;
+  statusType.value = type;
   
   // 3秒后自动清除消息
   setTimeout(() => {
-    statusMessage.value = ''
-  }, 3000)
-}
+    statusMessage.value = '';
+  }, 3000);
+};
 
 // 工具名称映射
 const getToolName = (tool) => {
@@ -211,43 +211,43 @@ const getToolName = (tool) => {
     'add-text': '文本标注',
     'draw-line': '绘制线条',
     'draw-area': '绘制区域'
-  }
-  return toolNames[tool] || tool
-}
+  };
+  return toolNames[tool] || tool;
+};
 
 // 装备选择事件处理
 const handleEquipmentSelected = (equipment) => {
   if (mapMainArea.value) {
-    mapMainArea.value.setSelectedEquipment(equipment)
+    mapMainArea.value.setSelectedEquipment(equipment);
   }
-}
+};
 
 // 生命周期钩子
 onMounted(() => {
-  document.addEventListener('keydown', handleKeydown)
+  document.addEventListener('keydown', handleKeydown);
   
   // 模拟定期更新坐标和状态
   setInterval(() => {
     // 更新网络和数据状态
-    const networkStatus = Math.random() > 0.1 ? 'online' : 'warning'
-    const dataStatus = Math.random() > 0.05 ? 'online' : 'warning'
+    const networkStatus = Math.random() > 0.1 ? 'online' : 'warning';
+    const dataStatus = Math.random() > 0.05 ? 'online' : 'warning';
     
     if (mapMainArea.value) {
-      mapMainArea.value.updateStatus(networkStatus, dataStatus)
+      mapMainArea.value.updateStatus(networkStatus, dataStatus);
     }
-  }, 5000)
-})
+  }, 5000);
+});
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', handleKeydown)
-})
+  document.removeEventListener('keydown', handleKeydown);
+});
 
 // 暴露方法供父组件使用
 defineExpose({
   setActiveTool: (tool) => {
-    activeTool.value = tool
+    activeTool.value = tool;
     if (mapTools.value) {
-      mapTools.value.setActiveTool(tool)
+      mapTools.value.setActiveTool(tool);
     }
   },
   updateCoordinates,
@@ -256,13 +256,13 @@ defineExpose({
   exitFullscreen,
   clearSelection: () => {
     if (mapMainArea.value) {
-      mapMainArea.value.clearSelection()
+      mapMainArea.value.clearSelection();
     }
   },
   updateVisibleLayers: (layers) => {
-    Object.assign(visibleLayers, layers)
+    Object.assign(visibleLayers, layers);
   }
-})
+});
 </script>
 
 <style scoped>

@@ -18,10 +18,10 @@
 </template>
 
 <script setup>
-import TopHeader from '~/components/header/TopHeader.vue'
-import LeftPanel from '~/components/panels/LeftPanel.vue'
-import MapContainer from '~/components/map/MapContainer.vue'
-import RightPanel from '~/components/panels/RightPanel.vue'
+import TopHeader from '~/components/header/TopHeader.vue';
+import LeftPanel from '~/components/panels/LeftPanel.vue';
+import MapContainer from '~/components/map/MapContainer.vue';
+import RightPanel from '~/components/panels/RightPanel.vue';
 </script>
 
 <style scoped>

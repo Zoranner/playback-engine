@@ -6,8 +6,8 @@
 </template>
 
 <script setup>
-import PanelCoords from './PanelCoords.vue'
-import PanelTargetInfo from './PanelTargetInfo.vue'
+import PanelCoords from './PanelCoords.vue';
+import PanelTargetInfo from './PanelTargetInfo.vue';
 </script>
 
 <style scoped>

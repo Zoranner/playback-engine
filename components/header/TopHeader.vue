@@ -13,9 +13,9 @@
 </template>
 
 <script setup>
-import HeaderLogo from './HeaderLogo.vue'
-import HeaderPlaybackControls from './HeaderPlaybackControls.vue'
-import HeaderMenuBar from './HeaderMenuBar.vue'
+import HeaderLogo from './HeaderLogo.vue';
+import HeaderPlaybackControls from './HeaderPlaybackControls.vue';
+import HeaderMenuBar from './HeaderMenuBar.vue';
 </script>
 
 <style scoped>

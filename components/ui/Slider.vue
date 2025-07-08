@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch } from 'vue';
 
 const props = defineProps({
   modelValue: {
@@ -75,48 +75,48 @@ const props = defineProps({
     default: 'primary',
     validator: (value) => ['primary', 'success', 'warning', 'danger'].includes(value)
   }
-})
+});
 
-const emit = defineEmits(['update:modelValue', 'change', 'input'])
+const emit = defineEmits(['update:modelValue', 'change', 'input']);
 
-const trackRef = ref(null)
-const isDragging = ref(false)
-const localValue = ref(props.modelValue)
+const trackRef = ref(null);
+const isDragging = ref(false);
+const localValue = ref(props.modelValue);
 
 const progressPercentage = computed(() => {
-  return ((localValue.value - props.min) / (props.max - props.min)) * 100
-})
+  return ((localValue.value - props.min) / (props.max - props.min)) * 100;
+});
 
 const formatValue = (value) => {
-  return props.formatter(value)
-}
+  return props.formatter(value);
+};
 
 const onInput = (event) => {
-  localValue.value = Number(event.target.value)
-  emit('update:modelValue', localValue.value)
-  emit('input', localValue.value)
-}
+  localValue.value = Number(event.target.value);
+  emit('update:modelValue', localValue.value);
+  emit('input', localValue.value);
+};
 
 const onChange = (event) => {
-  emit('change', Number(event.target.value))
-}
+  emit('change', Number(event.target.value));
+};
 
 const onTrackClick = (event) => {
-  if (props.disabled) return
+  if (props.disabled) return;
   
-  const track = trackRef.value
-  const rect = track.getBoundingClientRect()
-  const percentage = (event.clientX - rect.left) / rect.width
-  const newValue = props.min + (props.max - props.min) * percentage
+  const track = trackRef.value;
+  const rect = track.getBoundingClientRect();
+  const percentage = (event.clientX - rect.left) / rect.width;
+  const newValue = props.min + (props.max - props.min) * percentage;
   
-  localValue.value = Math.round(newValue / props.step) * props.step
-  emit('update:modelValue', localValue.value)
-  emit('change', localValue.value)
-}
+  localValue.value = Math.round(newValue / props.step) * props.step;
+  emit('update:modelValue', localValue.value);
+  emit('change', localValue.value);
+};
 
 watch(() => props.modelValue, (newValue) => {
-  localValue.value = newValue
-})
+  localValue.value = newValue;
+});
 </script>
 
 <style scoped>

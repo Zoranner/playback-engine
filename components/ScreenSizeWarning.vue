@@ -24,35 +24,35 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import Button from '~/components/ui/Button.vue'
+import { ref, watch } from 'vue';
+import Button from '~/components/ui/Button.vue';
 
 defineProps({
   width: { type: Number, default: 0 },
   height: { type: Number, default: 0 },
   minWidth: { type: Number, default: 1200 },
   minHeight: { type: Number, default: 800 }
-})
+});
 
-const emit = defineEmits(['force-show'])
+const emit = defineEmits(['force-show']);
 
-const forceShow = ref(false)
+const forceShow = ref(false);
 
 const checkFullscreen = () => {
   if (document.documentElement.requestFullscreen) {
-    document.documentElement.requestFullscreen()
+    document.documentElement.requestFullscreen();
   } else if (document.documentElement.webkitRequestFullscreen) {
-    document.documentElement.webkitRequestFullscreen()
+    document.documentElement.webkitRequestFullscreen();
   } else if (document.documentElement.msRequestFullscreen) {
-    document.documentElement.msRequestFullscreen()
+    document.documentElement.msRequestFullscreen();
   }
-}
+};
 
 watch(forceShow, (value) => {
   if (value) {
-    emit('force-show')
+    emit('force-show');
   }
-})
+});
 </script>
 
 <style scoped>

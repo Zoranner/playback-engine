@@ -73,64 +73,64 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref } from 'vue';
 
-const activeMenu = ref(null)
+const activeMenu = ref(null);
 
 const toggleMenu = (menu) => {
-  activeMenu.value = activeMenu.value === menu ? null : menu
-}
+  activeMenu.value = activeMenu.value === menu ? null : menu;
+};
 
 // 菜单操作函数
 const openProject = () => {
-  console.log('打开工程')
-  activeMenu.value = null
-}
+  // TODO: 实现打开工程功能
+  activeMenu.value = null;
+};
 
 const closeProject = () => {
-  console.log('关闭工程')
-  activeMenu.value = null
-}
+  // TODO: 实现关闭工程功能
+  activeMenu.value = null;
+};
 
 const importData = () => {
-  console.log('导入数据')
-  activeMenu.value = null
-}
+  // TODO: 实现导入数据功能
+  activeMenu.value = null;
+};
 
 const exportData = () => {
-  console.log('导出数据')
-  activeMenu.value = null
-}
+  // TODO: 实现导出数据功能
+  activeMenu.value = null;
+};
 
 const exit = () => {
-  console.log('退出应用')
-  activeMenu.value = null
-}
+  // TODO: 实现退出应用功能
+  activeMenu.value = null;
+};
 
 const resetView = () => {
-  console.log('重置视图')
-  activeMenu.value = null
-}
+  // TODO: 实现重置视图功能
+  activeMenu.value = null;
+};
 
 const fullscreen = () => {
-  console.log('全屏显示')
-  activeMenu.value = null
-}
+  // TODO: 实现全屏显示功能
+  activeMenu.value = null;
+};
 
 const toggleGrid = () => {
-  console.log('切换网格显示')
-  activeMenu.value = null
-}
+  // TODO: 实现切换网格显示功能
+  activeMenu.value = null;
+};
 
 const openSettings = () => {
-  console.log('打开设置')
-  activeMenu.value = null
-}
+  // TODO: 实现打开设置功能
+  activeMenu.value = null;
+};
 
 const openAbout = () => {
-  console.log('关于对话框')
-  activeMenu.value = null
-}
+  // TODO: 实现关于对话框功能
+  activeMenu.value = null;
+};
 </script>
 
 <style scoped>

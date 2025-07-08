@@ -109,17 +109,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import Button from '~/components/ui/Button.vue'
+import { ref } from 'vue';
+import Button from '~/components/ui/Button.vue';
 
 // 折叠状态
-const isCollapsed = ref(false)
+const isCollapsed = ref(false);
 const expandedGroups = ref({
   targets: true,
   platforms: false,
   tracks: false,
   zones: false
-})
+});
 
 // 数据 - 简化版本，移除基础图层
 const targetTypes = ref([
@@ -127,26 +127,26 @@ const targetTypes = ref([
   { id: 'commercial', name: '商船', color: '#4ade80', strokeColor: '#22c55e', visible: true, count: 25 },
   { id: 'unknown', name: '未知', color: '#f59e0b', strokeColor: '#d97706', visible: true, count: 8 },
   { id: 'suspicious', name: '可疑', color: '#ef4444', strokeColor: '#dc2626', visible: true, count: 3 }
-])
+]);
 
 const platformTypes = ref([
   { id: 'submarine', name: '潜艇', color: '#1e40af', strokeColor: '#1d4ed8', visible: true, count: 4 },
   { id: 'destroyer', name: '驱逐舰', color: '#7c3aed', strokeColor: '#6d28d9', visible: true, count: 6 },
   { id: 'frigate', name: '护卫舰', color: '#0891b2', strokeColor: '#0e7490', visible: true, count: 8 },
   { id: 'aircraft', name: '飞机', color: '#e11d48', strokeColor: '#be185d', visible: false, count: 2 }
-])
+]);
 
 const trackTypes = ref([
   { id: 'primary', name: '主航迹', color: '#60a5fa', style: 'solid', visible: true },
   { id: 'secondary', name: '副航迹', color: '#34d399', style: 'dashed', visible: true },
   { id: 'predicted', name: '预测航迹', color: '#fbbf24', style: 'dotted', visible: false }
-])
+]);
 
 const zoneTypes = ref([
   { id: 'patrol', name: '巡逻区', color: '#fbbf24', visible: true },
   { id: 'restricted', name: '禁航区', color: '#ef4444', visible: true },
   { id: 'safe', name: '安全区', color: '#22c55e', visible: false }
-])
+]);
 
 // 事件
 const emit = defineEmits([
@@ -156,71 +156,71 @@ const emit = defineEmits([
   'zone-type-toggle',
   'show-all',
   'hide-all'
-])
+]);
 
 // 方法
 const toggleCollapse = () => {
-  isCollapsed.value = !isCollapsed.value
-}
+  isCollapsed.value = !isCollapsed.value;
+};
 
 const toggleGroup = (groupName) => {
-  expandedGroups.value[groupName] = !expandedGroups.value[groupName]
-}
+  expandedGroups.value[groupName] = !expandedGroups.value[groupName];
+};
 
 const toggleItem = (type, id) => {
-  let items
+  let items;
   switch (type) {
-    case 'target':
-      items = targetTypes.value
-      break
-    case 'platform':
-      items = platformTypes.value
-      break
-    case 'track':
-      items = trackTypes.value
-      break
-    case 'zone':
-      items = zoneTypes.value
-      break
+  case 'target':
+    items = targetTypes.value;
+    break;
+  case 'platform':
+    items = platformTypes.value;
+    break;
+  case 'track':
+    items = trackTypes.value;
+    break;
+  case 'zone':
+    items = zoneTypes.value;
+    break;
   }
   
-  const item = items.find(item => item.id === id)
+  const item = items.find(item => item.id === id);
   if (item) {
-    item.visible = !item.visible
-    emit(`${type}-type-toggle`, { id, visible: item.visible })
+    item.visible = !item.visible;
+    emit(`${type}-type-toggle`, { id, visible: item.visible });
   }
-}
+};
 
 const getVisibleCount = (type) => {
   switch (type) {
-    case 'targets':
-      return targetTypes.value.filter(item => item.visible).length
-    case 'platforms':
-      return platformTypes.value.filter(item => item.visible).length
-    case 'tracks':
-      return trackTypes.value.filter(item => item.visible).length
-    case 'zones':
-      return zoneTypes.value.filter(item => item.visible).length
-    default:
-      return 0
+  case 'targets':
+    return targetTypes.value.filter(item => item.visible).length;
+  case 'platforms':
+    return platformTypes.value.filter(item => item.visible).length;
+  case 'tracks':
+    return trackTypes.value.filter(item => item.visible).length;
+  case 'zones':
+    return zoneTypes.value.filter(item => item.visible).length;
+  default:
+    return 0;
   }
-}
+};
 
 const showAll = () => {
-  targetTypes.value.forEach(item => { item.visible = true })
-  platformTypes.value.forEach(item => { item.visible = true })
-  trackTypes.value.forEach(item => { item.visible = true })
-  zoneTypes.value.forEach(item => { item.visible = true })
-  emit('show-all')
-}
+  targetTypes.value.forEach(item => { item.visible = true; });
+  platformTypes.value.forEach(item => { item.visible = true; });
+  trackTypes.value.forEach(item => { item.visible = true; });
+  zoneTypes.value.forEach(item => { item.visible = true; });
+  emit('show-all');
+};
 
 const hideAll = () => {
-  targetTypes.value.forEach(item => { item.visible = false })
-  platformTypes.value.forEach(item => { item.visible = false })
-  trackTypes.value.forEach(item => { item.visible = false })
-  zoneTypes.value.forEach(item => { item.visible = false })
-  emit('hide-all')
-}
+  targetTypes.value.forEach(item => { item.visible = false; });
+  platformTypes.value.forEach(item => { item.visible = false; });
+  trackTypes.value.forEach(item => { item.visible = false; });
+  zoneTypes.value.forEach(item => { item.visible = false; });
+  emit('hide-all');
+};
 </script>
 
 <style scoped>

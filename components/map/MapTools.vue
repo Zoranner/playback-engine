@@ -56,50 +56,50 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import Button from '~/components/ui/Button.vue'
+import { ref } from 'vue';
+import Button from '~/components/ui/Button.vue';
 
 // 工具状态
-const activeTool = ref('select')
+const activeTool = ref('select');
 
 // 测量结果
-const measurementResult = ref(null)
+const measurementResult = ref(null);
 
 // 动作按钮事件
 const zoomIn = () => {
-  emit('zoom-in')
-}
+  emit('zoom-in');
+};
 
 const zoomOut = () => {
-  emit('zoom-out')
-}
+  emit('zoom-out');
+};
 
 const resetZoom = () => {
-  emit('reset-zoom')
-}
+  emit('reset-zoom');
+};
 
 // 工具状态切换
 const setActiveTool = (tool) => {
   if (activeTool.value === tool) {
     // 如果点击的是当前激活的工具，取消激活
-    activeTool.value = 'select'
-    emit('tool-changed', 'select')
+    activeTool.value = 'select';
+    emit('tool-changed', 'select');
   } else {
-    activeTool.value = tool
-    emit('tool-changed', tool)
+    activeTool.value = tool;
+    emit('tool-changed', tool);
   }
-}
+};
 
 // 测量相关
 const clearMeasurement = () => {
-  measurementResult.value = null
-  emit('clear-measurement')
-}
+  measurementResult.value = null;
+  emit('clear-measurement');
+};
 
 // 对外暴露的方法
 const setMeasurementResult = (result) => {
-  measurementResult.value = result
-}
+  measurementResult.value = result;
+};
 
 // 定义事件
 const emit = defineEmits([
@@ -108,13 +108,13 @@ const emit = defineEmits([
   'reset-zoom',
   'tool-changed',
   'clear-measurement'
-])
+]);
 
 // 暴露方法给父组件
 defineExpose({
   setMeasurementResult,
   setActiveTool
-})
+});
 </script>
 
 <style scoped>

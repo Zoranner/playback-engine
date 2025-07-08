@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch } from 'vue';
 
 
 const props = defineProps({
@@ -62,16 +62,16 @@ const props = defineProps({
     default: 'primary',
     validator: (value) => ['primary', 'success', 'warning', 'danger'].includes(value)
   }
-})
+});
 
-const emit = defineEmits(['update:modelValue', 'change'])
+const emit = defineEmits(['update:modelValue', 'change']);
 
-const localValue = ref(props.modelValue)
+const localValue = ref(props.modelValue);
 
 const containerClass = computed(() => [
   `checkbox-container--${props.size}`,
   { 'checkbox-container--disabled': props.disabled }
-])
+]);
 
 const indicatorClass = computed(() => [
   `checkbox-indicator--${props.size}`,
@@ -81,47 +81,47 @@ const indicatorClass = computed(() => [
     'checkbox-indicator--indeterminate': props.indeterminate,
     'checkbox-indicator--disabled': props.disabled
   }
-])
+]);
 
 const isChecked = computed(() => {
   if (Array.isArray(localValue.value)) {
-    return localValue.value.includes(props.value)
+    return localValue.value.includes(props.value);
   }
-  return localValue.value
-})
+  return localValue.value;
+});
 
 const iconSize = computed(() => {
   const sizeMap = {
     small: 10,
     medium: 12,
     large: 14
-  }
-  return sizeMap[props.size]
-})
+  };
+  return sizeMap[props.size];
+});
 
 const onChange = (event) => {
   if (Array.isArray(localValue.value)) {
-    const newValue = [...localValue.value]
+    const newValue = [...localValue.value];
     if (event.target.checked) {
-      newValue.push(props.value)
+      newValue.push(props.value);
     } else {
-      const index = newValue.indexOf(props.value)
+      const index = newValue.indexOf(props.value);
       if (index > -1) {
-        newValue.splice(index, 1)
+        newValue.splice(index, 1);
       }
     }
-    localValue.value = newValue
+    localValue.value = newValue;
   } else {
-    localValue.value = event.target.checked
+    localValue.value = event.target.checked;
   }
   
-  emit('update:modelValue', localValue.value)
-  emit('change', localValue.value)
-}
+  emit('update:modelValue', localValue.value);
+  emit('change', localValue.value);
+};
 
 watch(() => props.modelValue, (newValue) => {
-  localValue.value = newValue
-})
+  localValue.value = newValue;
+});
 </script>
 
 <style scoped>

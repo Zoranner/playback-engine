@@ -31,9 +31,9 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useEvents } from "~/composables/useEvents";
-import GroupBox from "~/components/ui/GroupBox.vue";
+import { ref } from 'vue';
+import { useEvents } from '~/composables/useEvents';
+import GroupBox from '~/components/ui/GroupBox.vue';
 
 const { events } = useEvents();
 const selectedEvent = ref(null);

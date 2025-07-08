@@ -33,15 +33,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue';
 
-const currentTime = ref('')
-const coordinates = ref('116.3974, 39.9093')
-const zoomLevel = ref(100)
-const connectionStatus = ref('TCP:CONNECTED')
+const currentTime = ref('');
+const coordinates = ref('116.3974, 39.9093');
+const zoomLevel = ref(100);
+const connectionStatus = ref('TCP:CONNECTED');
 
 const updateTime = () => {
-  const now = new Date()
+  const now = new Date();
   currentTime.value = now.toLocaleString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
@@ -49,20 +49,20 @@ const updateTime = () => {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit'
-  })
-}
+  });
+};
 
-let timeInterval
+let timeInterval;
 onMounted(() => {
-  updateTime()
-  timeInterval = setInterval(updateTime, 1000)
-})
+  updateTime();
+  timeInterval = setInterval(updateTime, 1000);
+});
 
 onUnmounted(() => {
   if (timeInterval) {
-    clearInterval(timeInterval)
+    clearInterval(timeInterval);
   }
-})
+});
 </script>
 
 <style scoped>

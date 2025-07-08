@@ -21,13 +21,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useScreenSize } from '~/composables/useScreenSize'
-import ScreenSizeWarning from '~/components/ScreenSizeWarning.vue'
-import StatusBar from '~/components/ui/StatusBar.vue'
+import { ref } from 'vue';
+import { useScreenSize } from '~/composables/useScreenSize';
+import ScreenSizeWarning from '~/components/ScreenSizeWarning.vue';
+import StatusBar from '~/components/ui/StatusBar.vue';
 
-const { width, height, isScreenTooSmall, MIN_WIDTH, MIN_HEIGHT } = useScreenSize()
-const forceShow = ref(false)
+const { width, height, isScreenTooSmall, MIN_WIDTH, MIN_HEIGHT } = useScreenSize();
+const forceShow = ref(false);
 </script>
 
 <style scoped>

@@ -14,7 +14,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 const props = defineProps({
   // 按钮变体
@@ -61,9 +61,9 @@ const props = defineProps({
     type: Boolean,
     default: false
   }
-})
+});
 
-const emit = defineEmits(['click'])
+const emit = defineEmits(['click']);
 
 // 计算按钮样式类
 const buttonClasses = computed(() => [
@@ -75,14 +75,14 @@ const buttonClasses = computed(() => [
     'button--disabled': props.disabled,
     'button--icon-only': props.icon && !props.$slots?.default
   }
-])
+]);
 
 // 处理点击事件
 const handleClick = (event) => {
   if (!props.disabled) {
-    emit('click', event)
+    emit('click', event);
   }
-}
+};
 </script>
 
 <style scoped>

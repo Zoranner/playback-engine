@@ -10,10 +10,10 @@
 </template>
 
 <script setup>
-import { useEnvironment } from '~/composables/useEnvironment'
-import GroupBox from '~/components/ui/GroupBox.vue'
+import { useEnvironment } from '~/composables/useEnvironment';
+import GroupBox from '~/components/ui/GroupBox.vue';
 
-const { environmentData } = useEnvironment()
+const { environmentData } = useEnvironment();
 </script>
 
 <style scoped>

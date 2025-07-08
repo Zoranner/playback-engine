@@ -11,9 +11,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref } from 'vue';
 // 当前工程名称，后续可以通过props或store管理
-const currentProject = ref('南海演习回放数据_20241223')
+const currentProject = ref('南海演习回放数据_20241223');
 </script>
 
 <style scoped>

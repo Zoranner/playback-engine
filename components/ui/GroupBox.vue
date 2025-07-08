@@ -13,7 +13,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 const props = defineProps({
   title: {
@@ -34,12 +34,12 @@ const props = defineProps({
     default: 'medium',
     validator: (value) => ['small', 'medium', 'large'].includes(value)
   }
-})
+});
 
 const groupboxClass = computed(() => [
   `groupbox--${props.variant}`,
   `groupbox--${props.size}`
-])
+]);
 </script>
 
 <style scoped>

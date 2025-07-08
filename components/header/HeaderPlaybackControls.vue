@@ -53,16 +53,16 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import Button from '~/components/ui/Button.vue'
-import Select from '~/components/ui/Select.vue'
-import Slider from '~/components/ui/Slider.vue'
+import { ref, computed } from 'vue';
+import Button from '~/components/ui/Button.vue';
+import Select from '~/components/ui/Select.vue';
+import Slider from '~/components/ui/Slider.vue';
 
 // 回放状态
-const isPlaying = ref(false)
-const playbackSpeed = ref('1')
-const currentProgress = ref(30) // 当前进度（分钟）
-const totalDuration = ref(120) // 总时长（分钟）
+const isPlaying = ref(false);
+const playbackSpeed = ref('1');
+const currentProgress = ref(30); // 当前进度（分钟）
+const totalDuration = ref(120); // 总时长（分钟）
 
 // 倍速选项
 const speedOptions = ref([
@@ -71,32 +71,32 @@ const speedOptions = ref([
   { value: '4', label: '×4' },
   { value: '8', label: '×8' },
   { value: '16', label: '×16' }
-])
+]);
 
 // 时间显示
-const startTime = ref('14:30')
-const currentTime = ref('15:00')
+const startTime = ref('14:30');
+const currentTime = ref('15:00');
 
 // 计算进度百分比
 const progressPercentage = computed(() => {
-  return (currentProgress.value / totalDuration.value) * 100
-})
+  return (currentProgress.value / totalDuration.value) * 100;
+});
 
 // 播放/暂停切换
 const togglePlayPause = () => {
-  isPlaying.value = !isPlaying.value
-}
+  isPlaying.value = !isPlaying.value;
+};
 
 // 停止
 const stop = () => {
-  isPlaying.value = false
-  currentProgress.value = 0
-}
+  isPlaying.value = false;
+  currentProgress.value = 0;
+};
 
 // 进度条变化
 const onProgressChange = (event) => {
-  currentProgress.value = event.target.value
-}
+  currentProgress.value = event.target.value;
+};
 </script>
 
 <style scoped>

@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 const props = defineProps({
   title: {
@@ -50,7 +50,7 @@ const props = defineProps({
     default: 'medium',
     validator: (value) => ['small', 'medium', 'large'].includes(value)
   }
-})
+});
 
 const cardClass = computed(() => [
   `card--${props.variant}`,
@@ -59,7 +59,7 @@ const cardClass = computed(() => [
     'card--active': props.active,
     'card--hoverable': props.hoverable
   }
-])
+]);
 </script>
 
 <style scoped>

@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch } from 'vue';
 
 const props = defineProps({
   modelValue: {
@@ -64,16 +64,16 @@ const props = defineProps({
     default: 'primary',
     validator: (value) => ['primary', 'success', 'warning', 'danger'].includes(value)
   }
-})
+});
 
-const emit = defineEmits(['update:modelValue', 'change'])
+const emit = defineEmits(['update:modelValue', 'change']);
 
-const localValue = ref(props.modelValue)
+const localValue = ref(props.modelValue);
 
 const containerClass = computed(() => [
   `toggle-container--${props.size}`,
   { 'toggle-container--disabled': props.disabled }
-])
+]);
 
 const trackClass = computed(() => [
   `toggle-track--${props.size}`,
@@ -82,7 +82,7 @@ const trackClass = computed(() => [
     'toggle-track--on': localValue.value,
     'toggle-track--disabled': props.disabled
   }
-])
+]);
 
 const thumbClass = computed(() => [
   `toggle-thumb--${props.size}`,
@@ -90,16 +90,16 @@ const thumbClass = computed(() => [
     'toggle-thumb--on': localValue.value,
     'toggle-thumb--disabled': props.disabled
   }
-])
+]);
 
 const onChange = () => {
-  emit('update:modelValue', localValue.value)
-  emit('change', localValue.value)
-}
+  emit('update:modelValue', localValue.value);
+  emit('change', localValue.value);
+};
 
 watch(() => props.modelValue, (newValue) => {
-  localValue.value = newValue
-})
+  localValue.value = newValue;
+});
 </script>
 
 <style scoped>

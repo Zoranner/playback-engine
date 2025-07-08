@@ -2,8 +2,8 @@
   <div 
     class="list-item"
     :class="itemClass"
-    @click="handleClick"
     :tabindex="selectable ? 0 : -1"
+    @click="handleClick"
     @keydown.enter="handleClick"
   >
     <!-- 指示器 -->
@@ -53,7 +53,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 
 const props = defineProps({
@@ -126,9 +126,9 @@ const props = defineProps({
     default: 'default',
     validator: (value) => ['default', 'target', 'event', 'env', 'legend', 'menu'].includes(value)
   }
-})
+});
 
-const emit = defineEmits(['click', 'select'])
+const emit = defineEmits(['click', 'select']);
 
 const itemClass = computed(() => [
   `list-item--${props.variant}`,
@@ -138,33 +138,33 @@ const itemClass = computed(() => [
     'list-item--disabled': props.disabled,
     'list-item--selectable': props.selectable && !props.disabled
   }
-])
+]);
 
 const indicatorClass = computed(() => [
   `list-indicator--${props.indicatorType}`,
   { 'list-indicator--active': props.active }
-])
+]);
 
 const indicatorStyle = computed(() => {
-  const styles = {}
+  const styles = {};
   
   if (props.indicatorType === 'line') {
-    styles.borderLeftColor = props.indicatorColor
+    styles.borderLeftColor = props.indicatorColor;
   } else {
-    styles.backgroundColor = props.indicatorColor
+    styles.backgroundColor = props.indicatorColor;
   }
   
-  return styles
-})
+  return styles;
+});
 
 const handleClick = (event) => {
-  if (props.disabled) return
+  if (props.disabled) return;
   
-  emit('click', event)
+  emit('click', event);
   if (props.selectable) {
-    emit('select', event)
+    emit('select', event);
   }
-}
+};
 </script>
 
 <style scoped>
