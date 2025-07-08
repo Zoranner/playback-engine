@@ -1,7 +1,8 @@
-import { ref } from 'vue'
+import { ref } from 'vue';
+import type { Target } from '~/types';
 
 export const useTargets = () => {
-  const targets = ref([
+  const targets = ref<Target[]>([
     { 
       id: 'CKB_1435.763', 
       label: '1749', 
@@ -35,14 +36,14 @@ export const useTargets = () => {
       bearing: '280',
       status: 'unknown'
     }
-  ])
+  ]);
 
-  const selectTarget = (target) => {
-    console.log('选中目标:', target)
-  }
+  const selectTarget = (_target: Target) => {
+    // TODO: 实现目标选择逻辑
+  };
 
   return {
     targets,
     selectTarget
-  }
-} 
+  };
+}; 
