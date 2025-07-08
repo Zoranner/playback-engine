@@ -1,9 +1,9 @@
 <template>
-  <MilitaryGroupBox
+  <GroupBox
     title="事件列表"
     class="event-list-container"
   >
-    <div class="events military-scrollbar">
+    <div class="events scrollbar">
       <div
         v-for="event in events"
         :key="event.id"
@@ -27,13 +27,13 @@
         </div>
       </div>
     </div>
-  </MilitaryGroupBox>
+  </GroupBox>
 </template>
 
 <script setup>
 import { ref } from "vue";
 import { useEvents } from "~/composables/useEvents";
-import MilitaryGroupBox from "~/components/ui/MilitaryGroupBox.vue";
+import GroupBox from "~/components/ui/GroupBox.vue";
 
 const { events } = useEvents();
 const selectedEvent = ref(null);

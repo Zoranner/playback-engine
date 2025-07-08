@@ -25,16 +25,14 @@
       <div class="progress-section">
         <span class="time-start text-monospace">{{ startTime }}</span>
         <div class="progress-container">
-          <input 
-            v-model="currentProgress" 
-            type="range" 
-            class="progress-bar" 
-            :min="0" 
+          <Slider
+            v-model="currentProgress"
+            :min="0"
             :max="totalDuration"
+            variant="primary"
+            class="progress-slider"
             @input="onProgressChange"
-          >
-          <div class="progress-track"/>
-          <div class="progress-fill" :style="{ width: progressPercentage + '%' }"/>
+          />
         </div>
         <span class="time-current text-monospace">{{ currentTime }}</span>
       </div>
@@ -42,13 +40,13 @@
       <!-- 倍速控制 -->
       <div class="speed-controls">
         <span class="speed-label">倍速</span>
-        <select v-model="playbackSpeed" class="speed-selector military-input">
-          <option value="1">×1</option>
-          <option value="2">×2</option>
-          <option value="4">×4</option>
-          <option value="8">×8</option>
-          <option value="16">×16</option>
-        </select>
+        <Select
+          v-model="playbackSpeed"
+          :options="speedOptions"
+          size="small"
+          variant="ghost"
+          class="speed-selector"
+        />
       </div>
     </div>
   </div>
@@ -57,12 +55,23 @@
 <script setup>
 import { ref, computed } from 'vue'
 import Button from '~/components/ui/Button.vue'
+import Select from '~/components/ui/Select.vue'
+import Slider from '~/components/ui/Slider.vue'
 
 // 回放状态
 const isPlaying = ref(false)
 const playbackSpeed = ref('1')
 const currentProgress = ref(30) // 当前进度（分钟）
 const totalDuration = ref(120) // 总时长（分钟）
+
+// 倍速选项
+const speedOptions = ref([
+  { value: '1', label: '×1' },
+  { value: '2', label: '×2' },
+  { value: '4', label: '×4' },
+  { value: '8', label: '×8' },
+  { value: '16', label: '×16' }
+])
 
 // 时间显示
 const startTime = ref('14:30')

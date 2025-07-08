@@ -7,7 +7,7 @@
       <h2 class="warning-title">屏幕尺寸不合适</h2>
       <div class="warning-message">
         <p>当前屏幕尺寸：{{ width }} × {{ height }}</p>
-        <p>建议最小尺寸：{{ MIN_WIDTH }} × {{ MIN_HEIGHT }}</p>
+        <p>建议最小尺寸：{{ minWidth }} × {{ minHeight }}</p>
         <p class="suggestion">请最大化浏览器窗口或使用更大的屏幕以获得最佳体验</p>
       </div>
       <div class="warning-actions">
@@ -27,11 +27,11 @@
 import { ref, watch } from 'vue'
 import Button from '~/components/ui/Button.vue'
 
-const props = defineProps({
-  width: Number,
-  height: Number,
-  MIN_WIDTH: Number,
-  MIN_HEIGHT: Number
+defineProps({
+  width: { type: Number, default: 0 },
+  height: { type: Number, default: 0 },
+  minWidth: { type: Number, default: 1200 },
+  minHeight: { type: Number, default: 800 }
 })
 
 const emit = defineEmits(['force-show'])

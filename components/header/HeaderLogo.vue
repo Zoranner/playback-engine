@@ -4,7 +4,7 @@
       <Icon name="heroicons:globe-asia-australia" size="28" />
     </div>
     <div class="title-container">
-      <span class="system-title text-title">海域信息态势感知系统</span>
+      <span class="system-title text-title">综合复盘软件</span>
       <span class="project-name text-caption">{{ currentProject || '未打开工程' }}</span>
     </div>
   </div>

@@ -5,8 +5,8 @@
       v-if="isScreenTooSmall && !forceShow"
       :width="width"
       :height="height"
-      :MIN_WIDTH="MIN_WIDTH"
-      :MIN_HEIGHT="MIN_HEIGHT"
+      :min-width="MIN_WIDTH"
+      :min-height="MIN_HEIGHT"
       @force-show="forceShow = true"
     />
     

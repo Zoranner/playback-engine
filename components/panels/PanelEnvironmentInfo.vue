@@ -1,17 +1,17 @@
 <template>
-  <MilitaryGroupBox title="环境信息" class="environment-info-container">
+  <GroupBox title="环境信息" class="environment-info-container">
     <div class="env-data">
       <div v-for="item in environmentData" :key="item.label" class="env-item">
         <span class="env-label text-caption">{{ item.label }}</span>
         <span class="env-value text-monospace">{{ item.value }}</span>
       </div>
     </div>
-  </MilitaryGroupBox>
+  </GroupBox>
 </template>
 
 <script setup>
 import { useEnvironment } from '~/composables/useEnvironment'
-import MilitaryGroupBox from '~/components/ui/MilitaryGroupBox.vue'
+import GroupBox from '~/components/ui/GroupBox.vue'
 
 const { environmentData } = useEnvironment()
 </script>

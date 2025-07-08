@@ -63,46 +63,10 @@
   --status-bar-height: 28px;
 }
 
-/* 通用组件样式 */
-.military-card {
-  background: var(--panel-bg);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  transition: all var(--transition-normal);
-}
+/* 通用组件样式已移至各自的组件文件中 */
 
-.military-card:hover {
-  border-color: var(--border-color-light);
-  box-shadow: var(--shadow-md);
-}
-
-.military-card--active {
-  border-color: var(--border-color-active);
-  box-shadow: var(--glow-subtle);
-}
-
-.military-groupbox {
-  background: linear-gradient(145deg, var(--tertiary-bg), var(--secondary-bg));
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-inset);
-  position: relative;
-}
-
-.military-groupbox::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border-color-light), transparent);
-}
-
-/* 按钮样式已移至 Button.vue 组件中 */
-
-.military-input {
+/* 通用输入框样式 */
+.input {
   background: var(--secondary-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
@@ -113,39 +77,40 @@
   transition: all var(--transition-fast);
 }
 
-.military-input:focus {
+.input:focus {
   outline: none;
   border-color: var(--border-color-active);
   box-shadow: var(--glow-subtle);
   background: var(--tertiary-bg);
 }
 
-.military-input::placeholder {
+.input::placeholder {
   color: var(--text-muted);
 }
 
-.military-scrollbar {
+/* 美化滚动条 */
+.scrollbar {
   scrollbar-width: thin;
   scrollbar-color: var(--border-color) transparent;
 }
 
-.military-scrollbar::-webkit-scrollbar {
+.scrollbar::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
-.military-scrollbar::-webkit-scrollbar-track {
+.scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.military-scrollbar::-webkit-scrollbar-thumb {
+.scrollbar::-webkit-scrollbar-thumb {
   background: var(--border-color);
   border-radius: var(--radius-sm);
   border: 2px solid transparent;
   background-clip: content-box;
 }
 
-.military-scrollbar::-webkit-scrollbar-thumb:hover {
+.scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--border-color-light);
   background-clip: content-box;
 }
@@ -220,7 +185,7 @@
 }
 
 /* 工具提示样式 */
-.military-tooltip {
+.tooltip {
   background: var(--primary-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);

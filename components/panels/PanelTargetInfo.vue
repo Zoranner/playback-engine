@@ -1,6 +1,6 @@
 <template>
-  <MilitaryGroupBox title="目标信息" class="target-info-container">
-    <div class="target-list military-scrollbar">
+  <GroupBox title="目标信息" class="target-info-container">
+    <div class="target-list scrollbar">
       <div 
         v-for="target in targets" 
         :key="target.id" 
@@ -24,13 +24,13 @@
         <div class="target-status" :class="`target-status--${target.status}`"/>
       </div>
     </div>
-  </MilitaryGroupBox>
+  </GroupBox>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { useTargets } from '~/composables/useTargets'
-import MilitaryGroupBox from '~/components/ui/MilitaryGroupBox.vue'
+import GroupBox from '~/components/ui/GroupBox.vue'
 
 const { targets, selectTarget } = useTargets()
 const selectedTarget = ref(null)

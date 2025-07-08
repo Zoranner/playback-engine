@@ -1,5 +1,5 @@
 <template>
-  <MilitaryGroupBox title="坐标信息" class="coords-container">
+  <GroupBox title="坐标信息" class="coords-container">
     <!-- 选中装备信息 -->
     <div v-if="selectedEquipment" class="equipment-info">
       <div class="equipment-header">
@@ -35,12 +35,13 @@
       <div class="no-selection-text">未选中装备</div>
       <div class="no-selection-hint">点击地图上的装备查看详情</div>
     </div>
-  </MilitaryGroupBox>
+  </GroupBox>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
-import MilitaryGroupBox from '~/components/ui/MilitaryGroupBox.vue'
+import GroupBox from '~/components/ui/GroupBox.vue'
+
 
 // 坐标格式
 const coordinateFormats = ref([

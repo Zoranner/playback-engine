@@ -2,7 +2,7 @@
   <div class="status-bar">
     <div class="status-left">
       <div class="status-item">
-        <span class="status-indicator status-indicator--online"></span>
+        <span class="status-indicator status-indicator--online"/>
         系统运行正常
       </div>
       <div class="status-item">
@@ -33,7 +33,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 const currentTime = ref('')
 const coordinates = ref('116.3974, 39.9093')

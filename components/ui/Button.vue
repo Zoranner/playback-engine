@@ -1,6 +1,6 @@
 <template>
   <button 
-    class="military-button" 
+    class="button" 
     :class="buttonClasses"
     :disabled="disabled"
     @click="handleClick"
@@ -67,13 +67,13 @@ const emit = defineEmits(['click'])
 
 // 计算按钮样式类
 const buttonClasses = computed(() => [
-  `military-button--${props.variant}`,
-  `military-button--${props.size}`,
+  `button--${props.variant}`,
+  `button--${props.size}`,
   {
-    'military-button--square': props.square,
-    'military-button--active': props.active,
-    'military-button--disabled': props.disabled,
-    'military-button--icon-only': props.icon && !props.$slots?.default
+    'button--square': props.square,
+    'button--active': props.active,
+    'button--disabled': props.disabled,
+    'button--icon-only': props.icon && !props.$slots?.default
   }
 ])
 
@@ -86,7 +86,7 @@ const handleClick = (event) => {
 </script>
 
 <style scoped>
-.military-button {
+.button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -105,124 +105,124 @@ const handleClick = (event) => {
 }
 
 /* 尺寸变体 */
-.military-button--small {
+.button--small {
   height: 24px;
   padding: 0 var(--spacing-sm);
   font-size: 11px;
 }
 
-.military-button--medium {
+.button--medium {
   height: 32px;
   padding: 0 var(--spacing-md);
   font-size: 13px;
 }
 
-.military-button--large {
+.button--large {
   height: 40px;
   padding: 0 var(--spacing-lg);
   font-size: 14px;
 }
 
 /* 方形按钮 */
-.military-button--square.military-button--small {
+.button--square.button--small {
   width: 24px;
   padding: 0;
 }
 
-.military-button--square.military-button--medium {
+.button--square.button--medium {
   width: 32px;
   padding: 0;
 }
 
-.military-button--square.military-button--large {
+.button--square.button--large {
   width: 40px;
   padding: 0;
 }
 
 /* 颜色变体 */
-.military-button--default:hover {
+.button--default:hover {
   background: linear-gradient(145deg, var(--border-color-light), var(--tertiary-bg));
   border-color: var(--border-color-light);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
 
-.military-button--primary {
+.button--primary {
   background: linear-gradient(145deg, #0ea5e9, #0284c7);
   border-color: #0ea5e9;
 }
 
-.military-button--primary:hover {
+.button--primary:hover {
   background: linear-gradient(145deg, #38bdf8, #0ea5e9);
   box-shadow: var(--glow-subtle);
 }
 
-.military-button--success {
+.button--success {
   background: linear-gradient(145deg, var(--success-color), #059669);
   border-color: var(--success-color);
 }
 
-.military-button--success:hover {
+.button--success:hover {
   background: linear-gradient(145deg, #34d399, var(--success-color));
   box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
 }
 
-.military-button--warning {
+.button--warning {
   background: linear-gradient(145deg, var(--warning-color), #d97706);
   border-color: var(--warning-color);
 }
 
-.military-button--warning:hover {
+.button--warning:hover {
   background: linear-gradient(145deg, #fbbf24, var(--warning-color));
   box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
 }
 
-.military-button--danger {
+.button--danger {
   background: linear-gradient(145deg, var(--danger-color), #dc2626);
   border-color: var(--danger-color);
 }
 
-.military-button--danger:hover {
+.button--danger:hover {
   background: linear-gradient(145deg, #f87171, var(--danger-color));
   box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
 }
 
-.military-button--ghost {
+.button--ghost {
   background: transparent;
   border-color: var(--border-color);
 }
 
-.military-button--ghost:hover {
+.button--ghost:hover {
   background: var(--secondary-bg);
   border-color: var(--border-color-light);
 }
 
-.military-button--text {
+.button--text {
   background: transparent;
   border: none;
   color: var(--text-accent);
 }
 
-.military-button--text:hover {
+.button--text:hover {
   background: rgba(56, 189, 248, 0.1);
   color: #38bdf8;
 }
 
 /* 状态 */
-.military-button--active {
+.button--active {
   background: var(--tertiary-bg);
   border-color: var(--border-color-active);
   box-shadow: var(--glow-subtle);
 }
 
-.military-button--disabled {
+.button--disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none !important;
   box-shadow: none !important;
 }
 
-.military-button:active:not(.military-button--disabled) {
+.button:active:not(.button--disabled) {
   transform: translateY(0);
   box-shadow: var(--shadow-inset);
 }
@@ -243,12 +243,12 @@ const handleClick = (event) => {
 }
 
 /* 只有图标的按钮 */
-.military-button--icon-only .button-icon {
+.button--icon-only .button-icon {
   margin: 0;
 }
 
 /* 悬停时的微妙动画效果 */
-.military-button::before {
+.button::before {
   content: '';
   position: absolute;
   top: 0;
@@ -259,7 +259,7 @@ const handleClick = (event) => {
   transition: left var(--transition-normal);
 }
 
-.military-button:hover::before:not(.military-button--disabled) {
+.button:hover::before:not(.button--disabled) {
   left: 100%;
 }
 </style>
