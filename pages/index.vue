@@ -1,10 +1,13 @@
 <template>
-  <div class="page-container">
+  <div class="flex h-full flex-col overflow-hidden">
     <!-- 顶部标题栏 -->
     <TopHeader />
 
     <!-- 主要内容区域 -->
-    <main class="main-content">
+    <main
+      class="flex w-full flex-1 overflow-hidden"
+      style="height: calc(100vh - var(--header-height) - var(--status-bar-height))"
+    >
       <!-- 左侧面板 -->
       <LeftPanel />
 
@@ -18,25 +21,8 @@
 </template>
 
 <script setup>
-import TopHeader from '~/components/header/TopHeader.vue';
-import LeftPanel from '~/components/panels/LeftPanel.vue';
-import MapContainer from '~/components/map/MapContainer.vue';
-import RightPanel from '~/components/panels/RightPanel.vue';
+import TopHeader from '~/components/business/header/TopHeader.vue';
+import LeftPanel from '~/components/business/panels/LeftPanel.vue';
+import MapContainer from '~/components/business/map/MapContainer.vue';
+import RightPanel from '~/components/business/panels/RightPanel.vue';
 </script>
-
-<style scoped>
-.page-container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.main-content {
-  flex: 1;
-  display: flex;
-  overflow: hidden;
-  height: calc(100vh - var(--header-height) - var(--status-bar-height));
-  width: 100%;
-}
-</style> 
