@@ -1,89 +1,258 @@
-@import './theme.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* 重置样式并确保页面撑满浏览器 */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body {
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  font-family: var(--font-family-main);
-  background: var(--primary-bg);
-  color: var(--text-primary);
-}
-
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
-#__nuxt {
-  height: 100vh;
-  width: 100vw;
-}
-
-/* 全局滚动条样式 */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-color) transparent;
-}
-
-*::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-*::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-*::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: var(--radius-sm);
-  border: 2px solid transparent;
-  background-clip: content-box;
-}
-
-*::-webkit-scrollbar-thumb:hover {
-  background: var(--border-color-light);
-  background-clip: content-box;
-}
-
-/* 选择文本样式 */
-::selection {
-  background: rgba(56, 189, 248, 0.3);
-  color: var(--text-primary);
-}
-
-::-moz-selection {
-  background: rgba(56, 189, 248, 0.3);
-  color: var(--text-primary);
-}
-
-/* 焦点样式 */
-:focus-visible {
-  outline: 2px solid var(--border-color-active);
-  outline-offset: 2px;
-}
-
-/* 禁用状态 */
-:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* 动画减少偏好设置 */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+/* 基础重置和全局样式 */
+@layer base {
+  * {
+    @apply box-border;
   }
-} 
+
+  html,
+  body {
+    @apply h-full w-full overflow-hidden bg-background-primary font-main text-sm text-text-primary;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  #__nuxt {
+    @apply h-screen w-screen;
+  }
+
+  /* 选择文本样式 */
+  ::selection {
+    @apply bg-primary/30 text-text-primary;
+  }
+
+  /* 焦点样式 */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-border-active;
+  }
+
+  /* 禁用状态 */
+  :disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+
+  /* 滚动条样式 */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.border.DEFAULT') transparent;
+  }
+
+  *::-webkit-scrollbar {
+    @apply h-2 w-2;
+  }
+
+  *::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    @apply rounded-sm border-2 border-solid border-transparent bg-border;
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    @apply bg-border-light;
+    background-clip: content-box;
+  }
+}
+
+/* 组件层：可复用的组件样式 */
+@layer components {
+  /* 按钮基础样式 */
+  .btn-base {
+    @apply relative inline-flex h-8 cursor-pointer select-none items-center justify-center gap-xs overflow-hidden rounded-sm border border-border px-md font-medium transition-all duration-fast;
+  }
+
+  .btn-primary {
+    @apply btn-base border-primary bg-gradient-primary text-text-primary hover:-translate-y-px hover:shadow-glow;
+  }
+
+  .btn-secondary {
+    @apply btn-base border-border bg-gradient-default hover:-translate-y-px hover:border-border-light hover:bg-gradient-to-br hover:from-border-light hover:to-background-tertiary hover:shadow-sm;
+  }
+
+  .btn-success {
+    @apply btn-base border-success bg-gradient-success text-text-primary hover:shadow-glow-strong;
+  }
+
+  .btn-warning {
+    @apply btn-base border-warning bg-gradient-warning text-text-primary;
+  }
+
+  .btn-danger {
+    @apply btn-base border-danger bg-gradient-danger text-text-primary;
+  }
+
+  .btn-ghost {
+    @apply btn-base border-border bg-transparent hover:border-border-light hover:bg-background-secondary;
+  }
+
+  .btn-text {
+    @apply btn-base hover:text-primary-light border-transparent bg-transparent text-text-accent hover:bg-primary/10;
+  }
+
+  .btn-square {
+    @apply w-8 px-0;
+  }
+
+  .btn-active {
+    @apply border-border-active bg-background-tertiary shadow-glow;
+  }
+
+  .btn-disabled {
+    @apply transform-none cursor-not-allowed opacity-50 shadow-none;
+  }
+
+  .btn:active:not(.btn-disabled) {
+    @apply shadow-inset translate-y-0;
+  }
+
+  /* 卡片组件 */
+  .card {
+    @apply rounded-md border border-border bg-background-panel p-md shadow-sm;
+  }
+
+  /* 输入框组件 */
+  .input-base {
+    @apply h-8 w-full rounded-sm border border-border bg-background-secondary px-md text-text-primary transition-all duration-fast placeholder:text-text-muted focus:border-border-active focus:shadow-glow focus:outline-none;
+  }
+
+  /* 状态指示器 */
+  .status-indicator {
+    @apply relative mr-2 inline-block h-2 w-2 rounded-full;
+  }
+
+  .status-indicator::before {
+    @apply absolute inset-0 animate-pulse rounded-full content-[''];
+  }
+
+  .status-online {
+    @apply bg-success;
+  }
+
+  .status-warning {
+    @apply bg-warning;
+  }
+
+  .status-offline {
+    @apply bg-danger;
+  }
+
+  .status-info {
+    @apply bg-info;
+  }
+
+  /* 文本样式 */
+  .text-title {
+    @apply text-lg font-semibold leading-tight tracking-tight text-text-primary;
+  }
+
+  .text-subtitle {
+    @apply text-base font-medium leading-snug text-text-secondary;
+  }
+
+  .text-body {
+    @apply text-sm leading-relaxed text-text-primary;
+  }
+
+  .text-caption {
+    @apply text-xs leading-normal text-text-muted;
+  }
+
+  .text-monospace {
+    @apply rounded border border-border bg-background-tertiary px-1 py-0.5 font-mono text-xs text-text-secondary;
+  }
+}
+
+/* 工具类层：特定的工具类 */
+@layer utilities {
+  /* 布局工具 */
+  .layout-full {
+    @apply h-screen w-screen overflow-hidden;
+  }
+
+  .layout-header {
+    @apply h-header w-full flex-shrink-0;
+  }
+
+  .layout-panel {
+    @apply w-panel flex-shrink-0;
+  }
+
+  .layout-main {
+    @apply min-h-0 min-w-0 flex-1;
+  }
+
+  /* 渐变背景 */
+  .bg-gradient-default {
+    background: linear-gradient(
+      145deg,
+      theme('colors.background.tertiary'),
+      theme('colors.background.secondary')
+    );
+  }
+
+  .bg-gradient-primary {
+    background: linear-gradient(
+      145deg,
+      theme('colors.primary.DEFAULT'),
+      theme('colors.primary.600')
+    );
+  }
+
+  .bg-gradient-success {
+    background: linear-gradient(
+      145deg,
+      theme('colors.success.DEFAULT'),
+      theme('colors.success.dark')
+    );
+  }
+
+  .bg-gradient-warning {
+    background: linear-gradient(
+      145deg,
+      theme('colors.warning.DEFAULT'),
+      theme('colors.warning.dark')
+    );
+  }
+
+  .bg-gradient-danger {
+    background: linear-gradient(
+      145deg,
+      theme('colors.danger.DEFAULT'),
+      theme('colors.danger.dark')
+    );
+  }
+
+  /* 发光效果 */
+  .glow-primary {
+    box-shadow: 0 0 8px theme('colors.primary.400/30');
+  }
+
+  .glow-success {
+    box-shadow: 0 0 8px theme('colors.success.DEFAULT/30');
+  }
+
+  .glow-warning {
+    box-shadow: 0 0 8px theme('colors.warning.DEFAULT/30');
+  }
+
+  .glow-danger {
+    box-shadow: 0 0 8px theme('colors.danger.DEFAULT/30');
+  }
+
+  /* 动画减少偏好设置 */
+  @media (prefers-reduced-motion: reduce) {
+    .transition-all,
+    .transition-colors,
+    .transition-opacity,
+    .transition-shadow,
+    .transition-transform {
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

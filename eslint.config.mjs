@@ -1,10 +1,15 @@
 // @ts-check
 import withNuxt from './.nuxt/eslint.config.mjs';
+import eslintConfigPrettier from 'eslint-config-prettier';
+import eslintPluginPrettier from 'eslint-plugin-prettier';
 
 export default withNuxt({
+  plugins: {
+    prettier: eslintPluginPrettier,
+  },
   rules: {
     // 基础代码质量规则
-    'no-console': 'warn',
+    'no-console': 'off',
     'no-debugger': 'error',
     'no-unused-vars': 'warn',
     'prefer-const': 'error',
@@ -23,13 +28,11 @@ export default withNuxt({
     '@typescript-eslint/no-unused-vars': 'warn',
     '@typescript-eslint/no-explicit-any': 'warn',
     
-    // 代码风格规则
-    'indent': ['error', 2],
-    'quotes': ['error', 'single'],
-    'semi': ['error', 'always'],
-    'comma-dangle': ['error', 'never'],
-    'object-curly-spacing': ['error', 'always'],
-    'array-bracket-spacing': ['error', 'never']
+    // Prettier 集成
+    'prettier/prettier': 'error',
+    
+    // 禁用与 prettier 冲突的规则 - 这些将由 prettier 处理
+    ...eslintConfigPrettier.rules,
   },
   
   // 忽略特定文件的规则
@@ -38,6 +41,6 @@ export default withNuxt({
     'node_modules/**',
     '.nuxt/**',
     '.output/**',
-    'src-tauri/target/**'
-  ]
+    'src-tauri/target/**',
+  ],
 });
