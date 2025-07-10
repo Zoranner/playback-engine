@@ -11,8 +11,18 @@
       <!-- 左侧面板 -->
       <LeftPanel />
 
-      <!-- 主海图区域 -->
-      <MapContainer />
+      <!-- 中间区域：地图 + 时间轴 -->
+      <div class="flex flex-1 flex-col overflow-hidden">
+        <!-- 主海图区域 -->
+        <div class="flex-1 overflow-hidden">
+          <MapContainer />
+        </div>
+
+        <!-- 时间轴播放器 -->
+        <div class="border-t border-border p-md bg-background-secondary">
+          <TimelinePlayer />
+        </div>
+      </div>
 
       <!-- 右侧面板 -->
       <RightPanel />
@@ -25,4 +35,5 @@ import TopHeader from '~/components/business/header/TopHeader.vue';
 import LeftPanel from '~/components/business/panels/LeftPanel.vue';
 import MapContainer from '~/components/business/map/MapContainer.vue';
 import RightPanel from '~/components/business/panels/RightPanel.vue';
+import TimelinePlayer from '~/components/business/timeline/TimelinePlayer.vue';
 </script>

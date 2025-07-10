@@ -6,7 +6,7 @@
       <HeaderLogo />
     </div>
     <div class="flex flex-1 justify-center">
-      <PlaybackControls />
+      <!-- 播放控制已移至底部时间轴 -->
     </div>
     <div class="flex flex-1 items-center justify-end gap-lg">
       <HeaderMenuBar />
@@ -16,6 +16,5 @@
 
 <script setup>
 import HeaderLogo from './HeaderLogo.vue';
-import PlaybackControls from './PlaybackControls.vue';
 import HeaderMenuBar from './HeaderMenuBar.vue';
 </script>
