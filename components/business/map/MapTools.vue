@@ -2,28 +2,21 @@
   <div class="pointer-events-none absolute inset-0 z-30">
     <!-- 缩放按钮组 - 左上角 -->
     <div class="pointer-events-auto absolute left-sm top-sm flex flex-col gap-px">
-      <Button size="small" square title="放大" @click="zoomIn">
-        <Icon name="heroicons:magnifying-glass-plus" size="12" />
-      </Button>
+      <Button square title="放大" icon="heroicons:magnifying-glass-plus" @click="zoomIn" />
 
-      <Button size="small" square title="缩小" @click="zoomOut">
-        <Icon name="heroicons:magnifying-glass-minus" size="12" />
-      </Button>
+      <Button square title="缩小" icon="heroicons:magnifying-glass-minus" @click="zoomOut" />
 
-      <Button size="small" square title="重置缩放" @click="resetZoom">
-        <Icon name="heroicons:arrows-pointing-out" size="12" />
-      </Button>
+      <Button square title="重置缩放" icon="heroicons:arrows-pointing-out" @click="resetZoom" />
     </div>
 
     <!-- 测距工具 - 右上角 -->
     <div class="pointer-events-auto absolute right-sm top-sm">
       <Button
-        size="small"
+        icon="heroicons:arrows-right-left"
         :active="activeTool === 'measure-distance'"
         @click="setActiveTool('measure-distance')"
       >
-        <Icon name="heroicons:arrows-right-left" size="12" />
-        <span class="whitespace-nowrap font-medium">测距</span>
+        测距
       </Button>
     </div>
 
@@ -36,15 +29,13 @@
         <div class="mb-0.5 font-semibold text-text-secondary">{{ measurementResult.type }}</div>
         <div class="text-monospace font-semibold text-warning">{{ measurementResult.value }}</div>
         <Button
-          size="small"
           square
           variant="danger"
           title="清除"
+          icon="heroicons:x-mark"
           class="absolute right-1 top-1"
           @click="clearMeasurement"
-        >
-          <Icon name="heroicons:x-mark" size="12" />
-        </Button>
+        />
       </div>
     </div>
   </div>

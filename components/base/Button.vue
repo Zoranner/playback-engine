@@ -1,15 +1,15 @@
 <template>
   <button :class="buttonClasses" :disabled="disabled" @click="handleClick">
-    <Icon v-if="icon && iconPosition === 'left'" :name="icon" class="h-3.5 w-3.5 shrink-0" />
+    <Icon v-if="icon && iconPosition === 'left'" :name="icon" :class="iconClasses" />
     <span v-if="$slots.default" class="truncate">
       <slot />
     </span>
-    <Icon v-if="icon && iconPosition === 'right'" :name="icon" class="h-3.5 w-3.5 shrink-0" />
+    <Icon v-if="icon && iconPosition === 'right'" :name="icon" :class="iconClasses" />
   </button>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, provide } from 'vue';
 
 const props = defineProps({
   // 按钮变体
@@ -61,22 +61,27 @@ const props = defineProps({
 
 const emit = defineEmits(['click']);
 
+// 图标尺寸映射
+const iconSizeMap = {
+  small: 'h-3 w-3',
+  default: 'h-4 w-4',
+  large: 'h-5 w-5',
+};
+
+// 计算图标样式类
+const iconClasses = computed(() => [iconSizeMap[props.size], 'shrink-0']);
+
+// 向子组件提供尺寸信息
+provide('buttonSize', props.size);
+provide('iconClasses', iconClasses.value);
+
 // 计算按钮样式类
 const buttonClasses = computed(() => {
   // 尺寸样式
   const sizeClasses = {
-    small: [
-      'h-6 px-xs text-sm',
-      props.square && 'w-6 px-0',
-    ],
-    default: [
-      'h-8 px-md',
-      props.square && 'w-8 px-0',
-    ],
-    large: [
-      'h-10 px-lg text-lg',
-      props.square && 'w-10 px-0',
-    ],
+    small: ['h-6 px-xs text-sm', props.square && 'w-6 px-0'],
+    default: ['h-8 px-sm', props.square && 'w-8 px-0'],
+    large: ['h-10 px-lg text-lg', props.square && 'w-10 px-0'],
   };
 
   const baseClasses = [
