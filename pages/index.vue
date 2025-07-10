@@ -19,7 +19,7 @@
         </div>
 
         <!-- 时间轴播放器 -->
-        <div class="border-t border-border p-md bg-background-secondary">
+        <div class="border-t border-border bg-background-secondary p-md">
           <TimelinePlayer />
         </div>
       </div>
