@@ -1,24 +1,17 @@
 <template>
-  <div
-    class="absolute bottom-md right-md z-20 min-w-48 max-w-64 overflow-hidden rounded-md border border-border bg-background-panel shadow-lg backdrop-blur-sm transition-all duration-normal hover:shadow-xl"
-  >
-    <!-- 图例标题 -->
-    <div
-      class="flex cursor-pointer items-center justify-between bg-gradient-to-r from-background-secondary to-background-tertiary px-md py-sm transition-all duration-fast hover:from-background-tertiary hover:to-background-secondary hover:shadow-glow-subtle"
-      @click="toggleCollapse"
-    >
-      <div class="flex items-center gap-sm font-semibold tracking-wide text-text-primary">
-        <Icon name="heroicons:rectangle-stack" size="14" class="text-primary" />
-        <span>图例</span>
-      </div>
-      <Icon name="heroicons:chevron-down" size="12" :class="collapseIconClasses" />
-    </div>
+  <GroupBox title="图例" class="min-w-48 max-w-64 backdrop-blur-sm">
+    <template #actions>
+      <Button
+        size="small"
+        square
+        variant="ghost"
+        :icon="isCollapsed ? 'heroicons:chevron-right' : 'heroicons:chevron-down'"
+        @click="toggleCollapse"
+      />
+    </template>
 
     <!-- 图例内容 -->
-    <div
-      v-if="!isCollapsed"
-      class="max-h-80 overflow-y-auto bg-gradient-to-br from-background-panel to-background-secondary"
-    >
+    <div v-if="!isCollapsed" class="max-h-80 overflow-y-auto">
       <Collapse
         :items="collapseItems"
         :default-active-key="['targets']"
@@ -112,12 +105,14 @@
         </template>
       </Collapse>
     </div>
-  </div>
+  </GroupBox>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue';
 import Collapse from '~/components/layout/Collapse.vue';
+import GroupBox from '~/components/display/GroupBox.vue';
+import Button from '~/components/base/Button.vue';
 
 // 折叠状态
 const isCollapsed = ref(false);
@@ -205,11 +200,7 @@ const zoneTypes = ref([
   { id: 'safe', name: '安全区', color: '#22c55e', visible: false },
 ]);
 
-// 折叠图标样式类
-const collapseIconClasses = computed(() => [
-  'text-text-muted transition-transform duration-fast',
-  isCollapsed.value && '-rotate-90',
-]);
+// 移除折叠图标样式类，改用GroupBox的actions插槽
 
 // 获取符号样式类
 const getSymbolClasses = (type, visible) => {

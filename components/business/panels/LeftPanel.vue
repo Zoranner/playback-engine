@@ -1,7 +1,7 @@
 <template>
-  <aside class="flex w-panel flex-col gap-sm p-sm">
-    <PanelEventList />
-    <PanelEnvironmentInfo />
+  <aside class="flex h-full w-panel flex-col gap-sm p-sm">
+    <PanelEventList class="h-full flex-1" />
+    <PanelEnvironmentInfo class="flex-none" />
   </aside>
 </template>
 
