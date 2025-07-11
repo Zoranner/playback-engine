@@ -110,7 +110,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import Collapse from '~/components/layout/Collapse.vue';
+import Collapse from '~/components/display/Collapse.vue';
 import GroupBox from '~/components/display/GroupBox.vue';
 import Button from '~/components/base/Button.vue';
 
