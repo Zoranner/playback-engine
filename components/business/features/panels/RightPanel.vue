@@ -1,5 +1,5 @@
 <template>
-  <aside class="flex w-panel flex-col gap-sm p-sm">
+  <aside class="flex w-panel flex-col gap-sm">
     <PanelCoords class="flex-none" />
     <PanelTargetInfo class="h-full flex-1" />
   </aside>
