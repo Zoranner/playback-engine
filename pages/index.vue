@@ -5,11 +5,11 @@
     <MapContainer class="absolute inset-0 z-0" />
 
     <!-- 界面层（叠加在海图上） -->
-    <InterfaceContainer class="absolute inset-0 z-10" />
+    <InterfaceLayer class="absolute inset-0 z-10" />
   </main>
 </template>
 
 <script setup>
-import MapContainer from '~/components/business/features/map/MapContainer.vue';
-import InterfaceContainer from '~/components/business/containers/InterfaceContainer.vue';
+import MapContainer from '~/components/business/layout/MapContainer.vue';
+import InterfaceLayer from '~/components/business/layout/InterfaceLayer.vue';
 </script>

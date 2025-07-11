@@ -17,7 +17,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, reactive } from 'vue';
-import MapMainArea from './MapMainArea.vue';
+import MapMainArea from '~/components/business/features/map/MapMainArea.vue';
 
 // 响应式数据
 const activeTool = ref('select');

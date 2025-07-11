@@ -12,6 +12,6 @@
 </template>
 
 <script setup>
-import HeaderLogo from '../features/header/HeaderLogo.vue';
-import HeaderMenuBar from '../features/header/HeaderMenuBar.vue';
+import HeaderLogo from '~/components/business/features/header/HeaderLogo.vue';
+import HeaderMenuBar from '~/components/business/features/header/HeaderMenuBar.vue';
 </script>
