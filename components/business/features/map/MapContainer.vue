@@ -1,5 +1,5 @@
 <template>
-  <div class="relative flex-1 overflow-hidden border border-border bg-red-200 shadow-inner">
+  <div class="relative h-full w-full overflow-hidden shadow-inner">
     <!-- 主要地图区域 -->
     <MapMainArea
       ref="mapMainArea"
@@ -12,20 +12,6 @@
       @measurement-result="updateMeasurement"
       @equipment-selected="handleEquipmentSelected"
     />
-
-    <!-- 状态提示（简化版，移除动画） -->
-    <div
-      v-if="statusMessage"
-      class="absolute left-1/2 top-md z-[100] max-w-[300px] -translate-x-1/2 transform rounded-md px-md py-sm text-center font-medium text-white shadow-md"
-      :class="{
-        'bg-info': statusType === 'info',
-        'bg-success': statusType === 'success',
-        'bg-warning text-background-primary': statusType === 'warning',
-        'bg-danger': statusType === 'error',
-      }"
-    >
-      {{ statusMessage }}
-    </div>
   </div>
 </template>
 

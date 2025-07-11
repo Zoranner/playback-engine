@@ -5,16 +5,13 @@
     <div class="flex flex-1 items-center gap-2xl">
       <HeaderLogo />
     </div>
-    <div class="flex flex-1 justify-center">
-      <!-- 播放控制已移至底部时间轴 -->
-    </div>
-    <div class="flex flex-1 items-center justify-end gap-lg">
+    <div class="flex flex-none items-center justify-end gap-lg">
       <HeaderMenuBar />
     </div>
   </header>
 </template>
 
 <script setup>
-import HeaderLogo from './HeaderLogo.vue';
-import HeaderMenuBar from './HeaderMenuBar.vue';
+import HeaderLogo from '../features/header/HeaderLogo.vue';
+import HeaderMenuBar from '../features/header/HeaderMenuBar.vue';
 </script>
