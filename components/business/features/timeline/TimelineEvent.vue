@@ -14,8 +14,8 @@
       <div class="font-medium text-text-primary">{{ event.title }}</div>
       <div v-if="event.description" class="mt-0.5 text-text-secondary">{{ event.description }}</div>
       <div class="text-text-tertiary mt-0.5">
-        {{ formatTime(event.startTime) }}
-        <span v-if="event.endTime"> - {{ formatTime(event.endTime) }}</span>
+        {{ formatTimeSmart(event.startTime, totalDuration) }}
+        <span v-if="event.endTime"> - {{ formatTimeSmart(event.endTime, totalDuration) }}</span>
       </div>
 
       <!-- 提示箭头 -->
@@ -39,7 +39,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const { formatTime } = useTimeline();
+const { formatTime, formatTimeSmart } = useTimeline();
 
 const showTooltip = ref(false);
 
@@ -63,7 +63,7 @@ const eventTypeColors = {
   },
 };
 
-// 计算事件是否可见（在当前缩放级别下）
+// 计算事件是否可见
 const isVisible = computed(() => {
   return props.totalDuration > 0;
 });

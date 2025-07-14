@@ -35,9 +35,9 @@
     <!-- 中间：时间显示 -->
     <div class="flex items-center gap-md">
       <div class="flex items-center gap-xs font-mono text-sm">
-        <span class="text-text-primary">{{ currentTimeString }}</span>
+        <span class="text-text-primary">{{ formatTimeSmart(currentTime, totalDuration) }}</span>
         <span class="text-text-secondary">/</span>
-        <span class="text-text-secondary">{{ totalDurationString }}</span>
+        <span class="text-text-secondary">{{ formatTimeSmart(totalDuration, totalDuration) }}</span>
       </div>
     </div>
 
@@ -47,28 +47,6 @@
       <Button v-if="totalDuration === 0" variant="primary" size="small" @click="loadTestData">
         加载测试数据
       </Button>
-
-      <!-- 缩放控制 -->
-      <Button
-        icon="heroicons:magnifying-glass-minus"
-        variant="ghost"
-        size="small"
-        square
-        :disabled="zoomLevel <= 0.1"
-        @click="zoomOut"
-      />
-      <span class="px-xs text-xs text-text-secondary">{{ Math.round(zoomLevel * 100) }}%</span>
-      <Button
-        icon="heroicons:magnifying-glass-plus"
-        variant="ghost"
-        size="small"
-        square
-        :disabled="zoomLevel >= 10"
-        @click="zoomIn"
-      />
-
-      <!-- 分隔线 -->
-      <div class="h-6 w-px bg-border-light" />
 
       <!-- 展开/收起按钮 -->
       <Button
@@ -91,12 +69,12 @@ import Select from '~/components/input/Select.vue';
 const {
   // 状态
   isPlaying,
+  currentTime,
   currentTimeString,
   totalDurationString,
   playbackSpeed,
   speedOptions,
   isExpanded,
-  zoomLevel,
   totalDuration,
   platforms,
 
@@ -105,8 +83,8 @@ const {
   stop,
   setPlaybackSpeed,
   toggleExpanded,
-  setZoom,
   initializeTestData,
+  formatTimeSmart,
 } = useTimeline();
 
 // 是否可以控制（有项目且总时长大于0）
@@ -118,17 +96,8 @@ const currentSpeedOption = computed(() => {
 });
 
 // 倍速变化处理
-const onSpeedChange = (option: { value: number; label: string }) => {
+const onSpeedChange = (option: any) => {
   setPlaybackSpeed(option.value);
-};
-
-// 缩放控制
-const zoomIn = () => {
-  setZoom(zoomLevel.value * 1.2);
-};
-
-const zoomOut = () => {
-  setZoom(zoomLevel.value / 1.2);
 };
 
 // 加载测试数据

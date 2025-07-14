@@ -21,7 +21,7 @@
         v-if="showTimeTooltip || isDragging"
         class="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 transform whitespace-nowrap rounded bg-primary px-2 py-1 font-mono text-xs text-white"
       >
-        {{ currentTimeString }}
+        {{ formatTimeSmart(currentTime, totalDuration) }}
         <!-- 小箭头 -->
         <div class="absolute left-1/2 top-full -mt-px -translate-x-1/2 transform">
           <div class="h-2 w-2 rotate-45 transform bg-primary"></div>
@@ -43,6 +43,7 @@ const {
   startDragging,
   stopDragging,
   seekTo,
+  formatTimeSmart,
 } = useTimeline();
 
 const handleRef = ref<HTMLElement>();

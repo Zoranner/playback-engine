@@ -44,7 +44,6 @@ export const useTimeline = () => {
   // 时间轴UI状态
   const isExpanded = ref(false); // 是否展开显示所有平台
   const isDragging = ref(false); // 是否正在拖拽进度条
-  const zoomLevel = ref(1); // 缩放级别
 
   // 平台数据
   const platforms = ref<Platform[]>([]);
@@ -97,8 +96,58 @@ export const useTimeline = () => {
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  // 智能时间格式化函数（始终使用日期时间格式）
+  const formatTimeSmart = (milliseconds: number, totalDuration: number): string => {
+    // 设置基准时间为2024年1月1日 00:00:00
+    const baseDate = new Date('2024-01-01T00:00:00');
+    const targetDate = new Date(baseDate.getTime() + milliseconds);
+
+    const year = targetDate.getFullYear();
+    const month = (targetDate.getMonth() + 1).toString().padStart(2, '0');
+    const day = targetDate.getDate().toString().padStart(2, '0');
+    const hours = targetDate.getHours().toString().padStart(2, '0');
+    const minutes = targetDate.getMinutes().toString().padStart(2, '0');
+    const seconds = targetDate.getSeconds().toString().padStart(2, '0');
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  };
+
+  // 日期格式化函数
+  const formatDate = (milliseconds: number, format: string = 'YYYY-MM-DD'): string => {
+    // 设置基准时间为2024年1月1日 00:00:00
+    const baseDate = new Date('2024-01-01T00:00:00');
+    const targetDate = new Date(baseDate.getTime() + milliseconds);
+
+    const year = targetDate.getFullYear();
+    const month = (targetDate.getMonth() + 1).toString().padStart(2, '0');
+    const day = targetDate.getDate().toString().padStart(2, '0');
+
+    switch (format) {
+      case 'MM-DD':
+        return `${month}-${day}`;
+      case 'MM/DD':
+        return `${month}/${day}`;
+      case 'YYYY-MM-DD':
+      default:
+        return `${year}-${month}-${day}`;
+    }
+  };
+
+  // 时间格式化函数（仅时间部分，处理跨天情况）
+  const formatTimeOnly = (milliseconds: number): string => {
+    // 设置基准时间为2024年1月1日 00:00:00
+    const baseDate = new Date('2024-01-01T00:00:00');
+    const targetDate = new Date(baseDate.getTime() + milliseconds);
+
+    const hours = targetDate.getHours().toString().padStart(2, '0');
+    const minutes = targetDate.getMinutes().toString().padStart(2, '0');
+    const seconds = targetDate.getSeconds().toString().padStart(2, '0');
+
+    return `${hours}:${minutes}:${seconds}`;
+  };
+
   // 播放定时器
-  let playbackTimer: number | null = null;
+  let playbackTimer: ReturnType<typeof setInterval> | null = null;
 
   // 播放控制方法
   const play = () => {
@@ -194,10 +243,6 @@ export const useTimeline = () => {
     isExpanded.value = !isExpanded.value;
   };
 
-  const setZoom = (level: number) => {
-    zoomLevel.value = Math.max(0.1, Math.min(level, 10));
-  };
-
   // 拖拽控制
   const startDragging = () => {
     isDragging.value = true;
@@ -209,8 +254,8 @@ export const useTimeline = () => {
 
   // 初始化测试数据
   const initializeTestData = () => {
-    // 设置30分钟的测试时长
-    totalDuration.value = 30 * 60 * 1000; // 30分钟 = 1800秒 = 1,800,000毫秒
+    // 设置7天的测试时长（测试跨日期显示）
+    totalDuration.value = 7 * 24 * 60 * 60 * 1000; // 7天 = 604800秒 = 604,800,000毫秒
     currentTime.value = 0;
     playbackState.value = 'stopped';
 
@@ -224,29 +269,29 @@ export const useTimeline = () => {
           {
             id: '782-ITC-warning-1',
             type: 'warning',
-            startTime: 2 * 60 * 1000, // 2分钟
+            startTime: 6 * 60 * 60 * 1000, // 6小时
             title: '信号强度低',
             description: '接收信号强度降到临界值',
           },
           {
             id: '782-ITC-error-1',
             type: 'error',
-            startTime: 8 * 60 * 1000, // 8分钟
-            endTime: 8.5 * 60 * 1000, // 8分30秒
+            startTime: 2 * 24 * 60 * 60 * 1000, // 第2天
+            endTime: 2 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000, // 第2天+2小时
             title: '连接中断',
-            description: '与指挥中心连接中断30秒',
+            description: '与指挥中心连接中断2小时',
           },
           {
             id: '782-ITC-info-1',
             type: 'info',
-            startTime: 15 * 60 * 1000, // 15分钟
+            startTime: 4 * 24 * 60 * 60 * 1000, // 第4天
             title: '状态更新',
             description: '系统自检完成，状态正常',
           },
         ],
         activeSegments: [
-          { startTime: 0, endTime: 5 * 60 * 1000 }, // 0-5分钟
-          { startTime: 7 * 60 * 1000, endTime: 25 * 60 * 1000 }, // 7-25分钟
+          { startTime: 0, endTime: 1 * 24 * 60 * 60 * 1000 }, // 第1天
+          { startTime: 1.5 * 24 * 60 * 60 * 1000, endTime: 6 * 24 * 60 * 60 * 1000 }, // 第1.5-6天
         ],
       },
       {
@@ -257,29 +302,29 @@ export const useTimeline = () => {
           {
             id: '155-3X1-warning-1',
             type: 'warning',
-            startTime: 3 * 60 * 1000, // 3分钟
+            startTime: 12 * 60 * 60 * 1000, // 12小时
             title: 'GPS精度下降',
             description: '定位精度从3米降至8米',
           },
           {
             id: '155-3X1-error-1',
             type: 'error',
-            startTime: 12 * 60 * 1000, // 12分钟
+            startTime: 3 * 24 * 60 * 60 * 1000, // 第3天
             title: '传感器故障',
             description: '高度传感器读数异常',
           },
           {
             id: '155-3X1-success-1',
             type: 'success',
-            startTime: 20 * 60 * 1000, // 20分钟
-            endTime: 22 * 60 * 1000, // 22分钟
+            startTime: 5 * 24 * 60 * 60 * 1000, // 第5天
+            endTime: 5 * 24 * 60 * 60 * 1000 + 6 * 60 * 60 * 1000, // 第5天+6小时
             title: '维护完成',
             description: '传感器校准完成，系统恢复正常',
           },
         ],
         activeSegments: [
-          { startTime: 1 * 60 * 1000, endTime: 18 * 60 * 1000 }, // 1-18分钟
-          { startTime: 20 * 60 * 1000, endTime: 30 * 60 * 1000 }, // 20-30分钟
+          { startTime: 6 * 60 * 60 * 1000, endTime: 2 * 24 * 60 * 60 * 1000 }, // 6小时-第2天
+          { startTime: 2.5 * 24 * 60 * 60 * 1000, endTime: 6 * 24 * 60 * 60 * 1000 }, // 第2.5-6天
         ],
       },
       {
@@ -290,27 +335,28 @@ export const useTimeline = () => {
           {
             id: '162-Y-8-info-1',
             type: 'info',
-            startTime: 1 * 60 * 1000, // 1分钟
+            startTime: 18 * 60 * 60 * 1000, // 18小时
             title: '系统启动',
             description: '平台162-Y-8上线',
           },
           {
             id: '162-Y-8-warning-1',
             type: 'warning',
-            startTime: 6 * 60 * 1000, // 6分钟
+            startTime: 1.5 * 24 * 60 * 60 * 1000, // 第1.5天
             title: '燃油警告',
             description: '燃油储量低于20%',
           },
           {
             id: '162-Y-8-error-1',
             type: 'error',
-            startTime: 10 * 60 * 1000, // 10分钟
+            startTime: 4.5 * 24 * 60 * 60 * 1000, // 第4.5天
             title: '动力系统故障',
             description: '主引擎过热，系统自动关闭',
           },
         ],
         activeSegments: [
-          { startTime: 0.5 * 60 * 1000, endTime: 9 * 60 * 1000 }, // 0.5-9分钟
+          { startTime: 12 * 60 * 60 * 1000, endTime: 2 * 24 * 60 * 60 * 1000 }, // 12小时-第2天
+          { startTime: 3 * 24 * 60 * 60 * 1000, endTime: 5 * 24 * 60 * 60 * 1000 }, // 第3-5天
         ],
       },
       {
@@ -321,28 +367,28 @@ export const useTimeline = () => {
           {
             id: '206-265A-info-1',
             type: 'info',
-            startTime: 4 * 60 * 1000, // 4分钟
+            startTime: 24 * 60 * 60 * 1000, // 第1天
             title: '航线更新',
             description: '接收到新的航行指令',
           },
           {
             id: '206-265A-warning-1',
             type: 'warning',
-            startTime: 14 * 60 * 1000, // 14分钟
+            startTime: 3.5 * 24 * 60 * 60 * 1000, // 第3.5天
             title: '天气警告',
             description: '前方海域有强风警报',
           },
           {
             id: '206-265A-warning-2',
             type: 'warning',
-            startTime: 25 * 60 * 1000, // 25分钟
+            startTime: 6 * 24 * 60 * 60 * 1000, // 第6天
             title: '设备温度高',
             description: '雷达设备温度过高',
           },
         ],
         activeSegments: [
-          { startTime: 0, endTime: 12 * 60 * 1000 }, // 0-12分钟
-          { startTime: 16 * 60 * 1000, endTime: 30 * 60 * 1000 }, // 16-30分钟
+          { startTime: 0, endTime: 1.5 * 24 * 60 * 60 * 1000 }, // 0-第1.5天
+          { startTime: 2 * 24 * 60 * 60 * 1000, endTime: 7 * 24 * 60 * 60 * 1000 }, // 第2-7天
         ],
       },
     ];
@@ -438,7 +484,6 @@ export const useTimeline = () => {
     playbackSpeed,
     isExpanded,
     isDragging,
-    zoomLevel,
     platforms,
     speedOptions,
 
@@ -460,7 +505,6 @@ export const useTimeline = () => {
     seekToPercentage,
     setPlaybackSpeed,
     toggleExpanded,
-    setZoom,
     startDragging,
     stopDragging,
     initializePlatforms,
@@ -468,6 +512,9 @@ export const useTimeline = () => {
     addEvent,
     getEventsAtTime,
     formatTime,
+    formatTimeSmart,
+    formatDate,
+    formatTimeOnly,
     cleanup,
   };
 
