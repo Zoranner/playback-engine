@@ -39,16 +39,23 @@ onMounted(() => {
         type: 'globe',
       },
       sources: {
-        satellite: {
-          url: 'https://api.maptiler.com/tiles/satellite-v2/tiles.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL',
+        'arcgis-satellite': {
           type: 'raster',
+          tiles: [
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          ],
+          tileSize: 256,
+          attribution:
+            'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
         },
       },
       layers: [
         {
-          id: 'satellite',
+          id: 'arcgis-satellite-layer',
           type: 'raster',
-          source: 'satellite',
+          source: 'arcgis-satellite',
+          minzoom: 0,
+          maxzoom: 19,
         },
       ],
     },
