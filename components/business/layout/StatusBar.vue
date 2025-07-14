@@ -10,10 +10,6 @@
           <span class="font-medium">系统运行正常</span>
         </div>
       </div>
-
-      <div class="flex items-center gap-xs">
-        <span class="font-mono text-text-accent">{{ connectionStatus }}</span>
-      </div>
     </div>
 
     <!-- 中心坐标 -->
@@ -27,18 +23,7 @@
     <!-- 右侧信息 -->
     <div class="flex items-center gap-lg">
       <div class="flex items-center gap-xs whitespace-nowrap">
-        <span class="text-text-muted">缩放:</span>
-        <span class="font-mono text-text-accent">{{ zoomLevel }}%</span>
-      </div>
-
-      <div class="flex items-center gap-xs whitespace-nowrap">
         <span class="text-text-muted">{{ currentTime }}</span>
-      </div>
-
-      <div
-        class="flex cursor-nw-resize items-center gap-xs opacity-50 transition-opacity duration-fast hover:opacity-100"
-      >
-        <Icon name="heroicons:arrows-pointing-in" class="h-3 w-3" />
       </div>
     </div>
   </div>
@@ -49,8 +34,6 @@ import { ref, onMounted, onUnmounted } from 'vue';
 
 const currentTime = ref('');
 const coordinates = ref('116.3974, 39.9093');
-const zoomLevel = ref(100);
-const connectionStatus = ref('TCP:CONNECTED');
 
 const updateTime = () => {
   const now = new Date();
