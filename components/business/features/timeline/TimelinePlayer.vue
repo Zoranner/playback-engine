@@ -1,35 +1,68 @@
 <template>
   <GroupBox title="回放控制" :padded="false">
-    <div class="timeline-container flex flex-col overflow-hidden">
+    <div class="timeline-container relative flex flex-col overflow-hidden">
       <!-- 时间轴头部控制区域 -->
       <TimelineHeader />
 
       <!-- 时间轴主体区域 -->
-      <div class="flex max-h-[400px] min-h-[120px] flex-col overflow-hidden">
-        <!-- 时间标尺 -->
-        <TimelineRuler />
+      <div class="relative flex flex-col">
+        <!-- 时间轴内容区域 -->
+        <div class="flex flex-1">
+          <!-- 左侧：标题区域 -->
+          <div class="w-20 flex-shrink-0 border-r border-border bg-background-tertiary">
+            <!-- 时间标尺标题占位 -->
+            <div class="h-8 border-b border-border"></div>
 
-        <!-- 轨道区域 -->
-        <div class="flex-1 overflow-y-auto">
-          <TimelineTracks />
+            <!-- 轨道标题列表 -->
+            <div class="flex flex-col">
+              <!-- 总进度标题 -->
+              <div class="flex h-8 items-center border-b border-border px-xs">
+                <span class="text-xs font-medium text-text-primary">总进度</span>
+              </div>
+
+              <!-- 平台标题列表（只在展开时显示） -->
+              <template v-if="isExpanded">
+                <div
+                  v-for="platform in platforms"
+                  :key="platform.id"
+                  class="flex h-8 items-center border-b border-border px-xs"
+                >
+                  <span class="truncate text-xs font-medium text-text-primary">{{
+                    platform.name
+                  }}</span>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- 右侧：时间轨道区域 -->
+          <div class="relative flex-1 overflow-hidden">
+            <!-- 时间标尺 -->
+            <TimelineRuler />
+
+            <!-- 轨道区域 -->
+            <div class="flex-1 overflow-y-auto">
+              <TimelineTracks />
+            </div>
+
+            <!-- 进度指示器（只贯穿时间轨道区域） -->
+            <TimelineProgress />
+          </div>
         </div>
-      </div>
 
-      <!-- 底部状态栏（可选） -->
-      <div
-        v-if="showStatusBar"
-        class="flex h-6 items-center justify-between border-t border-border bg-background-tertiary px-md text-xs text-text-secondary"
-      >
-        <div class="flex items-center gap-md">
-          <span>缩放: {{ Math.round(zoomLevel * 100) }}%</span>
-          <span>平台: {{ activePlatformCount }}/{{ totalPlatformCount }}</span>
-          <span v-if="totalEventCount > 0">事件: {{ totalEventCount }}</span>
-        </div>
-
-        <div class="flex items-center gap-md">
-          <span v-if="currentProject">{{ currentProject.name }}</span>
-          <span v-else>演示模式</span>
-          <span>{{ currentTimeString }} / {{ totalDurationString }}</span>
+        <!-- 展开/收起提示条（贯穿整个时间轴区域） -->
+        <div
+          v-if="platforms.length > 0"
+          class="flex h-6 cursor-pointer items-center justify-center border-b border-border bg-background-tertiary transition-colors hover:bg-background-secondary"
+          @click="toggleExpanded"
+        >
+          <div class="flex items-center gap-xs text-xs text-text-secondary">
+            <Icon
+              :name="isExpanded ? 'heroicons:chevron-up' : 'heroicons:chevron-down'"
+              class="h-3 w-3"
+            />
+            <span>{{ isExpanded ? '收起平台详情' : '展开平台详情' }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -37,56 +70,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, onMounted, onUnmounted } from 'vue';
+import { watch, onMounted, onUnmounted } from 'vue';
 import TimelineHeader from './TimelineHeader.vue';
 import TimelineRuler from './TimelineRuler.vue';
 import TimelineTracks from './TimelineTracks.vue';
+import TimelineProgress from './TimelineProgress.vue';
 import GroupBox from '~/components/display/GroupBox.vue';
-import Button from '~/components/base/Button.vue';
-
-interface Props {
-  showStatusBar?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  showStatusBar: true,
-});
 
 // 使用时间轴状态管理
-const {
-  zoomLevel,
-  platforms,
-  allEvents,
-  currentTimeString,
-  totalDurationString,
-  initializePlatforms,
-  initializeTestData,
-  cleanup,
-} = useTimeline();
+const { platforms, isExpanded, toggleExpanded, initializePlatforms, initializeTestData, cleanup } =
+  useTimeline();
 
 // 使用项目状态管理
 const { currentProject } = useProject();
-
-// 计算属性
-const activePlatformCount = computed(() => {
-  return platforms.value.filter(platform => platform.isActive).length;
-});
-
-const totalPlatformCount = computed(() => {
-  return platforms.value.length;
-});
-
-const totalEventCount = computed(() => {
-  return allEvents.value.length;
-});
 
 // 手动加载测试数据
 const loadTestData = () => {
   initializeTestData();
   console.log('已加载测试数据，包含4个平台和多个事件');
-  console.log('平台数据:', platforms.value);
-  console.log('总时长:', totalDurationString.value);
-  console.log('所有事件:', allEvents.value);
 };
 
 // 监听项目变化，初始化时间轴数据
@@ -114,15 +115,10 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 确保时间轴容器可以被进度指示器正确识别 */
-.timeline-container {
-  position: relative;
-}
-
-/* 滚动条样式优化 */
+/* 滚动条样式优化 - 无法通过TailwindCSS内联样式实现 */
 .timeline-container ::-webkit-scrollbar {
   width: 6px;
-  height: 6px;
+  height: 60px;
 }
 
 .timeline-container ::-webkit-scrollbar-track {
