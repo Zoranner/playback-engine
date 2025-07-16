@@ -4,10 +4,10 @@
   "version": "0.1.0",
   "identifier": "com.zoranner.playback-engine",
   "build": {
-    "beforeDevCommand": "bun run build:dev",
+    "beforeDevCommand": "bun run nuxt:dev",
     "devUrl": "http://localhost:3000",
-    "beforeBuildCommand": "bun run build",
-    "frontendDist": "../dist"
+    "beforeBuildCommand": "bun run nuxt:build",
+    "frontendDist": "../.output/public"
   },
   "app": {
     "windows": [
