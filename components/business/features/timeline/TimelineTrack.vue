@@ -24,7 +24,10 @@
     </div>
 
     <!-- 点击区域（用于跳转时间） -->
-    <div class="absolute inset-0 cursor-pointer" @click="onTrackClick" />
+    <div
+      class="absolute inset-0 cursor-pointer"
+      @click="onTrackClick"
+    />
   </div>
 </template>
 
@@ -59,8 +62,6 @@ const getSegmentStyle = (segment: { startTime: number; endTime: number }) => {
     width: `${Math.max(width, 0.1)}%`,
   };
 };
-
-
 
 // 轨道点击事件
 const onTrackClick = (event: MouseEvent) => {

@@ -1,6 +1,9 @@
 <template>
   <div :class="containerClasses">
-    <label v-if="label" class="mb-xs block font-medium text-text-primary">
+    <label
+      v-if="label"
+      class="mb-xs block font-medium text-text-primary"
+    >
       {{ label }}
     </label>
 
@@ -13,16 +16,25 @@
         @change="onChange"
       />
 
-      <div :class="trackClasses" @click="!disabled && toggle()">
+      <div
+        :class="trackClasses"
+        @click="!disabled && toggle()"
+      >
         <div :class="thumbClasses" />
       </div>
 
-      <span v-if="showLabel" class="min-w-6 font-medium text-text-secondary">
+      <span
+        v-if="showLabel"
+        class="min-w-6 font-medium text-text-secondary"
+      >
         {{ localValue ? onLabel : offLabel }}
       </span>
     </div>
 
-    <div v-if="description" class="mt-xs leading-normal text-text-muted">
+    <div
+      v-if="description"
+      class="mt-xs leading-normal text-text-muted"
+    >
       {{ description }}
     </div>
   </div>

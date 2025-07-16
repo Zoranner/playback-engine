@@ -28,4 +28,4 @@ public/
 .vscode/
 coverage/
 *.min.js
-*.min.css 
+*.min.css

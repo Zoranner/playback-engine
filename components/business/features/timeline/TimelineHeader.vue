@@ -14,7 +14,13 @@
       />
 
       <!-- 停止按钮 -->
-      <Button icon="heroicons:stop" variant="danger" :disabled="!canControl" square @click="stop" />
+      <Button
+        icon="heroicons:stop"
+        variant="danger"
+        :disabled="!canControl"
+        square
+        @click="stop"
+      />
 
       <!-- 分隔线 -->
       <div class="h-6 w-px bg-border-light" />
@@ -44,7 +50,12 @@
     <!-- 右侧：控制按钮 -->
     <div class="flex items-center gap-xs">
       <!-- 测试数据按钮 -->
-      <Button v-if="totalDuration === 0" variant="primary" size="small" @click="loadTestData">
+      <Button
+        v-if="totalDuration === 0"
+        variant="primary"
+        size="small"
+        @click="loadTestData"
+      >
         加载测试数据
       </Button>
 

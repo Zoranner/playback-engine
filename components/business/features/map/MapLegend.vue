@@ -1,5 +1,8 @@
 <template>
-  <GroupBox title="图例" class="min-w-48 max-w-64 backdrop-blur-sm">
+  <GroupBox
+    title="图例"
+    class="min-w-48 max-w-64 backdrop-blur-sm"
+  >
     <template #actions>
       <Button
         size="small"
@@ -11,7 +14,10 @@
     </template>
 
     <!-- 图例内容 -->
-    <div v-if="!isCollapsed" class="max-h-80 overflow-y-auto">
+    <div
+      v-if="!isCollapsed"
+      class="max-h-80 overflow-y-auto"
+    >
       <Collapse
         :items="collapseItems"
         :default-active-key="['targets']"

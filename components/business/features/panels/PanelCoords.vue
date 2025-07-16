@@ -1,7 +1,13 @@
 <template>
-  <GroupBox title="坐标信息" class="min-h-40 flex-none">
+  <GroupBox
+    title="坐标信息"
+    class="min-h-40 flex-none"
+  >
     <!-- 选中装备信息 -->
-    <div v-if="selectedEquipment" class="equipment-info">
+    <div
+      v-if="selectedEquipment"
+      class="equipment-info"
+    >
       <div class="mb-sm border-b border-border-divider pb-xs">
         <div class="mb-0.5 font-semibold text-text-primary">{{ selectedEquipment.name }}</div>
         <div class="text-text-secondary">{{ selectedEquipment.type }}</div>
@@ -36,9 +42,15 @@
     </div>
 
     <!-- 无选中时的提示 -->
-    <div v-else class="py-md text-center text-text-muted">
+    <div
+      v-else
+      class="py-md text-center text-text-muted"
+    >
       <div class="mb-sm opacity-60">
-        <Icon name="heroicons:map-pin" size="16" />
+        <Icon
+          name="heroicons:map-pin"
+          size="16"
+        />
       </div>
       <div class="mb-xs text-text-secondary">未选中装备</div>
       <div class="text-text-muted opacity-70">点击地图上的装备查看详情</div>

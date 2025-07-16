@@ -64,7 +64,8 @@ const startDrag = (event: MouseEvent) => {
   event.preventDefault();
 
   // 找到时间轴容器
-  timelineContainer = event.target.closest('.timeline-container') as HTMLElement;
+  const target = event.target as HTMLElement | null;
+  timelineContainer = target?.closest?.('.timeline-container') as HTMLElement | null;
   if (!timelineContainer) return;
 
   startDragging();

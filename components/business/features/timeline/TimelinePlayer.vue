@@ -1,5 +1,8 @@
 <template>
-  <GroupBox title="回放控制" :padded="false">
+  <GroupBox
+    title="回放控制"
+    :padded="false"
+  >
     <div class="timeline-container relative flex flex-col overflow-hidden">
       <!-- 时间轴头部控制区域 -->
       <TimelineHeader />

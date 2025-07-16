@@ -1,12 +1,18 @@
 <template>
-  <div ref="dropdownRef" class="relative">
+  <div
+    ref="dropdownRef"
+    class="relative"
+  >
     <!-- 触发器 -->
     <div
       class="flex cursor-pointer select-none items-center gap-xs whitespace-nowrap rounded-xs bg-transparent px-sm py-xs transition-all duration-fast hover:bg-background-tertiary hover:shadow-glow-subtle"
       :class="{ 'bg-background-tertiary shadow-glow-subtle': isOpen }"
       @click="toggle"
     >
-      <slot name="trigger" :is-open="isOpen">
+      <slot
+        name="trigger"
+        :is-open="isOpen"
+      >
         <span class="font-medium text-text-primary">{{ label }}</span>
         <Icon
           name="heroicons:chevron-down"
@@ -22,7 +28,10 @@
       class="absolute z-dropdown overflow-hidden rounded-md border border-border bg-background-secondary shadow-md backdrop-blur-md"
       :class="[positionClasses, 'min-w-[180px]']"
     >
-      <slot name="content" :close="close" />
+      <slot
+        name="content"
+        :close="close"
+      />
     </div>
   </div>
 </template>

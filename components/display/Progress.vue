@@ -1,26 +1,46 @@
 <template>
   <div class="w-full">
-    <label v-if="label" class="mb-xs block font-medium text-text-secondary">
+    <label
+      v-if="label"
+      class="mb-xs block font-medium text-text-secondary"
+    >
       {{ label }}
     </label>
 
     <div class="flex items-center gap-sm">
-      <span v-if="showTime" class="min-w-8 whitespace-nowrap text-center text-text-secondary">
+      <span
+        v-if="showTime"
+        class="min-w-8 whitespace-nowrap text-center text-text-secondary"
+      >
         {{ startTime }}
       </span>
 
-      <div ref="trackRef" :class="trackClasses" @click="onTrackClick">
+      <div
+        ref="trackRef"
+        :class="trackClasses"
+        @click="onTrackClick"
+      >
         <!-- 背景轨道 -->
         <div class="h-1 w-full rounded-sm border border-border bg-background-secondary" />
 
         <!-- 进度填充 -->
-        <div :class="fillClasses" :style="{ width: progressPercentage + '%' }" />
+        <div
+          :class="fillClasses"
+          :style="{ width: progressPercentage + '%' }"
+        />
 
         <!-- 拖拽点 -->
-        <div v-if="showThumb" :class="thumbClasses" :style="{ left: progressPercentage + '%' }" />
+        <div
+          v-if="showThumb"
+          :class="thumbClasses"
+          :style="{ left: progressPercentage + '%' }"
+        />
       </div>
 
-      <span v-if="showTime" class="min-w-8 whitespace-nowrap text-center text-text-secondary">
+      <span
+        v-if="showTime"
+        class="min-w-8 whitespace-nowrap text-center text-text-secondary"
+      >
         {{ currentTime }}
       </span>
     </div>

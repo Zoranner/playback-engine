@@ -9,7 +9,10 @@
       <h4 class="m-0 text-xs font-semibold uppercase tracking-wide text-text-secondary">
         {{ title }}
       </h4>
-      <div v-if="$slots.actions" class="flex items-center gap-xs">
+      <div
+        v-if="$slots.actions"
+        class="flex items-center gap-xs"
+      >
         <slot name="actions" />
       </div>
     </div>

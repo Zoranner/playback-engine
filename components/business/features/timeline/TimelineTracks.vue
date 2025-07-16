@@ -26,16 +26,29 @@
       </div>
 
       <!-- 点击区域 -->
-      <div class="absolute inset-0 cursor-pointer" @click="onTrackClick" />
+      <div
+        class="absolute inset-0 cursor-pointer"
+        @click="onTrackClick"
+      />
     </div>
 
     <!-- 平台轨道列表（只在展开时显示） -->
-    <div v-if="isExpanded" class="flex flex-col">
-      <TimelineTrack v-for="platform in platforms" :key="platform.id" :platform="platform" />
+    <div
+      v-if="isExpanded"
+      class="flex flex-col"
+    >
+      <TimelineTrack
+        v-for="platform in platforms"
+        :key="platform.id"
+        :platform="platform"
+      />
     </div>
 
     <!-- 调试信息 -->
-    <div v-if="platforms.length === 0" class="p-4 text-center text-red-500">
+    <div
+      v-if="platforms.length === 0"
+      class="p-4 text-center text-red-500"
+    >
       没有检测到平台数据，请点击"加载测试数据"按钮
     </div>
   </div>

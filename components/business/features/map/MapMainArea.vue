@@ -1,5 +1,8 @@
 <template>
-  <div ref="mapContainer" class="relative h-full w-full" />
+  <div
+    ref="mapContainer"
+    class="relative h-full w-full"
+  />
 </template>
 
 <script setup>

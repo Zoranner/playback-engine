@@ -1,10 +1,25 @@
 <template>
-  <button :class="buttonClasses" :disabled="disabled" @click="handleClick">
-    <Icon v-if="icon && iconPosition === 'left'" :name="icon" :class="iconClasses" />
-    <span v-if="$slots.default" class="truncate">
+  <button
+    :class="buttonClasses"
+    :disabled="disabled"
+    @click="handleClick"
+  >
+    <Icon
+      v-if="icon && iconPosition === 'left'"
+      :name="icon"
+      :class="iconClasses"
+    />
+    <span
+      v-if="$slots.default"
+      class="truncate"
+    >
       <slot />
     </span>
-    <Icon v-if="icon && iconPosition === 'right'" :name="icon" :class="iconClasses" />
+    <Icon
+      v-if="icon && iconPosition === 'right'"
+      :name="icon"
+      :class="iconClasses"
+    />
   </button>
 </template>
 

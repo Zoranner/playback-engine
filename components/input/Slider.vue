@@ -1,15 +1,25 @@
 <template>
   <div class="w-full">
-    <label v-if="label" class="mb-xs block font-medium text-text-secondary">
+    <label
+      v-if="label"
+      class="mb-xs block font-medium text-text-secondary"
+    >
       {{ label }}
     </label>
 
     <div class="flex items-center gap-sm">
-      <span v-if="showMinMax" class="font-mono text-xs text-text-secondary">
+      <span
+        v-if="showMinMax"
+        class="font-mono text-xs text-text-secondary"
+      >
         {{ formatValue(min) }}
       </span>
 
-      <div ref="trackRef" :class="trackClasses" @click="onTrackClick">
+      <div
+        ref="trackRef"
+        :class="trackClasses"
+        @click="onTrackClick"
+      >
         <input
           v-model="localValue"
           type="range"
@@ -23,18 +33,30 @@
         />
 
         <!-- 进度条 -->
-        <div :class="progressClasses" :style="{ width: progressPercentage + '%' }" />
+        <div
+          :class="progressClasses"
+          :style="{ width: progressPercentage + '%' }"
+        />
 
         <!-- 拖拽点 -->
-        <div :class="thumbClasses" :style="{ left: progressPercentage + '%' }" />
+        <div
+          :class="thumbClasses"
+          :style="{ left: progressPercentage + '%' }"
+        />
       </div>
 
-      <span v-if="showMinMax" class="font-mono text-xs text-text-secondary">
+      <span
+        v-if="showMinMax"
+        class="font-mono text-xs text-text-secondary"
+      >
         {{ formatValue(max) }}
       </span>
     </div>
 
-    <div v-if="showValue" class="mt-xs text-center">
+    <div
+      v-if="showValue"
+      class="mt-xs text-center"
+    >
       <span class="font-mono text-sm text-text-accent">
         {{ formatValue(localValue) }}
       </span>

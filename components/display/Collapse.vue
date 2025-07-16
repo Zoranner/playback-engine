@@ -1,8 +1,15 @@
 <template>
   <div :class="collapseClasses">
-    <div v-for="(item, index) in items" :key="item.key || index" :class="itemClasses">
+    <div
+      v-for="(item, index) in items"
+      :key="item.key || index"
+      :class="itemClasses"
+    >
       <!-- 面板头部 -->
-      <div :class="getHeaderClasses(item)" @click="handleHeaderClick(item.key || index, item)">
+      <div
+        :class="getHeaderClasses(item)"
+        @click="handleHeaderClick(item.key || index, item)"
+      >
         <div class="flex min-w-0 flex-1 items-center">
           <!-- 标题 -->
           <span :class="getTitleClasses(item)">{{ item.label }}</span>
@@ -13,8 +20,15 @@
           v-if="item.showArrow !== false && item.collapsible !== 'disabled'"
           :class="getArrowClasses(item, index)"
         >
-          <slot name="expandIcon" :item="item" :expanded="activeKeys.includes(item.key || index)">
-            <Icon name="heroicons:chevron-down" size="14" />
+          <slot
+            name="expandIcon"
+            :item="item"
+            :expanded="activeKeys.includes(item.key || index)"
+          >
+            <Icon
+              name="heroicons:chevron-down"
+              size="14"
+            />
           </slot>
         </div>
       </div>
@@ -26,8 +40,15 @@
         :class="contentClasses"
       >
         <div :class="bodyClasses">
-          <slot :name="`content-${item.key || index}`" :item="item" :index="index">
-            <component :is="item.children" v-if="item.children" />
+          <slot
+            :name="`content-${item.key || index}`"
+            :item="item"
+            :index="index"
+          >
+            <component
+              :is="item.children"
+              v-if="item.children"
+            />
           </slot>
         </div>
       </div>

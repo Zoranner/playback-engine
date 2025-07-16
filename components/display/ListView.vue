@@ -6,7 +6,12 @@
       class="flex items-center justify-between border-b border-border p-sm"
     >
       <div class="flex items-center gap-sm">
-        <h3 v-if="title" class="m-0 font-semibold text-text-primary">{{ title }}</h3>
+        <h3
+          v-if="title"
+          class="m-0 font-semibold text-text-primary"
+        >
+          {{ title }}
+        </h3>
         <slot name="header" />
       </div>
 
@@ -31,7 +36,11 @@
         v-if="filteredItems.length === 0"
         class="flex flex-col items-center justify-center py-lg text-text-muted"
       >
-        <Icon v-if="emptyIcon" :name="emptyIcon" class="mb-sm h-8 w-8 opacity-50" />
+        <Icon
+          v-if="emptyIcon"
+          :name="emptyIcon"
+          class="mb-sm h-8 w-8 opacity-50"
+        />
         <div class="text-center">
           <div class="mb-xs font-medium">{{ emptyTitle }}</div>
           <div class="text-sm">{{ emptyDescription }}</div>
@@ -72,7 +81,10 @@
       v-if="$slots.footer || showSelection"
       class="flex items-center justify-between border-t border-border bg-background-secondary p-sm"
     >
-      <div v-if="showSelection" class="text-sm text-text-muted">
+      <div
+        v-if="showSelection"
+        class="text-sm text-text-muted"
+      >
         已选择 {{ selectedItems.length }} / {{ filteredItems.length }} 项
       </div>
       <slot name="footer" />

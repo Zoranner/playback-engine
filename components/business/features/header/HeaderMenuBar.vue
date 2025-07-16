@@ -24,8 +24,16 @@
           @click="closeProject(close)"
         />
         <MenuDivider />
-        <MenuItem icon="heroicons:arrow-down-tray" label="导入数据" @click="importData(close)" />
-        <MenuItem icon="heroicons:arrow-up-tray" label="导出数据" @click="exportData(close)" />
+        <MenuItem
+          icon="heroicons:arrow-down-tray"
+          label="导入数据"
+          @click="importData(close)"
+        />
+        <MenuItem
+          icon="heroicons:arrow-up-tray"
+          label="导出数据"
+          @click="exportData(close)"
+        />
         <MenuDivider />
         <MenuItem
           icon="heroicons:power"
@@ -58,7 +66,11 @@
           @click="fullscreen(close)"
         />
         <MenuDivider />
-        <MenuItem icon="heroicons:squares-2x2" label="显示网格" @click="toggleGrid(close)" />
+        <MenuItem
+          icon="heroicons:squares-2x2"
+          label="显示网格"
+          @click="toggleGrid(close)"
+        />
       </template>
     </DropdownMenu>
 
@@ -70,9 +82,17 @@
       @close="closeAllMenus"
     >
       <template #content="{ close }">
-        <MenuItem icon="heroicons:cog-6-tooth" label="系统设置" @click="openSettings(close)" />
+        <MenuItem
+          icon="heroicons:cog-6-tooth"
+          label="系统设置"
+          @click="openSettings(close)"
+        />
         <MenuDivider />
-        <MenuItem icon="heroicons:information-circle" label="关于" @click="openAbout(close)" />
+        <MenuItem
+          icon="heroicons:information-circle"
+          label="关于"
+          @click="openAbout(close)"
+        />
       </template>
     </DropdownMenu>
   </div>

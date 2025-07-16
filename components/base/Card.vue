@@ -8,7 +8,10 @@
       <slot name="header">
         <h3 class="m-0 font-semibold text-text-primary">{{ title }}</h3>
       </slot>
-      <div v-if="$slots.actions" class="flex items-center gap-sm">
+      <div
+        v-if="$slots.actions"
+        class="flex items-center gap-sm"
+      >
         <slot name="actions" />
       </div>
     </div>

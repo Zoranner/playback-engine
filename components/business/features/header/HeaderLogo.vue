@@ -3,7 +3,10 @@
     <div
       class="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-gradient-default text-text-accent shadow-sm"
     >
-      <Icon name="heroicons:globe-asia-australia" size="28" />
+      <Icon
+        name="heroicons:globe-asia-australia"
+        size="28"
+      />
     </div>
     <div class="flex flex-col gap-xs">
       <span class="text-title font-semibold leading-tight">综合复盘软件</span>

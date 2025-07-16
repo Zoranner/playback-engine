@@ -11,7 +11,11 @@
       />
 
       <div :class="indicatorClasses">
-        <Icon v-if="isChecked" name="heroicons:check" class="h-3 w-3 text-background-primary" />
+        <Icon
+          v-if="isChecked"
+          name="heroicons:check"
+          class="h-3 w-3 text-background-primary"
+        />
         <Icon
           v-else-if="indeterminate"
           name="heroicons:minus"
@@ -19,12 +23,18 @@
         />
       </div>
 
-      <span v-if="label || $slots.default" class="mt-0.5 flex-1 leading-normal text-text-primary">
+      <span
+        v-if="label || $slots.default"
+        class="mt-0.5 flex-1 leading-normal text-text-primary"
+      >
         <slot>{{ label }}</slot>
       </span>
     </label>
 
-    <div v-if="description" class="ml-7 mt-xs leading-normal text-text-muted">
+    <div
+      v-if="description"
+      class="ml-7 mt-xs leading-normal text-text-muted"
+    >
       {{ description }}
     </div>
   </div>

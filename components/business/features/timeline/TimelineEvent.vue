@@ -12,7 +12,12 @@
       class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1 -translate-x-1/2 transform whitespace-nowrap rounded border border-border bg-background-primary px-2 py-1 text-xs shadow-lg"
     >
       <div class="font-medium text-text-primary">{{ event.title }}</div>
-      <div v-if="event.description" class="mt-0.5 text-text-secondary">{{ event.description }}</div>
+      <div
+        v-if="event.description"
+        class="mt-0.5 text-text-secondary"
+      >
+        {{ event.description }}
+      </div>
       <div class="text-text-tertiary mt-0.5">
         {{ formatTimeSmart(event.startTime, totalDuration) }}
         <span v-if="event.endTime"> - {{ formatTimeSmart(event.endTime, totalDuration) }}</span>

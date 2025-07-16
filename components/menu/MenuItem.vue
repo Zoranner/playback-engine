@@ -10,7 +10,11 @@
     @click="handleClick"
   >
     <!-- 图标 -->
-    <Icon v-if="icon" :name="icon" class="shrink-0" />
+    <Icon
+      v-if="icon"
+      :name="icon"
+      class="shrink-0"
+    />
 
     <!-- 文字内容 -->
     <span class="flex-1">
@@ -18,7 +22,10 @@
     </span>
 
     <!-- 快捷键 -->
-    <span v-if="shortcut" class="ml-auto text-text-secondary opacity-60">
+    <span
+      v-if="shortcut"
+      class="ml-auto text-text-secondary opacity-60"
+    >
       {{ shortcut }}
     </span>
   </div>

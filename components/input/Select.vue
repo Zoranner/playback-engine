@@ -1,6 +1,9 @@
 <template>
   <div :class="containerClasses">
-    <label v-if="label" class="mb-xs block font-medium text-text-secondary">
+    <label
+      v-if="label"
+      class="mb-xs block font-medium text-text-secondary"
+    >
       {{ label }}
     </label>
 
@@ -15,11 +18,18 @@
         <span class="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left">
           {{ displayValue }}
         </span>
-        <Icon name="heroicons:chevron-down" :class="arrowClasses" />
+        <Icon
+          name="heroicons:chevron-down"
+          :class="arrowClasses"
+        />
       </div>
 
       <!-- 移除 Transition，直接显示 -->
-      <div v-if="isOpen" ref="dropdownRef" :class="dropdownClasses">
+      <div
+        v-if="isOpen"
+        ref="dropdownRef"
+        :class="dropdownClasses"
+      >
         <div
           v-for="option in options"
           :key="option.value"

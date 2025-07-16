@@ -1,5 +1,8 @@
 <template>
-  <GroupBox title="目标信息" class="flex flex-1 flex-col overflow-hidden">
+  <GroupBox
+    title="目标信息"
+    class="flex flex-1 flex-col overflow-hidden"
+  >
     <div class="-m-sm flex flex-1 flex-col gap-xs overflow-y-auto p-sm">
       <div
         v-for="target in targets"
