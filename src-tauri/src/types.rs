@@ -14,7 +14,7 @@ pub enum PacketType {
 pub struct DataPacket {
     /// 时间戳秒部分
     pub timestamp_sec: u32,
-    /// 时间戳纳秒部分  
+    /// 时间戳纳秒部分
     pub timestamp_nsec: u32,
     /// 数据内容
     pub data: Vec<u8>,
@@ -36,7 +36,7 @@ impl DataPacket {
             size,
         }
     }
-    
+
     /// 获取完整时间戳（纳秒）
     pub fn get_timestamp_ns(&self) -> u64 {
         (self.timestamp_sec as u64) * 1_000_000_000 + (self.timestamp_nsec as u64)
@@ -128,22 +128,28 @@ pub struct DataUpdatePayload {
 pub enum PlaybackError {
     #[error("文件读取错误: {0}")]
     FileError(#[from] std::io::Error),
-    
+
     #[error("JSON序列化/反序列化错误: {0}")]
     JsonError(#[from] serde_json::Error),
-    
+
+    #[error("XML处理错误: {0}")]
+    XmlError(String),
+
+    #[error("字符串编码错误: {0}")]
+    EncodingError(#[from] std::string::FromUtf8Error),
+
     #[error("文件格式错误: {0}")]
     FormatError(String),
-    
+
     #[error("工程错误: {0}")]
     ProjectError(String),
-    
+
     #[error("播放引擎错误: {0}")]
     PlaybackEngineError(String),
-    
+
     #[error("数据解析错误: {0}")]
     ParseError(String),
 }
 
 /// 统一的Result类型
-pub type Result<T> = std::result::Result<T, PlaybackError>; 
+pub type Result<T> = std::result::Result<T, PlaybackError>;

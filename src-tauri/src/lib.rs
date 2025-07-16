@@ -6,11 +6,17 @@ mod types;
 mod pcap_reader;
 mod project_manager;
 mod commands;
+mod pidx;
+mod pproj;
+mod multi_pcap_reader;
 
 // 重新导出类型
 pub use types::*;
 pub use pcap_reader::PcapReader;
 pub use project_manager::ProjectManager;
+pub use pidx::{PidxManager, PidxIndex, PacketIndexEntry, PcapFileIndex};
+pub use pproj::{PprojManager, PprojConfig, DatasetConfig, NetworkConfig, NetworkType};
+pub use multi_pcap_reader::MultiPcapReader;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
