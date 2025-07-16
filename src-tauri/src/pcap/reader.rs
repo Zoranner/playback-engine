@@ -6,32 +6,7 @@ use crc32fast::Hasher;
 use log::{debug, warn};
 
 use crate::types::{DataPacket, PacketType, PlaybackError, Result};
-
-/// PCAP文件头部魔数
-const PCAP_MAGIC_NUMBER: u32 = 0xD4C3B2A1;
-/// PCAP协议主版本号
-const PCAP_MAJOR_VERSION: u16 = 0x0002;
-/// PCAP协议次版本号
-const PCAP_MINOR_VERSION: u16 = 0x0004;
-
-/// PCAP文件头部结构（16字节）
-#[derive(Debug)]
-struct PcapFileHeader {
-    magic: u32,           // 魔数：0xD4C3B2A1
-    major_version: u16,   // 主版本号：0x0002
-    minor_version: u16,   // 次版本号：0x0004
-    timezone_offset: u32, // 时区偏移量：通常为0
-    timestamp_accuracy: u32, // 时间戳精度：固定为0
-}
-
-/// PCAP数据包头部结构（16字节）
-#[derive(Debug)]
-struct PcapPacketHeader {
-    timestamp_sec: u32,      // 时间戳秒部分
-    timestamp_nsec: u32,     // 时间戳纳秒部分
-    packet_length: u32,      // 数据包长度
-    checksum: u32,           // CRC32校验和
-}
+use crate::types::{PcapFileHeader, PcapPacketHeader, PCAP_MAGIC_NUMBER, PCAP_MAJOR_VERSION, PCAP_MINOR_VERSION};
 
 /// PCAP文件读取器
 pub struct PcapReader {

@@ -1,49 +1,45 @@
-use std::sync::Mutex;
-use log::info;
-
 // 模块声明
-mod types;
-mod pcap_reader;
-mod project_manager;
-mod commands;
-mod pidx;
-mod pproj;
-mod multi_pcap_reader;
+pub mod types;
+pub mod pcap;
+pub mod pproj;
+pub mod pidx;
+pub mod manager;
+pub mod commands;
 
-// 重新导出类型
-pub use types::*;
-pub use pcap_reader::PcapReader;
-pub use project_manager::ProjectManager;
-pub use pidx::{PidxManager, PidxIndex, PacketIndexEntry, PcapFileIndex};
-pub use pproj::{PprojManager, PprojConfig, DatasetConfig, NetworkConfig, NetworkType};
-pub use multi_pcap_reader::MultiPcapReader;
+// 重新导出主要类型和功能
+pub use pcap::{PcapReader, PcapWriter, MultiPcapReader};
+pub use pproj::{PprojReader, PprojWriter};
+pub use pidx::{PidxReader, PidxWriter};
+pub use manager::ProjectManager;
 
+// Tauri相关导入
+use tauri::Manager;
+
+/// 初始化Tauri应用
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // 初始化日志
-    env_logger::init();
-    info!("启动回放引擎应用");
-
-    // 创建应用状态
-    let project_manager = Mutex::new(ProjectManager::new());
-    let playback_state = Mutex::new(PlaybackState::default());
-
     tauri::Builder::default()
-        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
-        .manage(project_manager)
-        .manage(playback_state)
         .invoke_handler(tauri::generate_handler![
             commands::open_project,
+            commands::get_project_info,
+            commands::list_datasets,
+            commands::get_dataset_stats,
             commands::close_project,
-            commands::get_project_metadata,
-            commands::validate_project_directory,
-            commands::get_playback_state,
-            commands::reset_playback_state,
-            commands::test_connection,
-            commands::get_app_info,
-            commands::get_available_commands,
         ])
+        .setup(|app| {
+            // 初始化日志
+            env_logger::Builder::from_default_env()
+                .filter_level(log::LevelFilter::Info)
+                .init();
+
+            // 初始化项目管理器
+            let project_manager = std::sync::Mutex::new(ProjectManager::new());
+            app.manage(project_manager);
+
+            log::info!("Tauri应用初始化完成");
+            Ok(())
+        })
         .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .expect("运行Tauri应用时出错");
 }
