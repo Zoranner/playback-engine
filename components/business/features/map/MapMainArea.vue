@@ -1,7 +1,7 @@
 <template>
   <div
     ref="mapContainer"
-    class="relative h-full w-full"
+    class="relative h-full w-full bg-black"
   />
 </template>
 
@@ -9,12 +9,6 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-
-// Props
-const props = defineProps({
-  activeTool: String,
-  visibleLayers: Object,
-});
 
 // Emits
 const emit = defineEmits([
@@ -26,16 +20,18 @@ const emit = defineEmits([
 ]);
 
 // 响应式数据
-const mapContainer = ref();
 let map = null;
-const isGlobeView = ref(false);
+const mapContainer = ref();
 
 // 初始化地图
 onMounted(() => {
   map = new maplibregl.Map({
     container: mapContainer.value,
-    zoom: 8, // 调整缩放级别以显示杭州区域
+    zoom: 3, // 调整缩放级别以显示杭州区域
+    minZoom: 3,
+    maxZoom: 15,
     center: [120.1551, 30.2741], // 杭州坐标
+    maplibreLogo: false,
     style: {
       version: 8,
       projection: {
@@ -57,7 +53,7 @@ onMounted(() => {
           type: 'raster',
           source: 'arcgis-satellite',
           minzoom: 0,
-          maxzoom: 19,
+          maxzoom: 20,
         },
       ],
     },
@@ -76,9 +72,6 @@ onMounted(() => {
   map.getCanvas().addEventListener('contextmenu', e => {
     e.preventDefault();
   });
-
-  // 设置初始状态为地球视图
-  isGlobeView.value = true;
 
   // 监听地图事件
   map.on('moveend', () => {
@@ -113,57 +106,6 @@ onMounted(() => {
     console.log('卫星地球地图加载完成');
   });
 });
-
-// 切换到地球视图
-const switchToGlobe = () => {
-  if (!map) return;
-
-  isGlobeView.value = true;
-
-  // 切换到球面投影
-  map.setProjection({
-    type: 'globe',
-  });
-
-  // 设置3D视角 - 正对着地球表面
-  map.setPitch(0);
-  map.setBearing(0);
-
-  // 调整到合适的缩放级别以显示杭州区域
-  map.setZoom(8);
-  map.setCenter([120.1551, 30.2741]); // 杭州坐标
-
-  console.log('切换到地球视图');
-};
-
-// 切换到平面视图
-const switchToFlat = () => {
-  if (!map) return;
-
-  isGlobeView.value = false;
-
-  // 切换到墨卡托投影
-  map.setProjection({
-    type: 'mercator',
-  });
-
-  // 重置视角
-  map.setPitch(0);
-  map.setBearing(0);
-  map.setZoom(8);
-  map.setCenter([120.1551, 30.2741]); // 杭州坐标
-
-  console.log('切换到平面视图');
-};
-
-// 切换视图模式
-const toggleViewMode = () => {
-  if (isGlobeView.value) {
-    switchToFlat();
-  } else {
-    switchToGlobe();
-  }
-};
 
 // 加载S57数据（GeoJSON格式）
 const loadS57Data = async geojsonUrl => {
@@ -241,21 +183,6 @@ const loadS57Data = async geojsonUrl => {
   }
 };
 
-// 切换图层可见性
-const toggleLayer = (layerId, visible) => {
-  if (map && map.getLayer(layerId)) {
-    map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
-  }
-};
-
-// 设置3D视角
-const set3DView = (pitch = 45, bearing = 0) => {
-  if (!map) return;
-
-  map.setPitch(pitch);
-  map.setBearing(bearing);
-};
-
 // 旋转地球
 const rotateGlobe = bearing => {
   if (!map) return;
@@ -272,13 +199,7 @@ defineExpose({
     console.log('清除选择');
   },
   loadS57Data,
-  toggleLayer,
-  switchToGlobe,
-  switchToFlat,
-  toggleViewMode,
-  set3DView,
   rotateGlobe,
-  isGlobeView: () => isGlobeView.value,
   map: () => map,
 });
 
@@ -288,7 +209,3 @@ onUnmounted(() => {
   }
 });
 </script>
-
-<style scoped>
-/* MapLibre GL JS 会自动添加样式 */
-</style>
