@@ -1,4 +1,4 @@
-use crate::config::constants;
+use crate::foundation::types::constants;
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -134,7 +134,7 @@ impl DataPacketHeader {
 
     /// 从数据包数据创建头部
     pub fn from_packet_data(capture_time: SystemTime, packet_data: &[u8]) -> Result<Self, String> {
-        let checksum = crate::utils::calculate_crc32(packet_data);
+        let checksum = crate::foundation::utils::calculate_crc32(packet_data);
         let packet_length = packet_data.len() as u32;
 
         Self::from_datetime(capture_time, packet_length, checksum)
@@ -207,7 +207,7 @@ impl DataPacket {
         timestamp_nanoseconds: u32,
         data: Vec<u8>,
     ) -> Result<Self, String> {
-        let checksum = crate::utils::calculate_crc32(&data);
+        let checksum = crate::foundation::utils::calculate_crc32(&data);
         let packet_length = data.len() as u32;
 
         let header = DataPacketHeader::new(
@@ -260,7 +260,7 @@ impl DataPacket {
             return false;
         }
 
-        let calculated_checksum = crate::utils::calculate_crc32(&self.data);
+        let calculated_checksum = crate::foundation::utils::calculate_crc32(&self.data);
         calculated_checksum == self.header.checksum
     }
 

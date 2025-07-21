@@ -4,8 +4,8 @@ use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::config::Configuration;
-use crate::structures::{DataPacket, PcapFileHeader};
+use crate::business::config::Configuration;
+use crate::data::models::{DataPacket, PcapFileHeader};
 
 /// PCAP文件写入器
 pub struct PcapFileWriter {

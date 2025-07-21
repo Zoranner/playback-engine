@@ -8,11 +8,11 @@ use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use crate::config::Configuration;
-use crate::error::{PcapError, Result};
-use crate::file_writer::PcapFileWriter;
-use crate::structures::{DataPacket, DatasetInfo, FileInfo};
-use crate::traits::{Info, Write};
+use crate::business::config::Configuration;
+use crate::foundation::error::{PcapError, Result};
+use crate::data::file_writer::PcapFileWriter;
+use crate::data::models::{DataPacket, DatasetInfo, FileInfo};
+use crate::foundation::traits::{Info, Write};
 
 // 错误消息常量
 const ERR_WRITER_FINALIZED: &str = "写入器已完成，无法继续写入";
@@ -356,7 +356,7 @@ impl Writer {
         info!("开始生成PIDX索引...");
 
         // 使用PidxWriter生成并保存索引
-        use crate::index::writer::PidxWriter;
+        use crate::business::index::writer::PidxWriter;
 
         // 创建PidxWriter实例并生成索引
         let mut pidx_writer = PidxWriter::new(&self.dataset_path())?;

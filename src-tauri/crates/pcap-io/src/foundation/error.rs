@@ -1,4 +1,4 @@
-use crate::config::PcapErrorCode;
+use crate::foundation::types::PcapErrorCode;
 use thiserror::Error;
 
 /// PCAP操作错误

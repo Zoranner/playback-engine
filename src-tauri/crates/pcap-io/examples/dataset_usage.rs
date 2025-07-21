@@ -5,7 +5,7 @@
 
 use pcap_io::{
     Configuration, DataPacket, Reader, Writer,
-    traits::{Read, Write, Info}, Result,
+    Read, Write, Info, Result,
 };
 use std::time::SystemTime;
 

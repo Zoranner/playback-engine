@@ -1,6 +1,21 @@
 //! # PcapFile.IO - 高性能PCAP文件读写库
 //!
 //! 这是一个用Rust编写的高性能PCAP文件处理库，提供了完整的PCAP文件读写功能。
+//! 采用标准四层架构设计，确保系统的可维护性和可扩展性。
+//!
+//! ## 架构设计
+//!
+//! ```
+//! ┌─────────────────────────────────────┐
+//! │    用户接口层 (API Layer)           │  ← 对外提供服务接口
+//! ├─────────────────────────────────────┤
+//! │    业务逻辑层 (Business Layer)      │  ← 核心业务逻辑实现
+//! ├─────────────────────────────────────┤
+//! │    数据访问层 (Data Layer)          │  ← 数据操作和格式处理
+//! ├─────────────────────────────────────┤
+//! │    基础设施层 (Foundation)          │  ← 工具函数和通用组件
+//! └─────────────────────────────────────┘
+//! ```
 //!
 //! ## 特性
 //!
@@ -16,12 +31,11 @@
 //!
 //! ```rust
 //! use pcap_io::{
-//!     config::Configuration,
-//!     structures::DataPacket,
-//!     file_reader::PcapFileReader,
-//!     file_writer::PcapFileWriter,
-//!     index::{PidxReader, PidxWriter},
-//!     error::Result,
+//!     Configuration,
+//!     DataPacket,
+//!     Reader,
+//!     Writer,
+//!     Result,
 //! };
 //!
 //! #[tokio::main]
@@ -29,9 +43,8 @@
 //!     // 创建配置
 //!     let config = Configuration::default();
 //!
-//!     // 写入PCAP文件
-//!     let mut writer = PcapFileWriter::new(config.clone());
-//!     writer.create("example.pcap")?;
+//!     // 写入PCAP数据集
+//!     let mut writer = Writer::new("./data", "example_dataset", config.clone())?;
 //!
 //!     let data = b"Hello, World!".to_vec();
 //!     let packet = DataPacket::from_datetime(
@@ -40,15 +53,10 @@
 //!     )?;
 //!
 //!     writer.write_packet(&packet)?;
-//!     writer.close();
+//!     writer.finalize()?;
 //!
-//!     // 生成索引
-//!     let index = PidxWriter::generate_index("data_directory").await?;
-//!     PidxWriter::save_index(&index, "data_directory/dataset.pidx")?;
-//!
-//!     // 读取PCAP文件
-//!     let mut reader = PcapFileReader::new(config);
-//!     reader.open("example.pcap")?;
+//!     // 读取PCAP数据集
+//!     let mut reader = Reader::new("./data/example_dataset", config)?;
 //!
 //!     while let Some(packet) = reader.read_packet()? {
 //!         println!("读取数据包: {:?}", packet);
@@ -57,44 +65,29 @@
 //!     Ok(())
 //! }
 //! ```
-//!
-//! ## 模块结构
-//!
-//! - `config`: 配置管理和常量定义
-//! - `structures`: 数据结构和类型定义
-//! - `utils`: 工具函数和扩展方法
-//! - `file_reader`: 单个文件读取器（内部）
-//! - `file_writer`: 单个文件写入器（内部）
-//! - `index`: 索引文件处理
-//! - `error`: 错误处理和结果类型
-//!
-//! ## 许可证
-//!
-//! MIT License
 
-// 模块声明
-pub mod config;
-pub mod error;
-pub mod file_reader;
-pub mod file_writer;
-pub mod index;
-pub mod reader;
-pub mod structures;
-pub mod traits;
-pub mod utils;
-pub mod writer;
+// 分层架构模块声明
+pub mod api;
+pub mod business;
+pub mod data;
+pub mod foundation;
 
-// 重新导出主要类型和功能
-pub use config::{Configuration, PcapErrorCode};
-pub use error::{PcapError, Result};
-pub use file_reader::PcapFileReader;
-pub use file_writer::PcapFileWriter;
-pub use index::{PacketIndexEntry, PcapFileIndex, PidxIndex, PidxReader, PidxWriter};
-pub use reader::Reader;
-pub use structures::{DataPacket, DataPacketHeader, DatasetInfo, FileInfo, PcapFileHeader};
-pub use traits::{Info, Read, Write};
-pub use utils::{calculate_crc32, ByteArrayExtensions, DateTimeExtensions, FileInfoCache};
-pub use writer::Writer;
+// 重新导出主要类型和功能 - 按架构层次组织
+
+// 基础设施层导出
+pub use foundation::{Info, PcapError, Read, Result, Write};
+
+// 数据访问层导出
+pub use data::{DataPacket, DataPacketHeader, DatasetInfo, FileInfo, PcapFileHeader};
+
+// 业务逻辑层导出
+pub use business::{Configuration, PacketIndexEntry, PcapFileIndex, PidxIndex, PidxReader, PidxWriter};
+
+// 基础设施层类型导出
+pub use foundation::{constants, PcapErrorCode};
+
+// 用户接口层导出（主要API）
+pub use api::{Reader, Writer};
 
 // 版本信息
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

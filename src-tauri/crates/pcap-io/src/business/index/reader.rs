@@ -5,8 +5,8 @@ use std::io::{BufReader, Read};
 use std::path::{Path, PathBuf};
 // serde imports removed as they are not used in this module
 
-use crate::error::{PcapError, Result};
-use crate::index::types::PidxIndex;
+use crate::foundation::error::{PcapError, Result};
+use crate::business::index::types::PidxIndex;
 
 /// PIDX文件读取器
 pub struct PidxReader;

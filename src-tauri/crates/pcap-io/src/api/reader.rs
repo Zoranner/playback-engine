@@ -7,13 +7,13 @@ use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use crate::config::Configuration;
-use crate::error::{PcapError, Result};
-use crate::file_reader::PcapFileReader;
-use crate::index::{PidxIndex, PidxReader};
-use crate::structures::{DataPacket, DatasetInfo, FileInfo};
-use crate::traits::{Info, Read};
-use crate::utils::{CacheStats, FileInfoCache};
+use crate::business::config::Configuration;
+use crate::foundation::error::{PcapError, Result};
+use crate::data::file_reader::PcapFileReader;
+use crate::business::index::{PidxIndex, PidxReader};
+use crate::data::models::{DataPacket, DatasetInfo, FileInfo};
+use crate::foundation::traits::{Info, Read};
+use crate::business::cache::{CacheStats, FileInfoCache};
 
 // 错误消息常量
 const ERR_READER_FINALIZED: &str = "读取器已完成，无法继续读取";
@@ -305,7 +305,7 @@ impl Reader {
         info!("开始生成PIDX索引...");
 
         // 使用PidxWriter生成索引
-        use crate::index::writer::PidxWriter;
+        use crate::business::index::writer::PidxWriter;
 
         let mut pidx_writer = PidxWriter::new(&self.dataset_path())?;
         let index_path = pidx_writer.generate_index()?;

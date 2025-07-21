@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use crate::error::{PcapError, Result};
-use crate::file_reader::PcapFileReader;
-use crate::index::reader::PidxReader;
-use crate::index::types::{PacketIndexEntry, PcapFileIndex, PidxIndex};
+use crate::foundation::error::{PcapError, Result};
+use crate::data::file_reader::PcapFileReader;
+use crate::business::index::reader::PidxReader;
+use crate::business::index::types::{PacketIndexEntry, PcapFileIndex, PidxIndex};
 
 /// PIDX文件写入器
 ///
@@ -150,7 +150,7 @@ impl PidxWriter {
         let file_size = fs::metadata(path).map_err(|e| PcapError::Io(e))?.len();
 
         // 打开PCAP文件并读取所有数据包
-        let mut reader = PcapFileReader::new(crate::config::Configuration::default());
+        let mut reader = PcapFileReader::new(crate::business::config::Configuration::default());
         reader.open(path)?;
         let mut packets = Vec::new();
         let mut packet_count = 0u64;

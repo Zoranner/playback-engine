@@ -2,8 +2,8 @@
 //!
 //! 定义了pcap-io库的核心trait接口，提供统一的读写和信息查询接口。
 
-use crate::error::Result;
-use crate::structures::{DataPacket, DatasetInfo, FileInfo};
+use crate::foundation::error::Result;
+use crate::data::models::{DataPacket, DatasetInfo, FileInfo};
 
 /// 数据包读取trait
 ///
