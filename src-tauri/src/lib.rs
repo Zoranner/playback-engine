@@ -1,16 +1,21 @@
 // 模块声明
 pub mod types;
-pub mod pcap;
 pub mod pproj;
-pub mod pidx;
 pub mod manager;
 pub mod commands;
 
-// 重新导出主要类型和功能
-pub use pcap::{PcapReader, PcapWriter, MultiPcapReader};
-pub use pproj::{PprojReader, PprojWriter};
-pub use pidx::{PidxReader, PidxWriter};
+// 重新导出 pcap-io 库的核心类型
+pub use pcap_io::{
+    Configuration as PcapConfiguration, DataPacket, DataPacketHeader, PcapFileHeader, Read,
+    Reader as PcapReader, Write, Writer as PcapWriter,
+    // 索引相关类型
+    PacketIndexEntry, PcapFileIndex, PidxIndex, PidxReader, PidxWriter,
+};
+
+// 重新导出应用类型
 pub use manager::ProjectManager;
+pub use pproj::{PprojReader, PprojWriter};
+pub use types::{AppDataPacket, PacketType, PlaybackError, Result};
 
 // Tauri相关导入
 use tauri::Manager;
@@ -37,7 +42,7 @@ pub fn run() {
             let project_manager = std::sync::Mutex::new(ProjectManager::new());
             app.manage(project_manager);
 
-            log::info!("Tauri应用初始化完成");
+            log::info!("Tauri应用初始化完成，集成pcap-io库");
             Ok(())
         })
         .run(tauri::generate_context!())

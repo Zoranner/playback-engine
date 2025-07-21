@@ -1,6 +1,6 @@
 use std::fs;
 use std::path::{Path, PathBuf};
-use log::{info, warn};
+use log::info;
 
 use crate::types::{PlaybackError, Result, PprojConfig};
 

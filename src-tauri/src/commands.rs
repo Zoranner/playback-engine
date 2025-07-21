@@ -3,7 +3,6 @@ use log::{info, error};
 
 use crate::manager::ProjectManager;
 use crate::types::ProjectInfo;
-use crate::pidx::reader::IndexStats;
 
 /// 打开工程目录
 #[tauri::command]
@@ -64,15 +63,12 @@ pub fn list_datasets(
 pub fn get_dataset_stats(
     app: AppHandle,
     dataset_name: String,
-) -> std::result::Result<Option<IndexStats>, String> {
+) -> std::result::Result<Option<u64>, String> {
     let project_manager_state = app.state::<std::sync::Mutex<ProjectManager>>();
     let manager = project_manager_state.lock().unwrap();
 
     match manager.get_dataset_reader(&dataset_name) {
-        Some(reader) => {
-            let stats = crate::pidx::reader::PidxReader::get_index_stats(&reader.index);
-            Ok(Some(stats))
-        }
+        Some(reader) => Ok(Some(reader.total_packets)),
         None => Ok(None)
     }
 }

@@ -1,24 +1,20 @@
-use std::fs;
 use std::path::{Path, PathBuf};
 use std::collections::HashMap;
-use log::{debug, info, warn};
-use chrono::DateTime;
+use log::{info, warn};
+// use chrono::DateTime;
 
 use crate::types::{ProjectInfo, PlaybackError, Result, PprojConfig, DatasetConfig};
-use crate::pcap::multi_reader::MultiPcapReader;
 use crate::pproj::{PprojReader, PprojWriter};
-use crate::pidx::{PidxReader, PidxWriter};
-use crate::pidx::reader::IndexStats;
-use crate::types::PidxIndex;
+use pcap_io::{Reader as PcapReader, Configuration, Read};
 
 /// 数据集读取器信息
 pub struct DatasetReader {
     /// 数据集配置
     pub config: DatasetConfig,
-    /// 多文件PCAP读取器
-    pub reader: MultiPcapReader,
-    /// PIDX索引
-    pub index: PidxIndex,
+    /// PCAP文件路径列表
+    pub pcap_files: Vec<PathBuf>,
+    /// 数据包总数（缓存）
+    pub total_packets: u64,
 }
 
 /// 工程管理器
@@ -44,7 +40,7 @@ impl ProjectManager {
         }
     }
 
-    /// 打开工程目录 - 支持完整的链式加载
+    /// 打开工程目录
     pub async fn open_project<P: AsRef<Path>>(&mut self, project_path: P) -> Result<ProjectInfo> {
         let path = project_path.as_ref();
 
@@ -127,63 +123,81 @@ impl ProjectManager {
     async fn create_dataset_reader(&self, dataset_config: &DatasetConfig) -> Result<DatasetReader> {
         let dataset_path = Path::new(&dataset_config.path);
 
-        // 1. 查找或生成PIDX索引
-        let index = self.load_or_generate_pidx_index(dataset_path).await?;
+        // 扫描数据集目录中的所有PCAP文件
+        let pcap_files = self.scan_pcap_files(dataset_path)?;
 
-        // 2. 创建多文件读取器
-        let reader = MultiPcapReader::new(dataset_path, index.clone())?;
+        if pcap_files.is_empty() {
+            return Err(PlaybackError::ProjectError(format!(
+                "数据集目录中未找到PCAP文件: {:?}", dataset_path
+            )));
+        }
 
-        Ok(DatasetReader {
-            config: dataset_config.clone(),
-            reader,
-            index,
-        })
-    }
-
-    /// 加载或生成PIDX索引
-    async fn load_or_generate_pidx_index<P: AsRef<Path>>(&self, dataset_path: P) -> Result<PidxIndex> {
-        let path = dataset_path.as_ref();
-
-        // 查找现有的PIDX文件
-        if let Some(pidx_file) = PidxReader::find_pidx_file(path)? {
-            info!("找到PIDX文件: {:?}", pidx_file);
-            let index = PidxReader::load_index(pidx_file)?;
-
-            // 验证索引有效性
-            if PidxReader::verify_index_validity(&index, path).await? {
-                return Ok(index);
-            } else {
-                warn!("PIDX文件验证失败，重新生成索引");
+        // 统计总数据包数
+        let mut total_packets = 0;
+        for file_path in &pcap_files {
+            match self.count_packets_in_file(file_path) {
+                Ok(count) => total_packets += count,
+                Err(e) => warn!("统计文件 {:?} 数据包失败: {}", file_path, e),
             }
         }
 
-        // 生成新的索引
-        info!("生成PIDX索引: {:?}", path);
-        let index = PidxWriter::generate_index(path).await?;
+        Ok(DatasetReader {
+            config: dataset_config.clone(),
+            pcap_files,
+            total_packets,
+        })
+    }
 
-        // 自动保存索引
-        let dataset_name = path.file_name()
-            .and_then(|name| name.to_str())
-            .unwrap_or("dataset");
-        let pidx_file_path = path.join(format!("{}.pidx", dataset_name));
-        PidxWriter::save_index(&index, pidx_file_path)?;
+    /// 扫描目录中的PCAP文件
+    fn scan_pcap_files<P: AsRef<Path>>(&self, dir_path: P) -> Result<Vec<PathBuf>> {
+        let mut pcap_files = Vec::new();
+        let entries = std::fs::read_dir(dir_path)?;
 
-        Ok(index)
+        for entry in entries {
+            let entry = entry?;
+            let path = entry.path();
+
+            if path.is_file() {
+                if let Some(extension) = path.extension() {
+                    if extension.to_str() == Some("pcap") {
+                        pcap_files.push(path);
+                    }
+                }
+            }
+        }
+
+        // 按文件名排序
+        pcap_files.sort();
+        Ok(pcap_files)
+    }
+
+    /// 统计单个文件中的数据包数量
+    fn count_packets_in_file(&self, file_path: &Path) -> Result<u64> {
+        let config = Configuration::default();
+        let mut reader = PcapReader::new(file_path, config)
+            .map_err(|e| PlaybackError::FileError(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("打开PCAP文件失败: {}", e)
+            )))?;
+
+        let mut count = 0;
+        while let Ok(Some(_)) = reader.read_packet() {
+            count += 1;
+        }
+
+        Ok(count)
     }
 
     /// 生成工程信息
     async fn generate_project_info<P: AsRef<Path>>(
         &self,
         project_path: P,
-        config: &PprojConfig
+        config: &PprojConfig,
     ) -> Result<ProjectInfo> {
         let path = project_path.as_ref();
         let project_name = config.project_name.clone();
 
-        let mut project_info = ProjectInfo::new(
-            project_name,
-            path.to_string_lossy().to_string()
-        );
+        let mut project_info = ProjectInfo::new(project_name, path.to_string_lossy().to_string());
 
         // 设置元数据
         project_info.metadata.description = config.project_description.clone();
@@ -193,53 +207,20 @@ impl ProjectManager {
         project_info.metadata.tags = config.tags.clone();
 
         // 统计所有数据集的信息
-        let mut total_duration = 0u64;
         let mut total_files = 0usize;
-        let mut earliest_time = u64::MAX;
-        let mut latest_time = 0u64;
         let mut pcap_files = Vec::new();
 
         for dataset_reader in self.dataset_readers.values() {
-            let stats = PidxReader::get_index_stats(&dataset_reader.index);
-
-            total_duration += stats.total_duration_ns;
-            total_files += stats.total_files;
-
-            if stats.start_timestamp < earliest_time {
-                earliest_time = stats.start_timestamp;
-            }
-            if stats.end_timestamp > latest_time {
-                latest_time = stats.end_timestamp;
-            }
+            total_files += dataset_reader.pcap_files.len();
 
             // 收集PCAP文件路径
-            for file_index in &dataset_reader.index.files {
-                let file_path = Path::new(&dataset_reader.config.path)
-                    .join(&file_index.file_name);
+            for file_path in &dataset_reader.pcap_files {
                 pcap_files.push(file_path.to_string_lossy().to_string());
             }
         }
 
-        project_info.total_duration = total_duration;
         project_info.file_count = total_files;
         project_info.pcap_files = pcap_files;
-
-        // 转换时间戳为ISO格式
-        if earliest_time != u64::MAX {
-            let start_time = DateTime::from_timestamp(
-                (earliest_time / 1_000_000_000) as i64,
-                (earliest_time % 1_000_000_000) as u32
-            ).unwrap_or_default();
-            project_info.start_time = start_time.to_rfc3339();
-        }
-
-        if latest_time != 0 {
-            let end_time = DateTime::from_timestamp(
-                (latest_time / 1_000_000_000) as i64,
-                (latest_time % 1_000_000_000) as u32
-            ).unwrap_or_default();
-            project_info.end_time = end_time.to_rfc3339();
-        }
 
         Ok(project_info)
     }
@@ -249,35 +230,14 @@ impl ProjectManager {
         self.current_project.as_ref()
     }
 
-    /// 获取工程配置
-    pub fn get_project_config(&self) -> Option<&PprojConfig> {
-        self.project_config.as_ref()
-    }
-
     /// 获取数据集读取器
     pub fn get_dataset_reader(&self, dataset_name: &str) -> Option<&DatasetReader> {
         self.dataset_readers.get(dataset_name)
     }
 
-    /// 获取数据集读取器（可变）
-    pub fn get_dataset_reader_mut(&mut self, dataset_name: &str) -> Option<&mut DatasetReader> {
-        self.dataset_readers.get_mut(dataset_name)
-    }
-
     /// 列出所有数据集名称
     pub fn list_dataset_names(&self) -> Vec<String> {
         self.dataset_readers.keys().cloned().collect()
-    }
-
-    /// 刷新工程信息
-    pub async fn refresh_project(&mut self) -> Result<ProjectInfo> {
-        if let Some(project_path) = &self.project_path.clone() {
-            self.open_project(project_path).await
-        } else {
-            Err(PlaybackError::ProjectError(
-                "当前没有打开的工程".to_string()
-            ))
-        }
     }
 
     /// 关闭当前工程
@@ -288,68 +248,12 @@ impl ProjectManager {
         self.project_path = None;
         info!("工程已关闭");
     }
-
-    /// 重新加载数据集索引
-    pub async fn reload_dataset_index(&mut self, dataset_name: &str) -> Result<()> {
-        if let Some(dataset_reader) = self.dataset_readers.get(dataset_name) {
-            let dataset_path = &dataset_reader.config.path;
-            let new_index = self.load_or_generate_pidx_index(dataset_path).await?;
-
-            // 更新读取器
-            let new_reader = MultiPcapReader::new(dataset_path, new_index.clone())?;
-
-            self.dataset_readers.insert(dataset_name.to_string(), DatasetReader {
-                config: dataset_reader.config.clone(),
-                reader: new_reader,
-                index: new_index,
-            });
-
-            info!("数据集索引已重新加载: {}", dataset_name);
-            Ok(())
-        } else {
-            Err(PlaybackError::ProjectError(
-                format!("数据集不存在: {}", dataset_name)
-            ))
-        }
-    }
-
-    /// 获取工程统计信息
-    pub fn get_project_statistics(&self) -> ProjectStatistics {
-        let mut stats = ProjectStatistics::default();
-
-        if let Some(project) = &self.current_project {
-            stats.total_duration_seconds = project.total_duration as f64 / 1_000_000_000.0;
-            stats.total_files = project.file_count;
-        }
-
-        stats.total_datasets = self.dataset_readers.len();
-
-        let mut total_packets = 0u64;
-        for reader in self.dataset_readers.values() {
-            total_packets += reader.index.total_packets;
-        }
-        stats.total_packets = total_packets;
-
-        if stats.total_duration_seconds > 0.0 {
-            stats.average_packet_rate = stats.total_packets as f64 / stats.total_duration_seconds;
-        }
-
-        stats
-    }
 }
 
-impl Default for ProjectManager {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-/// 工程统计信息
-#[derive(Debug, Clone, Default)]
+/// 简化的统计信息结构
+#[derive(Debug, Default)]
 pub struct ProjectStatistics {
     pub total_datasets: usize,
     pub total_files: usize,
     pub total_packets: u64,
-    pub total_duration_seconds: f64,
-    pub average_packet_rate: f64,
 }
