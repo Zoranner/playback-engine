@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 /// PCAP格式常量定义
 pub mod constants {
@@ -30,7 +30,7 @@ pub mod constants {
 
 /// PCAP库配置
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PcapConfiguration {
+pub struct Configuration {
     /// 每个PCAP文件最大数据包数量
     pub max_packets_per_file: usize,
     /// 缓冲区大小（字节）
@@ -59,7 +59,7 @@ pub struct PcapConfiguration {
     pub temp_directory: PathBuf,
 }
 
-impl Default for PcapConfiguration {
+impl Default for Configuration {
     fn default() -> Self {
         Self {
             max_packets_per_file: constants::DEFAULT_MAX_PACKETS_PER_FILE,
@@ -79,7 +79,7 @@ impl Default for PcapConfiguration {
     }
 }
 
-impl PcapConfiguration {
+impl Configuration {
     /// 获取高性能配置（适用于大量数据处理）
     pub fn high_performance() -> Self {
         Self {

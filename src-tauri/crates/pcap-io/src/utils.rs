@@ -1,7 +1,42 @@
+use chrono::{DateTime, Timelike, Utc};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use std::time::{SystemTime, Duration};
-use chrono::{DateTime, Utc, Timelike};
+use std::time::{Duration, SystemTime};
+
+/// 缓存统计信息（内部使用）
+#[derive(Debug, Clone)]
+pub struct CacheStats {
+    /// 缓存条目总数
+    pub total_entries: usize,
+    /// 缓存命中次数
+    pub hit_count: u64,
+    /// 缓存未命中次数
+    pub miss_count: u64,
+    /// 缓存命中率
+    pub hit_rate: f64,
+}
+
+impl CacheStats {
+    /// 创建新的缓存统计信息
+    pub fn new() -> Self {
+        Self {
+            total_entries: 0,
+            hit_count: 0,
+            miss_count: 0,
+            hit_rate: 0.0,
+        }
+    }
+
+    /// 更新命中率
+    pub fn update_hit_rate(&mut self) {
+        let total_requests = self.hit_count + self.miss_count;
+        self.hit_rate = if total_requests > 0 {
+            self.hit_count as f64 / total_requests as f64
+        } else {
+            0.0
+        };
+    }
+}
 
 /// 字节数组扩展方法
 pub trait ByteArrayExtensions {
@@ -57,8 +92,7 @@ impl ByteArrayExtensions for [u8] {
     }
 
     fn to_utf8_string(&self) -> Result<String, String> {
-        String::from_utf8(self.to_vec())
-            .map_err(|e| format!("UTF8解码失败: {}", e))
+        String::from_utf8(self.to_vec()).map_err(|e| format!("UTF8解码失败: {}", e))
     }
 
     fn equals(&self, other: &[u8]) -> bool {
@@ -186,8 +220,7 @@ pub mod binary_converter {
 
     /// 从UTF8字节数组转换为字符串
     pub fn utf8_bytes_to_string(bytes: &[u8]) -> Result<String, String> {
-        String::from_utf8(bytes.to_vec())
-            .map_err(|e| format!("UTF8解码失败: {}", e))
+        String::from_utf8(bytes.to_vec()).map_err(|e| format!("UTF8解码失败: {}", e))
     }
 
     /// 将字节数组转换为Base64字符串
@@ -205,26 +238,33 @@ pub mod binary_converter {
 /// 文件信息缓存项
 #[derive(Debug, Clone)]
 pub struct FileInfoCacheItem {
-    pub file_path: String,
-    pub file_size: u64,
-    pub last_write_time: SystemTime,
-    pub packet_count: u64,
+    pub file_info: crate::structures::FileInfo,
     pub cache_time: SystemTime,
 }
 
 impl FileInfoCacheItem {
-    pub fn new(file_path: String, file_size: u64, packet_count: u64) -> Self {
+    pub fn new(file_info: crate::structures::FileInfo) -> Self {
         Self {
-            file_path,
-            file_size,
-            last_write_time: SystemTime::now(),
-            packet_count,
+            file_info,
             cache_time: SystemTime::now(),
         }
     }
 
     pub fn is_valid(&self, current_file_size: u64, current_write_time: SystemTime) -> bool {
-        self.file_size == current_file_size && self.last_write_time == current_write_time
+        self.file_info.file_size == current_file_size
+            && self.file_info.modified_time
+                == current_write_time
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_secs()
+                    .to_string()
+    }
+
+    pub fn is_expired(&self, expiration_duration: Duration) -> bool {
+        SystemTime::now()
+            .duration_since(self.cache_time)
+            .unwrap_or(Duration::ZERO)
+            >= expiration_duration
     }
 }
 
@@ -254,6 +294,8 @@ pub struct FileInfoCache {
     cache_expiration: Duration,
     cleanup_interval: Duration,
     last_cleanup: Arc<Mutex<SystemTime>>,
+    hit_count: Arc<Mutex<u64>>,
+    miss_count: Arc<Mutex<u64>>,
 }
 
 impl FileInfoCache {
@@ -264,53 +306,124 @@ impl FileInfoCache {
             cache_expiration: Duration::from_secs(30 * 60), // 30分钟
             cleanup_interval: Duration::from_secs(10 * 60), // 10分钟
             last_cleanup: Arc::new(Mutex::new(SystemTime::now())),
+            hit_count: Arc::new(Mutex::new(0)),
+            miss_count: Arc::new(Mutex::new(0)),
         }
     }
 
-    pub fn get_packet_count(&self, file_path: &str) -> Result<u64, String> {
-        let mut cache = self.cache.lock().map_err(|_| "缓存锁定失败")?;
+    /// 从缓存中获取文件信息
+    pub fn get<P: AsRef<std::path::Path>>(
+        &self,
+        file_path: P,
+    ) -> Option<crate::structures::FileInfo> {
+        let path_str = file_path.as_ref().to_string_lossy().to_string();
+        let mut cache = self.cache.lock().ok()?;
 
-        // 检查是否需要清理
-        self.perform_periodic_cleanup(&mut cache)?;
+        // 执行定期清理
+        let _ = self.perform_periodic_cleanup(&mut cache);
 
-        if let Some(item) = cache.get(file_path) {
-            // 检查缓存项是否仍然有效
-            if let Ok(metadata) = std::fs::metadata(file_path) {
-                if item.is_valid(metadata.len(), metadata.modified().unwrap_or(SystemTime::now())) {
-                    return Ok(item.packet_count);
+        if let Some(item) = cache.get(&path_str) {
+            // 检查文件是否已修改
+            if let Ok(metadata) = std::fs::metadata(&file_path) {
+                if let Ok(modified_time) = metadata.modified() {
+                    if item.is_valid(metadata.len(), modified_time) {
+                        // 缓存命中
+                        if let Ok(mut hit_count) = self.hit_count.lock() {
+                            *hit_count += 1;
+                        }
+                        return Some(item.file_info.clone());
+                    }
                 }
             }
         }
 
-        // 缓存未命中或无效，重新计算
-        let packet_count = self.calculate_packet_count(file_path)?;
-
-        // 更新缓存
-        let item = FileInfoCacheItem::new(
-            file_path.to_string(),
-            std::fs::metadata(file_path).map_err(|e| format!("获取文件元数据失败: {}", e))?.len(),
-            packet_count,
-        );
-
-        cache.insert(file_path.to_string(), item);
-
-        // 检查缓存大小
-        if cache.len() > self.max_entries {
-            self.cleanup_expired_entries(&mut cache)?;
+        // 缓存未命中
+        if let Ok(mut miss_count) = self.miss_count.lock() {
+            *miss_count += 1;
         }
 
+        None
+    }
+
+    /// 向缓存中插入文件信息
+    pub fn insert<P: AsRef<std::path::Path>>(
+        &self,
+        file_path: P,
+        file_info: crate::structures::FileInfo,
+    ) {
+        let path_str = file_path.as_ref().to_string_lossy().to_string();
+
+        if let Ok(mut cache) = self.cache.lock() {
+            let item = FileInfoCacheItem::new(file_info);
+            cache.insert(path_str, item);
+
+            // 检查缓存大小限制
+            if cache.len() > self.max_entries {
+                let _ = self.cleanup_expired_entries(&mut cache);
+
+                // 如果清理后仍然超过限制，移除最旧的条目
+                if cache.len() > self.max_entries {
+                    let oldest_key = cache
+                        .iter()
+                        .min_by_key(|(_, item)| item.cache_time)
+                        .map(|(key, _)| key.clone());
+
+                    if let Some(key) = oldest_key {
+                        cache.remove(&key);
+                    }
+                }
+            }
+        }
+    }
+
+    /// 获取或计算文件的数据包数量
+    pub fn get_packet_count(&self, file_path: &str) -> Result<u64, String> {
+        let path = std::path::Path::new(file_path);
+
+        // 尝试从缓存获取
+        if let Some(file_info) = self.get(path) {
+            return Ok(file_info.packet_count);
+        }
+
+        // 缓存未命中，计算数据包数量
+        let packet_count = self.calculate_packet_count(file_path)?;
+
+        // 创建文件信息并插入缓存
+        let mut file_info = crate::structures::FileInfo::from_file(path)
+            .map_err(|e| format!("创建文件信息失败: {}", e))?;
+        file_info.packet_count = packet_count;
+
+        self.insert(path, file_info);
         Ok(packet_count)
+    }
+
+    /// 获取缓存统计信息
+    pub fn get_cache_stats(&self) -> CacheStats {
+        let total_entries = self.cache.lock().map(|cache| cache.len()).unwrap_or(0);
+
+        let hit_count = self.hit_count.lock().map(|guard| *guard).unwrap_or(0);
+        let miss_count = self.miss_count.lock().map(|guard| *guard).unwrap_or(0);
+
+        let mut stats = CacheStats {
+            total_entries,
+            hit_count,
+            miss_count,
+            hit_rate: 0.0,
+        };
+
+        stats.update_hit_rate();
+        stats
     }
 
     fn calculate_packet_count(&self, file_path: &str) -> Result<u64, String> {
         use std::fs::File;
         use std::io::{BufReader, Read, Seek, SeekFrom};
 
-        let file = File::open(file_path)
-            .map_err(|e| format!("无法打开文件: {}", e))?;
+        let file = File::open(file_path).map_err(|e| format!("无法打开文件: {}", e))?;
 
         let mut reader = BufReader::new(file);
-        let file_size = reader.seek(SeekFrom::End(0))
+        let file_size = reader
+            .seek(SeekFrom::End(0))
             .map_err(|e| format!("无法获取文件大小: {}", e))?;
 
         if file_size < crate::structures::PcapFileHeader::HEADER_SIZE as u64 {
@@ -318,7 +431,10 @@ impl FileInfoCache {
         }
 
         // 重置到数据区开始位置
-        reader.seek(SeekFrom::Start(crate::structures::PcapFileHeader::HEADER_SIZE as u64))
+        reader
+            .seek(SeekFrom::Start(
+                crate::structures::PcapFileHeader::HEADER_SIZE as u64,
+            ))
             .map_err(|e| format!("无法定位到数据区: {}", e))?;
 
         let mut packet_count = 0u64;
@@ -333,7 +449,8 @@ impl FileInfoCache {
 
                     // 跳过数据包内容
                     let skip_bytes = header.packet_length as i64;
-                    reader.seek(SeekFrom::Current(skip_bytes))
+                    reader
+                        .seek(SeekFrom::Current(skip_bytes))
                         .map_err(|e| format!("跳过数据包内容失败: {}", e))?;
 
                     packet_count += 1;
@@ -345,7 +462,10 @@ impl FileInfoCache {
         Ok(packet_count)
     }
 
-    fn perform_periodic_cleanup(&self, cache: &mut HashMap<String, FileInfoCacheItem>) -> Result<(), String> {
+    fn perform_periodic_cleanup(
+        &self,
+        cache: &mut HashMap<String, FileInfoCacheItem>,
+    ) -> Result<(), String> {
         let mut last_cleanup = self.last_cleanup.lock().map_err(|_| "清理时间锁定失败")?;
         let now = SystemTime::now();
 
@@ -357,13 +477,13 @@ impl FileInfoCache {
         Ok(())
     }
 
-    fn cleanup_expired_entries(&self, cache: &mut HashMap<String, FileInfoCacheItem>) -> Result<(), String> {
-        let now = SystemTime::now();
+    fn cleanup_expired_entries(
+        &self,
+        cache: &mut HashMap<String, FileInfoCacheItem>,
+    ) -> Result<(), String> {
         let expired_keys: Vec<String> = cache
             .iter()
-            .filter(|(_, item)| {
-                now.duration_since(item.cache_time).unwrap_or(Duration::ZERO) >= self.cache_expiration
-            })
+            .filter(|(_, item)| item.is_expired(self.cache_expiration))
             .map(|(key, _)| key.clone())
             .collect();
 
@@ -388,13 +508,10 @@ impl FileInfoCache {
 
     pub fn get_statistics(&self) -> Result<CacheStatistics, String> {
         let cache = self.cache.lock().map_err(|_| "缓存锁定失败")?;
-        let now = SystemTime::now();
 
         let expired_entries = cache
             .values()
-            .filter(|item| {
-                now.duration_since(item.cache_time).unwrap_or(Duration::ZERO) >= self.cache_expiration
-            })
+            .filter(|item| item.is_expired(self.cache_expiration))
             .count();
 
         let last_cleanup = *self.last_cleanup.lock().map_err(|_| "清理时间锁定失败")?;

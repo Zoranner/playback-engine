@@ -1,5 +1,5 @@
-use thiserror::Error;
 use crate::config::PcapErrorCode;
+use thiserror::Error;
 
 /// PCAP操作错误
 #[derive(Error, Debug)]
