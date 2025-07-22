@@ -1,7 +1,7 @@
 ---
 alwaysApply: true
 ---
-# 代码编写规范和风格标准
+# 代码风格和工程开发规范
 
 ## 🎨 命名和风格约定
 
@@ -361,9 +361,3 @@ pub fn chain_processors(
     Ok(current)
 }
 ```
-
-description:
-globs:
-alwaysApply: false
-
----

@@ -1,0 +1,428 @@
+---
+description: 开发流程和工具使用规范
+alwaysApply: false
+---
+# 开发流程和工具使用规范
+
+## 🔧 Rust 开发工具链
+
+### 必需工具安装
+
+```bash
+# Rust 工具链
+rustup update stable
+rustup component add rustfmt clippy rust-src
+
+# Tauri CLI 工具
+cargo install tauri-cli
+cargo install --locked trunk  # 如需WebAssembly支持
+
+# 代码质量工具
+cargo install cargo-watch     # 文件变化监听
+cargo install cargo-audit     # 安全漏洞检查
+cargo install cargo-machete   # 未使用依赖检查
+cargo install cargo-outdated  # 过期依赖检查
+cargo install cargo-expand    # 宏展开工具
+```
+
+## 📋 开发工作流
+
+### 代码提交前检查
+
+```bash
+#!/bin/bash
+# scripts/pre-commit-check.sh
+
+echo "🔍 运行 Tauri 后端代码质量检查..."
+
+# 1. Rust代码格式化检查
+echo "检查代码格式..."
+if ! cargo fmt --all -- --check; then
+    echo "❌ 代码格式不规范，运行修复: cargo fmt"
+    exit 1
+fi
+
+# 2. Clippy静态分析
+echo "运行 Clippy 检查..."
+if ! cargo clippy --all-targets --all-features --workspace -- -D warnings; then
+    echo "❌ Clippy 检查失败，请修复警告"
+    exit 1
+fi
+
+# 3. 类型检查
+echo "运行类型检查..."
+if ! cargo check --all-targets --all-features --workspace; then
+    echo "❌ 类型检查失败"
+    exit 1
+fi
+
+# 4. 单元测试
+echo "运行单元测试..."
+if ! cargo test --workspace; then
+    echo "❌ 测试失败，请修复测试"
+    exit 1
+fi
+
+# 5. 文档生成检查
+echo "检查文档生成..."
+if ! cargo doc --no-deps --workspace; then
+    echo "❌ 文档生成失败，请修复文档注释"
+    exit 1
+fi
+
+# 6. 安全漏洞检查
+echo "检查安全漏洞..."
+if ! cargo audit; then
+    echo "⚠️ 发现安全漏洞，请更新依赖"
+fi
+
+echo "✅ 所有检查通过，可以提交代码"
+```
+
+### Tauri 专用开发脚本
+
+```json
+// package.json (如果需要与前端协作)
+{
+  "scripts": {
+    "tauri:dev": "cargo tauri dev",
+    "tauri:build": "cargo tauri build",
+    "tauri:test": "cd src-tauri && cargo test",
+    "tauri:check": "cd src-tauri && cargo check",
+    "tauri:clippy": "cd src-tauri && cargo clippy -- -D warnings",
+    "tauri:fmt": "cd src-tauri && cargo fmt",
+    "tauri:doc": "cd src-tauri && cargo doc --open"
+  }
+}
+```
+
+## 🧪 测试策略
+
+### 测试分类和结构
+
+```rust
+// tests/integration_tests.rs - 集成测试
+use tempfile::TempDir;
+use playback_engine_lib::{ProjectManager, types::ProjectInfo};
+
+#[tokio::test]
+async fn test_project_lifecycle() {
+    // 创建临时测试目录
+    let temp_dir = TempDir::new().unwrap();
+    let project_path = temp_dir.path().join("test_project");
+
+    // 测试项目创建和加载
+    let mut manager = ProjectManager::new();
+
+    // 创建测试项目
+    create_test_project(&project_path).await.unwrap();
+
+    // 测试打开项目
+    let project_info = manager.open_project(&project_path).await.unwrap();
+    assert_eq!(project_info.name, "test_project");
+
+    // 测试项目信息获取
+    let current_project = manager.get_current_project();
+    assert!(current_project.is_some());
+}
+
+#[tokio::test]
+async fn test_pcap_processing() {
+    let temp_dir = TempDir::new().unwrap();
+    let dataset_path = temp_dir.path().join("test_dataset");
+
+    // 测试PCAP数据处理流程
+    let config = pcap_io::Configuration::default();
+    let mut writer = pcap_io::Writer::new(&dataset_path, "test", config.clone()).unwrap();
+
+    // 写入测试数据
+    for i in 0..100 {
+        let packet = create_test_packet(i);
+        writer.write_packet(&packet).unwrap();
+    }
+    writer.finalize().unwrap();
+
+    // 读取并验证数据
+    let mut reader = pcap_io::Reader::new(&dataset_path, config).unwrap();
+    let mut count = 0;
+    while let Some(_packet) = reader.read_packet().unwrap() {
+        count += 1;
+    }
+    assert_eq!(count, 100);
+}
+
+// src/lib.rs - 单元测试
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::types::DatasetConfig;
+
+    #[test]
+    fn test_dataset_config_validation() {
+        let config = DatasetConfig {
+            name: "test_dataset".to_string(),
+            dataset_type: crate::types::DatasetType::Environment,
+            pcap_files: vec![PathBuf::from("test.pcap")],
+            config: pcap_io::Configuration::default(),
+        };
+
+        assert!(validate_dataset_config(&config).is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_project_manager_state() {
+        let mut manager = ProjectManager::new();
+
+        // 测试初始状态
+        assert!(manager.get_current_project().is_none());
+        assert!(manager.list_dataset_names().is_empty());
+
+        // 测试状态变更
+        // ...
+    }
+}
+```
+
+### 性能测试
+
+```rust
+// benches/command_performance.rs
+use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
+use playback_engine_lib::{ProjectManager, types::ProjectInfo};
+use tempfile::TempDir;
+
+fn benchmark_project_loading(c: &mut Criterion) {
+    let rt = tokio::runtime::Runtime::new().unwrap();
+
+    let mut group = c.benchmark_group("project_operations");
+
+    // 测试不同大小的项目加载性能
+    for size in [10, 100, 1000].iter() {
+        group.bench_with_input(
+            BenchmarkId::new("load_project", size),
+            size,
+            |b, &size| {
+                b.to_async(&rt).iter(|| async {
+                    let temp_dir = TempDir::new().unwrap();
+                    let project_path = create_test_project_with_datasets(&temp_dir, size).await;
+
+                    let mut manager = ProjectManager::new();
+                    black_box(manager.open_project(&project_path).await.unwrap())
+                });
+            },
+        );
+    }
+    group.finish();
+}
+
+fn benchmark_pcap_processing(c: &mut Criterion) {
+    let rt = tokio::runtime::Runtime::new().unwrap();
+
+    c.bench_function("pcap_read_1k_packets", |b| {
+        b.to_async(&rt).iter(|| async {
+            let dataset_path = create_test_dataset(1000).await;
+            let config = pcap_io::Configuration::default();
+            let mut reader = pcap_io::Reader::new(&dataset_path, config).unwrap();
+
+            let mut count = 0;
+            while let Some(_packet) = reader.read_packet().unwrap() {
+                count += 1;
+            }
+            black_box(count)
+        });
+    });
+}
+
+criterion_group!(benches, benchmark_project_loading, benchmark_pcap_processing);
+criterion_main!(benches);
+```
+
+## 🚀 构建和部署
+
+### 开发模式启动
+
+```bash
+# 方式1: 使用Tauri CLI (推荐)
+cargo tauri dev
+
+# 方式2: 单独启动后端进行调试
+RUST_LOG=debug cargo run
+
+# 方式3: 监听文件变化自动重启
+cargo watch -x 'run' -w src/ -w crates/
+
+# 方式4: 调试模式启动
+RUST_LOG=trace RUST_BACKTRACE=full cargo tauri dev
+```
+
+### 生产构建
+
+```bash
+# 完整构建所有目标平台
+cargo tauri build
+
+# 指定目标平台构建
+cargo tauri build --target x86_64-unknown-linux-gnu
+cargo tauri build --target x86_64-pc-windows-msvc
+
+# Release模式优化构建
+RUSTFLAGS="-C target-cpu=native" cargo tauri build --release
+
+# 生成调试信息的Release构建
+cargo tauri build --release --config '{"tauri":{"bundle":{"active":false}}}'
+```
+
+### 构建优化设置
+
+```toml
+# Cargo.toml
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.dev]
+opt-level = 0
+debug = true
+split-debuginfo = "unpacked"
+
+[profile.test]
+opt-level = 1
+debug = true
+
+# 针对依赖库的优化
+[profile.dev.package."*"]
+opt-level = 2
+```
+
+## 📊 调试和诊断
+
+### 日志配置和使用
+
+```rust
+// src/main.rs
+use log::{info, warn, error, debug, trace};
+
+fn init_logging() {
+    let env = env_logger::Env::default()
+        .filter_or("RUST_LOG", "info,playback_engine=debug,pcap_io=debug");
+
+    env_logger::Builder::from_env(env)
+        .format_timestamp(Some(env_logger::fmt::TimestampPrecision::Millis))
+        .format_module_path(true)
+        .format_target(false)
+        .init();
+
+    info!("日志系统初始化完成");
+}
+
+// 在代码中使用日志
+#[tauri::command]
+pub async fn debug_command(param: String) -> Result<String, String> {
+    debug!("接收到调试命令，参数: {}", param);
+
+    // 性能敏感的操作使用trace级别
+    trace!("开始执行详细步骤...");
+
+    match perform_operation(&param).await {
+        Ok(result) => {
+            info!("操作成功完成: {}", result);
+            Ok(result)
+        }
+        Err(e) => {
+            error!("操作失败: {}", e);
+            Err(e.to_string())
+        }
+    }
+}
+```
+
+### 性能分析工具
+
+```bash
+# CPU性能分析
+cargo install flamegraph
+CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph --bin playback-engine
+
+# 内存使用分析
+cargo install heaptrack
+heaptrack cargo run --release
+
+# 基准测试
+cargo bench
+cargo bench -- --output-format html
+
+# 依赖分析
+cargo tree
+cargo machete
+cargo outdated
+```
+
+### 常见问题诊断
+
+```bash
+# 编译问题诊断
+RUST_LOG=cargo::core::compiler cargo build -v
+
+# 依赖问题解决
+cargo clean
+cargo update
+cargo check
+
+# Tauri特定问题
+cargo tauri info  # 查看环境信息
+cargo tauri dev --verbose  # 详细调试信息
+
+# PCAP处理问题
+RUST_LOG=pcap_io=trace cargo test pcap_tests -- --nocapture
+```
+
+## 📚 文档和维护
+
+### API文档生成
+
+```bash
+# 生成完整文档
+cargo doc --no-deps --workspace --open
+
+# 包含私有项的文档
+cargo doc --document-private-items --workspace
+
+# 检查文档链接
+cargo doc --workspace 2>&1 | grep "warning: "
+```
+
+### 代码覆盖率
+
+```bash
+# 安装覆盖率工具
+cargo install cargo-tarpaulin
+
+# 生成覆盖率报告
+cargo tarpaulin --out Html --output-dir coverage/
+
+# 上传到codecov (CI环境)
+cargo tarpaulin --out Xml
+bash <(curl -s https://codecov.io/bash)
+```
+
+### 依赖管理
+
+```bash
+# 检查过期依赖
+cargo outdated
+
+# 更新依赖
+cargo update
+
+# 检查未使用的依赖
+cargo machete
+
+# 安全审计
+cargo audit
+
+# 许可证检查
+cargo install cargo-license
+cargo license
+```

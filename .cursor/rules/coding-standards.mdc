@@ -1,0 +1,327 @@
+---
+alwaysApply: true
+---
+# 代码风格和工程开发规范
+
+## 🎨 前端代码规范 (TypeScript/Vue3)
+
+### 命名约定
+
+```typescript
+// ✅ 变量和函数：camelCase
+const projectData = ref<ProjectInfo>()
+const loadProjectData = async () => {}
+
+// ✅ 类型和接口：PascalCase
+interface ProjectInfo {}
+type DataStatus = 'loading' | 'ready' | 'error'
+
+// ✅ 常量：UPPER_SNAKE_CASE
+const MAX_FILE_SIZE = 1024 * 1024
+const API_ENDPOINTS = {
+  PROJECT: '/api/project'
+} as const
+
+// ✅ 组件文件：PascalCase
+HeaderLogo.vue
+PanelEventList.vue
+```
+
+### Vue3 组件规范
+
+```vue
+<template>
+  <!-- 使用语义化标签和合理的层级结构 -->
+  <div class="project-panel">
+    <header class="panel-header">
+      <h2>{{ title }}</h2>
+    </header>
+    <main class="panel-content">
+      <!-- 内容区域 -->
+    </main>
+  </div>
+</template>
+
+<script setup lang="ts">
+// ✅ 导入顺序：Vue -> 第三方 -> 本地
+import { ref, computed, onMounted } from 'vue'
+import { invoke } from '@tauri-apps/api'
+import { useProject } from '~/composables/useProject'
+
+// ✅ 接口定义在组件内部或单独文件
+interface Props {
+  title: string
+  projectId?: string
+}
+
+// ✅ 使用 defineProps 和 defineEmits
+const props = withDefaults(defineProps<Props>(), {
+  projectId: ''
+})
+
+const emit = defineEmits<{
+  projectLoaded: [project: ProjectInfo]
+}>()
+
+// ✅ 响应式数据使用类型注解
+const isLoading = ref<boolean>(false)
+const project = ref<ProjectInfo | null>(null)
+
+// ✅ 计算属性明确返回类型
+const displayTitle = computed((): string => {
+  return props.title || '默认标题'
+})
+</script>
+
+<style scoped>
+/* ✅ 使用 TailwindCSS，避免自定义样式 */
+.project-panel {
+  @apply flex flex-col bg-white rounded-lg shadow-md;
+}
+
+.panel-header {
+  @apply px-4 py-3 border-b border-gray-200;
+}
+
+/* ✅ 必要时使用 CSS 变量 */
+.custom-component {
+  --primary-color: #3b82f6;
+  --border-radius: 0.5rem;
+}
+</style>
+```
+
+### Composables 规范
+
+```typescript
+// composables/useProject.ts
+export function useProject() {
+  // ✅ 内部状态使用 ref 或 reactive
+  const projectInfo = ref<ProjectInfo | null>(null)
+  const isLoading = ref(false)
+  const error = ref<string | null>(null)
+
+  // ✅ 异步操作使用 async/await
+  const loadProject = async (projectPath: string): Promise<void> => {
+    try {
+      isLoading.value = true
+      error.value = null
+
+      const result = await invoke<ProjectInfo>('load_project', {
+        path: projectPath
+      })
+
+      projectInfo.value = result
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : '加载项目失败'
+      console.error('加载项目失败:', err)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // ✅ 返回只读状态和操作方法
+  return {
+    // 只读状态
+    projectInfo: readonly(projectInfo),
+    isLoading: readonly(isLoading),
+    error: readonly(error),
+
+    // 操作方法
+    loadProject,
+    clearProject: () => {
+      projectInfo.value = null
+      error.value = null
+    }
+  }
+}
+```
+
+## 🦀 后端代码规范 (Rust)
+
+### 命名约定
+
+```rust
+// ✅ 结构体和枚举：PascalCase
+pub struct ProjectManager {}
+pub enum DataStatus { Loading, Ready, Error }
+
+// ✅ 函数和变量：snake_case
+pub fn load_project_data() -> Result<()> {}
+let file_path = PathBuf::new();
+
+// ✅ 常量：UPPER_SNAKE_CASE
+pub const MAX_BUFFER_SIZE: usize = 8192;
+const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
+
+// ✅ 模块：snake_case
+mod project_manager;
+mod data_processor;
+```
+
+### 错误处理规范
+
+```rust
+use thiserror::Error;
+
+// ✅ 统一错误类型定义
+#[derive(Error, Debug)]
+pub enum AppError {
+    #[error("项目加载失败: {path}")]
+    ProjectLoadFailed { path: String },
+
+    #[error("文件操作错误: {source}")]
+    FileError {
+        #[from]
+        source: std::io::Error
+    },
+
+    #[error("数据解析错误: {message}")]
+    ParseError { message: String },
+}
+
+pub type Result<T> = std::result::Result<T, AppError>;
+
+// ✅ 命令层错误转换
+#[tauri::command]
+pub async fn load_project(path: String) -> Result<ProjectInfo, String> {
+    project_manager::load_project(&path)
+        .await
+        .map_err(|e| e.to_string())
+}
+```
+
+### 文档注释规范
+
+```rust
+/// 项目管理器
+///
+/// 负责项目的加载、保存和状态管理。支持多种项目格式，
+/// 提供异步操作接口。
+///
+/// # 示例
+/// ```rust
+/// use crate::manager::ProjectManager;
+///
+/// let manager = ProjectManager::new();
+/// let project = manager.load_project("/path/to/project").await?;
+/// ```
+pub struct ProjectManager {
+    /// 当前项目信息
+    current_project: Option<ProjectInfo>,
+    /// 项目缓存
+    cache: DashMap<String, ProjectInfo>,
+}
+
+impl ProjectManager {
+    /// 加载指定路径的项目
+    ///
+    /// # 参数
+    /// * `path` - 项目文件或目录路径
+    ///
+    /// # 返回值
+    /// * `Ok(ProjectInfo)` - 成功加载的项目信息
+    /// * `Err(AppError)` - 加载失败的错误信息
+    ///
+    /// # 错误
+    /// 当路径不存在或格式不正确时返回错误
+    pub async fn load_project<P: AsRef<Path>>(&mut self, path: P) -> Result<ProjectInfo> {
+        // 实现逻辑...
+    }
+}
+```
+
+### 异步编程规范
+
+```rust
+// ✅ 使用 async/await 进行异步编程
+#[tauri::command]
+pub async fn process_large_dataset(
+    dataset_path: String,
+    options: ProcessOptions
+) -> Result<ProcessResult, String> {
+    tokio::task::spawn_blocking(move || {
+        // CPU 密集型任务在线程池中执行
+        heavy_computation(&dataset_path, &options)
+    })
+    .await
+    .map_err(|e| format!("任务执行失败: {}", e))?
+    .map_err(|e| e.to_string())
+}
+
+// ✅ 正确使用 Arc 和 Mutex 进行状态共享
+pub struct AppState {
+    pub project_manager: Arc<Mutex<ProjectManager>>,
+    pub cache: Arc<DashMap<String, CachedData>>,
+}
+
+impl AppState {
+    pub async fn get_project(&self) -> Option<ProjectInfo> {
+        let manager = self.project_manager.lock().await;
+        manager.current_project.clone()
+    }
+}
+```
+
+## 📝 注释和文档规范
+
+### 注释原则
+
+```typescript
+// ✅ 解释为什么，而不是做什么
+// 由于 Tauri 的限制，需要序列化大对象时使用分片传输
+const chunks = splitIntoChunks(largeData, CHUNK_SIZE)
+
+// ✅ 复杂业务逻辑添加说明
+// 播放速度计算：基础速度 * 用户倍速设置 * 性能调节因子
+const actualSpeed = baseSpeed * userSpeedMultiplier * performanceFactor
+```
+
+```rust
+// ✅ 重要算法添加详细说明
+/// 使用二分查找定位时间戳对应的数据包位置
+///
+/// 时间复杂度：O(log n)
+/// 空间复杂度：O(1)
+fn find_packet_by_timestamp(&self, timestamp: u64) -> Option<usize> {
+    // 实现细节...
+}
+```
+
+## 🔧 工具配置
+
+### ESLint 配置精简版
+
+```javascript
+// eslint.config.mjs
+export default [
+  {
+    rules: {
+      // TypeScript 规则
+      '@typescript-eslint/no-unused-vars': 'error',
+      '@typescript-eslint/explicit-function-return-type': 'warn',
+
+      // Vue 规则
+      'vue/component-name-in-template-casing': ['error', 'PascalCase'],
+      'vue/component-definition-name-casing': ['error', 'PascalCase'],
+
+      // 通用规则
+      'no-console': 'warn',
+      'prefer-const': 'error'
+    }
+  }
+]
+```
+
+### Prettier 配置
+
+```json
+{
+  "semi": false,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "none",
+  "printWidth": 80,
+  "endOfLine": "lf"
+}
+```

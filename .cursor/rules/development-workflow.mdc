@@ -1,0 +1,281 @@
+---
+description: 开发流程和工具使用规范
+alwaysApply: false
+---
+# 开发流程和工具使用规范
+
+## 🔧 开发工具链
+
+### 必需工具安装
+
+```bash
+# Rust 工具链
+rustup update stable
+rustup component add rustfmt clippy
+
+# Tauri 开发
+cargo install tauri-cli
+bun install @tauri-apps/cli
+
+# 代码质量工具
+cargo install cargo-watch
+bun add -g eslint prettier
+```
+
+### 环境配置
+
+```bash
+# .env.development
+RUST_LOG=debug
+RUST_BACKTRACE=1
+TAURI_DEBUG=true
+
+# 开发模式设置
+DEV_MODE=true
+LOG_LEVEL=debug
+```
+
+## 📋 开发工作流
+
+### 提交前检查清单
+
+```bash
+# 1. 代码格式化
+bun run format
+cargo fmt
+
+# 2. 代码检查
+bun run lint
+cargo clippy -- -D warnings
+
+# 3. 类型检查
+bunx nuxi typecheck
+cargo check
+
+# 4. 测试运行
+bun test
+cargo test
+```
+
+## 🧪 测试策略
+
+### 测试分类
+
+**前端测试**
+```bash
+# 单元测试
+bun test
+
+# 组件测试
+bun test components/
+
+# E2E 测试
+bun run test:e2e
+```
+
+**后端测试**
+```bash
+# 单元测试
+cargo test
+
+# 集成测试
+cargo test --test integration_tests
+
+# 性能测试
+cargo bench
+```
+
+### 测试编写规范
+
+```typescript
+// 前端测试示例
+import { describe, it, expect } from 'vitest'
+import { useProject } from '~/composables/useProject'
+
+describe('useProject', () => {
+  it('应该正确加载项目', async () => {
+    const { loadProject, projectInfo } = useProject()
+    await loadProject('/test/path')
+    expect(projectInfo.value).toBeDefined()
+  })
+})
+```
+
+```rust
+// 后端测试示例
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_load_project() {
+        let manager = ProjectManager::new();
+        let result = manager.load_project("test_data").await;
+        assert!(result.is_ok());
+    }
+}
+```
+
+## 🚀 构建和部署
+
+### 开发模式
+
+```bash
+# 启动开发服务器
+bun run tauri:dev
+
+# 或单独启动前后端
+bun run nuxt:dev    # 前端开发服务器
+cargo tauri dev     # Tauri 开发模式
+```
+
+### 生产构建
+
+```bash
+# 完整构建
+bun run tauri:build
+
+# 指定平台构建
+cargo tauri build --target x86_64-pc-windows-msvc
+cargo tauri build --target x86_64-unknown-linux-gnu
+```
+
+### 构建优化
+
+```bash
+# Rust 优化编译
+cargo build --release
+
+# 前端打包优化
+bun run nuxt:build
+```
+
+## 🔄 CI/CD 配置
+
+### GitHub Actions 工作流
+
+```yaml
+# .github/workflows/ci.yml (精简版)
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Check format
+        run: |
+          cargo fmt --check
+          bun run format:check
+
+      - name: Run tests
+        run: |
+          cargo test
+          bun test
+
+      - name: Build
+        run: bun run tauri:build
+```
+
+## 🔧 开发环境管理
+
+### 项目脚本
+
+```json
+// package.json scripts
+{
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "lint": "eslint . --fix",
+    "format": "prettier --write .",
+    "typecheck": "nuxi typecheck"
+  }
+}
+```
+
+### 依赖管理
+
+```bash
+# 添加依赖
+bun add <package>          # 前端依赖
+cargo add <crate>          # Rust 依赖
+
+# 更新依赖
+bun update                 # 前端更新
+cargo update               # Rust 更新
+
+# 检查过时依赖
+bun outdated
+cargo outdated
+```
+
+## 📚 文档维护
+
+### API 文档生成
+
+```bash
+# Rust 文档
+cargo doc --no-deps --open
+
+# TypeScript 文档
+bunx typedoc src
+```
+
+### 文档更新原则
+
+- 公开 API 必须有文档注释
+- 重要配置变更更新 README
+- 新功能添加使用示例
+- 破坏性变更详细说明迁移方案
+
+## 🐛 调试和故障排除
+
+### 常用调试命令
+
+```bash
+# Rust 调试
+RUST_LOG=trace cargo run
+cargo expand                # 宏展开
+
+# 前端调试
+DEBUG=* bun run dev
+bun run dev --debug
+```
+
+### 日志配置
+
+```rust
+// Rust 日志设置
+use log::{info, warn, error, debug};
+
+fn main() {
+    env_logger::init();
+    info!("应用启动");
+}
+```
+
+```typescript
+// 前端日志设置
+const isDev = process.env.NODE_ENV === 'development'
+
+export const logger = {
+  info: (msg: string) => isDev && console.log(`[INFO] ${msg}`),
+  warn: (msg: string) => console.warn(`[WARN] ${msg}`),
+  error: (msg: string) => console.error(`[ERROR] ${msg}`)
+}
+```

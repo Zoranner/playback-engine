@@ -1,9 +1,7 @@
 ---
 description: 开发流程和工具使用规范
-globs:
 alwaysApply: false
 ---
-
 # 开发流程和工具使用规范
 
 ## 🔧 必需的开发工具链
@@ -428,9 +426,3 @@ jobs:
       - name: Check documentation
         run: cargo doc --no-deps --all-features
 ```
-
-description:
-globs:
-alwaysApply: false
-
----

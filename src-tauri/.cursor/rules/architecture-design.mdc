@@ -1,0 +1,238 @@
+---
+alwaysApply: true
+---
+# 系统架构设计原则规范
+
+## 🏗️ Tauri 分层架构设计
+
+### 标准三层架构
+
+适配 Tauri 应用特点的分层架构：
+
+```
+┌─────────────────────────────────────┐
+│    命令接口层 (Commands Layer)      │  ← 前端调用的 Tauri 命令
+├─────────────────────────────────────┤
+│    业务管理层 (Managers Layer)      │  ← 业务逻辑和状态管理
+├─────────────────────────────────────┤
+│    核心服务层 (Services Layer)      │  ← 底层服务和外部集成
+└─────────────────────────────────────┘
+```
+
+### 层次职责定义
+
+**命令接口层** - Tauri 命令处理
+- 处理前端请求和参数验证
+- 统一错误处理和响应格式
+- 异步操作协调和超时控制
+- 权限验证和安全检查
+
+**业务管理层** - 应用状态和逻辑
+- 全局状态管理和同步
+- 业务流程编排和控制
+- 数据缓存和性能优化
+- 事件发送和前端通知
+
+**核心服务层** - 底层功能实现
+- 文件系统操作和数据处理
+- 外部库集成（如 pcap-io）
+- 系统资源管理
+- 配置管理和持久化
+
+## 📁 模块组织规范
+
+### 标准目录结构
+
+```
+src/
+├── main.rs               # 应用入口和初始化
+├── lib.rs                # 公共模块声明
+├── commands/             # 命令接口层
+│   ├── mod.rs            # 命令模块统一导出
+│   ├── project.rs        # 项目管理相关命令
+│   ├── dataset.rs        # 数据集操作命令
+│   ├── playback.rs       # 播放控制命令
+│   └── system.rs         # 系统操作命令
+├── manager/              # 业务管理层
+│   ├── mod.rs            # 管理器模块统一导出
+│   ├── project.rs        # 项目管理器
+│   ├── state.rs          # 全局状态管理
+│   └── cache.rs          # 缓存管理器
+├── types/                # 类型定义
+│   ├── mod.rs            # 类型模块统一导出
+│   ├── common.rs         # 通用类型定义
+│   ├── pcap.rs           # PCAP相关类型
+│   └── pproj.rs          # 项目格式类型
+└── pproj/                # 项目格式处理
+    ├── mod.rs            # 项目格式模块导出
+    ├── reader.rs         # 项目读取器
+    └── writer.rs         # 项目写入器
+
+crates/                   # 独立模块
+└── pcap-io/              # PCAP处理模块
+    ├── src/
+    │   ├── api/          # 用户接口层
+    │   ├── business/     # 业务逻辑层
+    │   ├── data/         # 数据访问层
+    │   └── foundation/   # 基础设施层
+    └── examples/         # 使用示例
+```
+
+### 模块职责规范
+
+**命令层 (`commands/`)**：
+- 处理前端 invoke 调用
+- 参数验证和错误转换
+- 统一的响应格式
+- 权限检查和安全控制
+
+**管理层 (`manager/`)**：
+- 全局状态的 CRUD 操作
+- 复杂业务逻辑编排
+- 前端事件发送
+- 数据缓存管理
+
+**类型定义 (`types/`)**：
+- 统一数据结构定义
+- 序列化/反序列化支持
+- 前后端类型共享
+- 错误类型定义
+
+**PCAP模块 (`crates/pcap-io/`)**：
+- 高性能数据处理
+- 文件格式解析
+- 索引管理
+- 底层I/O操作
+
+## 🔌 状态管理架构
+
+### 全局状态设计
+
+使用线程安全的状态管理模式：
+
+```rust
+/// 应用全局状态
+#[derive(Debug)]
+pub struct AppState {
+    /// 项目管理器
+    pub project_manager: Arc<Mutex<ProjectManager>>,
+    /// 播放状态
+    pub playback_state: Arc<Mutex<PlaybackState>>,
+    /// 应用配置
+    pub app_config: Arc<RwLock<AppConfig>>,
+}
+
+impl AppState {
+    pub fn new() -> Self {
+        Self {
+            project_manager: Arc::new(Mutex::new(ProjectManager::new())),
+            playback_state: Arc::new(Mutex::new(PlaybackState::default())),
+            app_config: Arc::new(RwLock::new(AppConfig::default())),
+        }
+    }
+}
+```
+
+### 状态同步策略
+
+- **命令层状态访问**：通过 `app.state()` 获取全局状态
+- **跨线程共享**：使用 `Arc<Mutex<T>>` 保证线程安全
+- **读写分离**：配置信息使用 `RwLock` 优化读性能
+- **事件通知**：状态变更时向前端发送事件
+
+## 🚀 性能优化原则
+
+### 异步处理策略
+
+```rust
+/// CPU密集型任务使用线程池
+#[tauri::command]
+pub async fn process_large_dataset(
+    data_path: String,
+) -> Result<ProcessResult, String> {
+    tokio::task::spawn_blocking(move || {
+        // CPU密集型处理逻辑
+        heavy_computation(&data_path)
+    })
+    .await
+    .map_err(|e| format!("任务执行失败: {}", e))?
+    .map_err(|e| e.to_string())
+}
+
+/// I/O密集型任务使用异步
+#[tauri::command]
+pub async fn load_project(
+    project_path: String,
+) -> Result<ProjectInfo, String> {
+    // 异步文件操作
+    tokio::fs::read_to_string(&project_path)
+        .await
+        .map_err(|e| format!("读取项目失败: {}", e))?;
+
+    // 异步业务逻辑
+    process_project_data(&project_path).await
+}
+```
+
+### 内存管理策略
+
+- **零拷贝操作**：使用引用和借用避免不必要的数据复制
+- **流式处理**：大文件使用流式读取避免全量加载
+- **合理缓存**：在内存使用和性能之间找到平衡
+- **及时释放**：使用RAII模式自动管理资源
+
+### PCAP-IO 集成优化
+
+```rust
+/// 优化的PCAP数据读取
+pub async fn read_pcap_optimized(
+    dataset_path: &str,
+) -> Result<Vec<DataPacket>, Box<dyn std::error::Error>> {
+    // 使用高性能配置
+    let config = Configuration::high_performance();
+
+    // 创建读取器
+    let mut reader = pcap_io::Reader::new(dataset_path, config)?;
+
+    // 批量读取，减少系统调用
+    let packets = reader.read_batch(1000)?;
+
+    Ok(packets)
+}
+```
+
+## 🔗 外部库集成规范
+
+### PCAP-IO 库集成
+
+```rust
+// 在 lib.rs 中统一重导出
+pub use pcap_io::{
+    Configuration as PcapConfiguration,
+    DataPacket,
+    Reader as PcapReader,
+    Writer as PcapWriter,
+    PacketIndexEntry,
+    PcapFileIndex,
+};
+
+// 在命令层中使用
+#[tauri::command]
+pub async fn create_dataset(
+    dataset_name: String,
+    config: PcapConfiguration,
+) -> Result<String, String> {
+    let mut writer = PcapWriter::new(&dataset_name, config)
+        .map_err(|e| e.to_string())?;
+
+    // 业务逻辑...
+    Ok(dataset_name)
+}
+```
+
+### 依赖管理原则
+
+- **明确版本**：Cargo.toml 中指定确切的依赖版本
+- **特性控制**：只启用必需的 crate 特性
+- **本地路径**：内部模块使用相对路径依赖
+- **异步兼容**：选择支持 tokio 的异步库版本

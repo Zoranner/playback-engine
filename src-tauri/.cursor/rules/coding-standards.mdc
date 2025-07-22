@@ -1,0 +1,385 @@
+---
+alwaysApply: true
+---
+# 代码风格和工程开发规范
+
+## 🦀 Rust 代码规范
+
+### 命名约定
+
+```rust
+// ✅ 结构体和枚举：PascalCase
+pub struct ProjectManager {}
+pub struct DatasetInfo {}
+pub enum PlaybackState { Playing, Paused, Stopped }
+pub enum PacketType { Environment, Event, Target, Unknown }
+
+// ✅ 函数和变量：snake_case
+pub async fn load_project_data() -> Result<ProjectInfo> {}
+pub fn process_pcap_file() -> Result<()> {}
+let project_path = PathBuf::new();
+let dataset_config = DatasetConfig::default();
+
+// ✅ 常量：UPPER_SNAKE_CASE
+pub const MAX_PACKET_SIZE: usize = 65536;
+pub const DEFAULT_TIMEOUT_SECS: u64 = 30;
+const PCAP_MAGIC_NUMBER: u32 = 0xA1B2C3D4;
+
+// ✅ 模块：snake_case
+mod project_manager;
+mod dataset_processor;
+mod pcap_utils;
+```
+
+### Tauri 命令规范
+
+```rust
+/// 项目管理相关命令
+///
+/// 负责处理项目的打开、关闭和信息获取操作
+#[tauri::command]
+pub async fn open_project(
+    app: AppHandle,
+    project_path: String,
+) -> std::result::Result<ProjectInfo, String> {
+    info!("接收到打开项目请求: {}", project_path);
+
+    // 1. 参数验证
+    if project_path.is_empty() {
+        return Err("项目路径不能为空".to_string());
+    }
+
+    // 2. 获取状态管理器
+    let project_manager_state = app.state::<std::sync::Mutex<ProjectManager>>();
+    let mut manager = project_manager_state.lock().unwrap();
+
+    // 3. 执行核心逻辑
+    match manager.open_project(&project_path).await {
+        Ok(project_info) => {
+            info!("项目打开成功: {}", project_info.name);
+            Ok(project_info)
+        }
+        Err(e) => {
+            error!("项目打开失败: {}", e);
+            Err(e.to_string())
+        }
+    }
+}
+
+/// 数据集操作命令模板
+#[tauri::command]
+pub async fn process_dataset(
+    app: AppHandle,
+    dataset_name: String,
+    options: ProcessOptions,
+) -> std::result::Result<ProcessResult, String> {
+    // 遵循统一的命令处理模式
+    validate_params(&dataset_name, &options)?;
+
+    let state = app.state::<AppState>();
+    execute_dataset_processing(state, dataset_name, options)
+        .await
+        .map_err(|e| e.to_string())
+}
+```
+
+### 错误处理规范
+
+```rust
+use thiserror::Error;
+
+/// 应用统一错误类型
+#[derive(Error, Debug)]
+pub enum PlaybackError {
+    #[error("项目操作错误: {message}")]
+    ProjectError { message: String },
+
+    #[error("数据集处理错误: {dataset} - {source}")]
+    DatasetError {
+        dataset: String,
+        #[from]
+        source: pcap_io::PcapError,
+    },
+
+    #[error("I/O操作失败: {operation} - {source}")]
+    IoError {
+        operation: String,
+        #[from]
+        source: std::io::Error,
+    },
+
+    #[error("配置错误: {config_key} = {config_value}")]
+    ConfigError {
+        config_key: String,
+        config_value: String,
+    },
+
+    #[error("播放控制错误: {reason}")]
+    PlaybackControlError { reason: String },
+}
+
+/// 项目统一的 Result 类型
+pub type Result<T> = std::result::Result<T, PlaybackError>;
+
+/// 错误处理辅助函数
+pub fn handle_pcap_error(
+    operation: &str,
+    result: pcap_io::Result<impl std::fmt::Debug>,
+) -> Result<()> {
+    result.map_err(|e| PlaybackError::DatasetError {
+        dataset: operation.to_string(),
+        source: e,
+    })?;
+    Ok(())
+}
+```
+
+### 异步编程规范
+
+```rust
+/// CPU密集型任务处理
+#[tauri::command]
+pub async fn analyze_large_dataset(
+    dataset_path: String,
+    analysis_options: AnalysisOptions,
+) -> Result<AnalysisResult, String> {
+    tokio::task::spawn_blocking(move || {
+        // 在线程池中执行CPU密集型任务
+        perform_dataset_analysis(&dataset_path, &analysis_options)
+    })
+    .await
+    .map_err(|e| format!("分析任务执行失败: {}", e))?
+    .map_err(|e| e.to_string())
+}
+
+/// I/O密集型任务处理
+#[tauri::command]
+pub async fn load_project_metadata(
+    project_path: String,
+) -> Result<ProjectMetadata, String> {
+    // 异步文件读取
+    let content = tokio::fs::read_to_string(&project_path)
+        .await
+        .map_err(|e| format!("读取项目文件失败: {}", e))?;
+
+    // 异步解析
+    parse_project_metadata(&content)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// 状态管理最佳实践
+pub struct AppState {
+    project_manager: Arc<Mutex<ProjectManager>>,
+    playback_controller: Arc<Mutex<PlaybackController>>,
+    app_config: Arc<RwLock<AppConfig>>,
+}
+
+impl AppState {
+    /// 安全的状态访问
+    pub async fn with_project_manager<F, R>(&self, f: F) -> R
+    where
+        F: FnOnce(&mut ProjectManager) -> R,
+    {
+        let mut manager = self.project_manager.lock().unwrap();
+        f(&mut manager)
+    }
+
+    /// 读取配置（无锁冲突）
+    pub fn get_config_value(&self, key: &str) -> Option<String> {
+        let config = self.app_config.read().unwrap();
+        config.get(key).cloned()
+    }
+}
+```
+
+### 类型定义规范
+
+```rust
+/// 类型定义使用充分的文档注释
+///
+/// 项目信息结构体，包含项目的基本元数据和统计信息
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProjectInfo {
+    /// 项目名称
+    pub name: String,
+    /// 项目路径
+    pub path: PathBuf,
+    /// 项目创建时间
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    /// 包含的数据集列表
+    pub datasets: Vec<DatasetConfig>,
+    /// 项目总数据包数量
+    pub total_packets: u64,
+    /// 项目文件大小（字节）
+    pub total_size: u64,
+}
+
+/// 数据集配置信息
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DatasetConfig {
+    /// 数据集名称
+    pub name: String,
+    /// 数据集类型
+    pub dataset_type: DatasetType,
+    /// PCAP文件路径列表
+    pub pcap_files: Vec<PathBuf>,
+    /// 数据集配置参数
+    pub config: pcap_io::Configuration,
+}
+
+/// 数据集类型枚举
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum DatasetType {
+    /// 环境数据集
+    Environment,
+    /// 事件数据集
+    Event,
+    /// 目标数据集
+    Target,
+    /// 混合数据集
+    Mixed,
+}
+```
+
+## 📝 文档注释规范
+
+### 模块级文档
+
+```rust
+//! # 项目管理模块
+//!
+//! 提供项目的加载、保存、配置管理等核心功能。
+//! 支持多种项目格式，提供异步操作接口。
+//!
+//! ## 主要功能
+//!
+//! - 项目目录扫描和验证
+//! - PPROJ格式文件的读写
+//! - 数据集配置管理
+//! - 项目状态持久化
+//!
+//! ## 使用示例
+//!
+//! ```rust
+//! use crate::manager::ProjectManager;
+//!
+//! let mut manager = ProjectManager::new();
+//! let project = manager.open_project("/path/to/project").await?;
+//! println!("项目名称: {}", project.name);
+//! ```
+
+use std::path::{Path, PathBuf};
+use crate::types::{ProjectInfo, PlaybackError, Result};
+```
+
+### 函数文档规范
+
+```rust
+impl ProjectManager {
+    /// 打开指定路径的项目
+    ///
+    /// 扫描项目目录，加载配置文件，初始化数据集读取器。
+    /// 如果项目目录不存在PPROJ文件，将自动生成默认配置。
+    ///
+    /// # 参数
+    ///
+    /// * `project_path` - 项目目录路径，必须是有效的目录
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(ProjectInfo)` - 成功加载的项目信息，包含所有数据集配置
+    /// * `Err(PlaybackError)` - 加载失败的具体错误信息
+    ///
+    /// # 错误
+    ///
+    /// 以下情况会返回错误：
+    /// - 路径不存在或不是目录
+    /// - 缺少读取权限
+    /// - PPROJ文件格式无效
+    /// - 数据集文件损坏或不可访问
+    ///
+    /// # 性能说明
+    ///
+    /// - 大型项目的加载时间与数据集数量和文件大小成正比
+    /// - 使用异步I/O避免阻塞主线程
+    /// - 自动缓存文件元数据以提高后续访问速度
+    ///
+    /// # 示例
+    ///
+    /// ```rust
+    /// use crate::manager::ProjectManager;
+    ///
+    /// let mut manager = ProjectManager::new();
+    ///
+    /// match manager.open_project("/data/experiment_001").await {
+    ///     Ok(project) => {
+    ///         println!("项目加载成功: {}", project.name);
+    ///         println!("包含 {} 个数据集", project.datasets.len());
+    ///     }
+    ///     Err(e) => {
+    ///         eprintln!("项目加载失败: {}", e);
+    ///     }
+    /// }
+    /// ```
+    pub async fn open_project<P: AsRef<Path>>(
+        &mut self,
+        project_path: P
+    ) -> Result<ProjectInfo> {
+        // 实现细节...
+    }
+}
+```
+
+## 🔧 工具配置
+
+### Cargo.toml 依赖规范
+
+```toml
+[package]
+name = "playback-engine"
+version = "0.1.0"
+description = "PCAP数据回放引擎"
+authors = ["KimoTech"]
+edition = "2021"
+rust-version = "1.70"
+
+[dependencies]
+# Tauri 核心依赖
+tauri = { version = "2", features = ["protocol-asset"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+
+# 序列化
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde-xml-rs = "0.6"
+
+# 异步运行时
+tokio = { version = "1.0", features = ["full"] }
+
+# 错误处理
+thiserror = "1.0"
+
+# 日志系统
+log = "0.4"
+env_logger = "0.10"
+
+# 时间处理
+chrono = { version = "0.4", features = ["serde"] }
+
+# 加密和哈希
+sha2 = "0.10"
+
+# 本地pcap-io库
+pcap-io = { path = "./crates/pcap-io" }
+
+[dev-dependencies]
+tokio-test = "0.4"
+tempfile = "3.0"
+criterion = "0.5"
+
+[features]
+default = []
+debug-logging = ["log/max_level_trace"]
+```
