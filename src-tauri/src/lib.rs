@@ -1,34 +1,54 @@
 // 模块声明
-pub mod types;
-pub mod project;
-pub mod state;
 pub mod api;
-pub mod streaming;
 pub mod geo;
 pub mod playback;
+pub mod project;
+pub mod state;
+pub mod streaming;
+pub mod types;
 
 // 重新导出 pcap-io 库的核心类型
 pub use pcap_io::{
-    Configuration as PcapConfiguration, DataPacket, DataPacketHeader, PcapFileHeader, Read,
-    Reader as PcapReader, Write, Writer as PcapWriter,
+    Configuration as PcapConfiguration,
+    DataPacket,
+    DataPacketHeader,
     // 索引相关类型
-    PacketIndexEntry, PcapFileIndex, PidxIndex, PidxReader, PidxWriter,
+    PacketIndexEntry,
+    PcapFileHeader,
+    PcapFileIndex,
+    PidxIndex,
+    PidxReader,
+    PidxWriter,
+    Read,
+    Reader as PcapReader,
+    Write,
+    Writer as PcapWriter,
 };
 
 // 重新导出应用类型
-pub use types::{AppDataPacket, PacketType, PlaybackError, Result};
 pub use project::loader::ProjectLoader;
 pub use state::app_state::AppState;
 pub use state::playback_state::PlaybackState;
+pub use types::{AppDataPacket, PacketType, PlaybackError, Result};
 
 // Tauri相关导入
-use tauri::Manager;
+use dotenvy::dotenv;
 use std::sync::Arc;
+use tauri::Manager;
+use tauri::{webview::WebviewWindowBuilder, WebviewUrl};
 use tokio::sync::Mutex;
+
+/// 通过环境变量获取前端URL
+fn get_frontend_url() -> String {
+    let port = std::env::var("TAURI_FRONTEND_PORT").unwrap_or_else(|_| "32030".to_string());
+    format!("http://localhost:{}", port)
+}
 
 /// 初始化Tauri应用
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // 加载 .env 文件
+    dotenv().ok();
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
@@ -58,9 +78,18 @@ pub fn run() {
             let app_state = Arc::new(Mutex::new(AppState::new()));
             app.manage(app_state);
 
-            log::info!("Tauri应用初始化完成，集成pcap-io库");
+            // 动态创建窗口
+            let frontend_url = get_frontend_url().parse().unwrap();
+            log::info!("Load frontend from: {}", frontend_url);
+            WebviewWindowBuilder::new(app, "main", WebviewUrl::External(frontend_url))
+                .title("综合复盘软件")
+                .min_inner_size(960.0, 600.0)
+                .maximized(true)
+                .build()
+                .expect("创建窗口失败");
+
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("运行Tauri应用时出错");
+        .expect("运行应用时出错");
 }
