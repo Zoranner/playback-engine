@@ -52,9 +52,11 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
+            api::project_commands::select_project_directory,
             api::project_commands::open_project,
             api::project_commands::get_project_info,
             api::project_commands::close_project,
+            api::project_commands::get_project_structure,
             api::config_commands::list_datasets,
             api::config_commands::get_dataset_stats,
             api::config_commands::get_dataset_info,
@@ -75,7 +77,7 @@ pub fn run() {
                 .init();
 
             // 初始化应用状态
-            let app_state = Arc::new(Mutex::new(AppState::new()));
+            let app_state = std::sync::Mutex::new(AppState::new());
             app.manage(app_state);
 
             // 动态创建窗口

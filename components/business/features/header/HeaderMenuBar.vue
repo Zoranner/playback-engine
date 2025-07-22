@@ -100,22 +100,19 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { open } from '@tauri-apps/plugin-dialog';
+import { useProject } from '~/composables/useProject';
 import DropdownMenu from '~/components/menu/DropdownMenu.vue';
 import MenuItem from '~/components/menu/MenuItem.vue';
 import MenuDivider from '~/components/menu/MenuDivider.vue';
+import { invoke } from '@tauri-apps/api/core';
 
 // 菜单状态
 const projectMenuOpen = ref(false);
 const viewMenuOpen = ref(false);
 const toolsMenuOpen = ref(false);
 
-// 使用composables
-const {
-  isProjectLoaded,
-  openProject: openProjectAction,
-  closeProject: closeProjectAction,
-} = useProject();
+// 使用项目管理
+const { isProjectLoaded, openProject: openProjectAction, closeProject: closeProjectAction } = useProject();
 
 // 打开指定菜单（关闭其他菜单）
 const openMenu = (menuName: 'project' | 'view' | 'tools') => {
@@ -148,14 +145,15 @@ const closeAllMenus = () => {
 // 菜单操作函数
 const openProject = async (close: () => void) => {
   try {
-    // 使用Tauri的dialog插件打开文件夹选择对话框
-    const selected = await open({
-      directory: true,
-      title: '选择回放数据工程目录',
-    });
+    console.log('正在选择工程目录...');
+    // 使用后端命令选择目录
+    const selected = await invoke('select_project_directory');
 
     if (selected && typeof selected === 'string') {
+      console.log('选择的目录:', selected);
       await openProjectAction(selected);
+    } else {
+      console.log('用户取消了选择');
     }
   } catch (err) {
     console.error('打开工程失败:', err);

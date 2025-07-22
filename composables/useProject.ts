@@ -2,12 +2,12 @@ import { ref, computed, readonly } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import type { ProjectInfo, AppInfo } from '~/types/project';
 
-export const useProject = () => {
-  // 状态
-  const currentProject = ref<ProjectInfo | null>(null);
-  const isLoading = ref(false);
-  const error = ref<string | null>(null);
+// 全局状态 - 在模块级别创建，确保所有组件共享
+const currentProject = ref<ProjectInfo | null>(null);
+const isLoading = ref(false);
+const error = ref<string | null>(null);
 
+export const useProject = () => {
   // 计算属性
   const isProjectLoaded = computed(() => currentProject.value !== null);
   const projectName = computed(() => currentProject.value?.name || '');
@@ -32,16 +32,17 @@ export const useProject = () => {
   });
 
   // 打开工程
-  const openProject = async (path: string): Promise<ProjectInfo | null> => {
+  const openProject = async (projectPath: string): Promise<ProjectInfo | null> => {
     isLoading.value = true;
     error.value = null;
 
     try {
-      console.log('正在打开工程:', path);
-      const projectInfo = await invoke<ProjectInfo>('open_project', { path });
+      console.log('正在打开工程:', projectPath);
+      const projectInfo = await invoke<ProjectInfo>('open_project', { path: projectPath });
 
       currentProject.value = projectInfo;
       console.log('工程打开成功:', projectInfo);
+      console.log('currentProject.value 已更新:', currentProject.value);
 
       return projectInfo;
     } catch (err) {

@@ -23,7 +23,15 @@ const selectedDataset = ref(null);
 // 处理数据集选择
 const handleDatasetSelected = (dataset) => {
   selectedDataset.value = dataset;
-  console.log('数据集已选择:', dataset.name);
+  if (dataset) {
+    console.log('数据集已选择:', dataset.name);
+  }
+};
+
+// 处理工程选择
+const handleProjectSelected = (project) => {
+  selectedDataset.value = null; // 选择工程时清除数据集选择
+  console.log('工程已选择:', project?.name);
 };
 
 // 处理设置变更

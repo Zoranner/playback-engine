@@ -3,86 +3,40 @@
     title="工程管理"
     class="flex flex-1 flex-col overflow-hidden"
   >
-    <!-- 工程信息 -->
-    <div
-      v-if="currentProject"
-      class="mb-sm border-b border-border-divider pb-sm"
-    >
-      <div class="mb-1 font-semibold text-text-primary">{{ currentProject.name }}</div>
-      <div class="text-caption text-text-secondary">
-        文件数量: {{ currentProject.fileCount }} |
-        时长: {{ formattedDuration }}
-      </div>
-    </div>
-
     <!-- 数据集目录树 -->
     <div
       v-if="currentProject"
-      class="-m-sm flex flex-1 flex-col gap-xs overflow-y-auto p-sm"
+      class="flex flex-1 flex-col overflow-y-auto"
     >
-      <!-- 工程根目录 -->
-      <div class="flex items-center gap-sm text-text-primary">
-        <Icon
-          name="heroicons:folder"
-          size="16"
-          class="text-text-secondary"
-        />
-        <span class="text-subtitle font-medium">{{ projectName }}</span>
-      </div>
-
-      <!-- 数据集列表 -->
-      <div
-        v-for="dataset in datasets"
-        :key="dataset.name"
-        class="ml-4"
-      >
+      <!-- 工程项目列表 -->
+      <div class="flex-1 overflow-y-auto">
+        <!-- 工程根目录 -->
         <div
-          :class="getDatasetItemClasses(dataset)"
+          :class="getProjectItemClasses(selectedItem === 'project')"
+          @click="selectProject"
+        >
+          <Icon
+            name="heroicons:folder"
+            size="16"
+            class="text-primary"
+          />
+          <span class="text-sm">{{ projectName }}</span>
+        </div>
+
+        <!-- 数据集列表 -->
+        <div
+          v-for="dataset in datasets"
+          :key="dataset.name"
+          :class="getDatasetItemClasses(selectedItem === dataset.name)"
           @click="selectDataset(dataset)"
         >
           <Icon
-            :name="dataset.expanded ? 'heroicons:folder-open' : 'heroicons:folder'"
+            name="heroicons:folder"
             size="16"
             class="text-warning"
           />
-          <span class="flex-1 text-subtitle">{{ dataset.name }}</span>
-          <span class="text-caption text-text-muted">{{ dataset.files.length }} 文件</span>
-          <Icon
-            :name="dataset.expanded ? 'heroicons:chevron-down' : 'heroicons:chevron-right'"
-            size="12"
-            class="text-text-muted"
-          />
+          <span class="text-sm">{{ dataset.name }}</span>
         </div>
-
-        <!-- 数据集文件列表 -->
-        <div
-          v-if="dataset.expanded"
-          class="ml-6 mt-xs"
-        >
-          <div
-            v-for="file in dataset.files"
-            :key="file.name"
-            class="flex items-center gap-sm py-xs px-sm rounded-sm hover:bg-background-tertiary/50 transition-colors"
-          >
-            <Icon
-              :name="getFileIcon(file.type)"
-              size="14"
-              :class="getFileIconClass(file.type)"
-            />
-            <span class="flex-1 text-caption font-mono">{{ file.name }}</span>
-            <span class="text-caption text-text-muted">{{ formatFileSize(file.size) }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 工程文件 -->
-      <div class="ml-4 flex items-center gap-sm py-xs">
-        <Icon
-          name="heroicons:document-text"
-          size="16"
-          class="text-primary"
-        />
-        <span class="text-caption font-mono">project.pproj</span>
       </div>
     </div>
 
@@ -104,89 +58,52 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { invoke } from '@tauri-apps/api/core';
 import { useProject } from '~/composables/useProject';
 import GroupBox from '~/components/display/GroupBox.vue';
 
 // 定义 emit 事件
-const emit = defineEmits(['dataset-selected']);
+const emit = defineEmits(['dataset-selected', 'project-selected']);
 
 // 使用项目管理
-const { currentProject, projectName, formattedDuration } = useProject();
+const { currentProject, projectName } = useProject();
 
-// 选中的数据集
-const selectedDataset = ref(null);
+// 选中的项目（工程或数据集）
+const selectedItem = ref(null);
+
+// 添加调试日志
+console.log('PanelProjectManager 初始化，当前项目:', currentProject.value);
 
 // 模拟数据集数据（在实际项目中应该从后端获取）
-const datasets = ref([
-  {
-    name: 'data-set-01',
-    expanded: false,
-    selected: false,
-    files: [
-      {
-        name: 'data_240321_153045_1234567.pcap',
-        type: 'pcap',
-        size: 134217728, // 128MB
-      },
-      {
-        name: 'data_240321_154012_4567890.pcap',
-        type: 'pcap',
-        size: 268435456, // 256MB
-      },
-      {
-        name: 'data_240321_155130_7890123.pcap',
-        type: 'pcap',
-        size: 104857600, // 100MB
-      },
-      {
-        name: 'data-set-01.pidx',
-        type: 'pidx',
-        size: 1048576, // 1MB
-      },
-    ],
-  },
-  {
-    name: 'data-set-02',
-    expanded: false,
-    selected: false,
-    files: [
-      {
-        name: 'data_240321_153045_1234567.pcap',
-        type: 'pcap',
-        size: 209715200, // 200MB
-      },
-      {
-        name: 'data_240321_154012_4567890.pcap',
-        type: 'pcap',
-        size: 314572800, // 300MB
-      },
-      {
-        name: 'data_240321_155130_7890123.pcap',
-        type: 'pcap',
-        size: 157286400, // 150MB
-      },
-      {
-        name: 'data-set-02.pidx',
-        type: 'pidx',
-        size: 1572864, // 1.5MB
-      },
-    ],
-  },
-]);
+const datasets = ref([]);
 
-// 数据集项样式类
-const getDatasetItemClasses = (dataset) => {
+// 统一的项目样式类
+const getProjectItemClasses = (isSelected) => {
   const baseClasses = [
-    'flex items-center gap-sm p-sm bg-background-tertiary border border-border rounded-sm',
-    'cursor-pointer transition-all duration-fast relative',
+    'flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors',
+    'hover:bg-background-tertiary/70'
   ];
 
-  if (dataset.selected) {
-    baseClasses.push('bg-background-panel border-border-active shadow-glow');
+  if (isSelected) {
+    baseClasses.push('bg-primary/10 text-primary border-r-2 border-primary');
   } else {
-    baseClasses.push(
-      'hover:bg-background-panel hover:border-border-light hover:-translate-y-px hover:shadow-sm'
-    );
+    baseClasses.push('text-text-primary');
+  }
+
+  return baseClasses;
+};
+
+// 统一的数据集样式类（带缩进）
+const getDatasetItemClasses = (isSelected) => {
+  const baseClasses = [
+    'flex items-center gap-2 px-3 py-2 ml-4 cursor-pointer transition-colors',
+    'hover:bg-background-tertiary/70'
+  ];
+
+  if (isSelected) {
+    baseClasses.push('bg-primary/10 text-primary border-r-2 border-primary');
+  } else {
+    baseClasses.push('text-text-secondary');
   }
 
   return baseClasses;
@@ -227,32 +144,99 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 };
 
+// 选择工程
+const selectProject = () => {
+  selectedItem.value = 'project';
+  emit('project-selected', currentProject.value);
+};
+
 // 选择数据集
 const selectDataset = (dataset) => {
+  selectedItem.value = dataset.name;
   // 清除之前的选中状态
   datasets.value.forEach(d => d.selected = false);
-
   // 设置当前选中
   dataset.selected = true;
-  dataset.expanded = !dataset.expanded;
-  selectedDataset.value = dataset;
-
   // 触发事件
   emit('dataset-selected', dataset);
 };
 
-// 监听项目变化，重置数据集列表
-watch(currentProject, (newProject) => {
-  if (newProject) {
-    // 在实际项目中，这里应该从后端获取数据集信息
-    console.log('项目已更新，应从后端获取数据集信息:', newProject);
-  } else {
-    // 清除选中状态
-    datasets.value.forEach(d => {
-      d.selected = false;
-      d.expanded = false;
-    });
-    selectedDataset.value = null;
+// 加载项目数据集
+const loadProjectDatasets = async (projectPath) => {
+  try {
+    console.log('正在加载项目数据集:', projectPath);
+    // 调用后端API获取数据集信息
+    const projectStructure = await getProjectStructure(projectPath);
+    datasets.value = projectStructure.datasets.map(dataset => ({
+      name: dataset.name,
+      files: dataset.files.map(file => ({
+        name: file.name,
+        type: file.type || getFileTypeFromName(file.name),
+        size: file.size,
+        path: file.path
+      }))
+    }));
+    console.log('数据集加载完成:', datasets.value);
+
+    // 默认选中工程
+    selectedItem.value = 'project';
+  } catch (error) {
+    console.error('加载项目数据集失败:', error);
   }
-});
+};
+
+// 监听项目变化，加载数据集信息
+watch(currentProject, async (newProject) => {
+  console.log('PanelProjectManager watch 触发，新项目:', newProject);
+  if (newProject) {
+    console.log('项目已更新，正在加载数据集信息:', newProject);
+    await loadProjectDatasets(newProject.path);
+  } else {
+    console.log('项目已清空，清除数据集列表');
+    // 清除数据集列表
+    datasets.value = [];
+    selectedItem.value = null;
+  }
+}, { immediate: true });
+
+// 获取项目结构（调用后端API）
+const getProjectStructure = async (path) => {
+  try {
+    console.log('调用后端 get_project_structure API，路径:', path);
+    const result = await invoke('get_project_structure', { projectPath: path });
+    console.log('后端返回的项目结构:', result);
+    return {
+      datasets: result.datasets.map(dataset => ({
+        name: dataset.name,
+        files: dataset.files.map(file => ({
+          name: file.name,
+          size: file.size,
+          path: file.path,
+          type: file.type
+        }))
+      }))
+    };
+  } catch (error) {
+    console.error('获取项目结构失败:', error);
+    throw error;
+  }
+};
+
+// 从文件名获取文件类型（作为后备方案）
+const getFileTypeFromName = (filename) => {
+  const ext = filename.toLowerCase().split('.').pop();
+  switch (ext) {
+    case 'pcap':
+      return 'pcap';
+    case 'pidx':
+      return 'pidx';
+    default:
+      return 'unknown';
+  }
+};
+
+// 获取文件类型（保持向后兼容）
+const getFileType = (filename) => {
+  return getFileTypeFromName(filename);
+};
 </script>
