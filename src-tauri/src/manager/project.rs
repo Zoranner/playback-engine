@@ -8,6 +8,7 @@ use crate::pproj::{PprojReader, PprojWriter};
 use pcap_io::{Reader as PcapReader, Configuration, Read};
 
 /// 数据集读取器信息
+#[derive(Debug, Clone)]
 pub struct DatasetReader {
     /// 数据集配置
     pub config: DatasetConfig,

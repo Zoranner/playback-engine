@@ -98,6 +98,9 @@ pub enum PlaybackError {
     #[error("文件格式错误: {0}")]
     FormatError(String),
 
+    #[error("网络错误: {0}")]
+    NetworkError(String),
+
     #[error("工程错误: {0}")]
     ProjectError(String),
 

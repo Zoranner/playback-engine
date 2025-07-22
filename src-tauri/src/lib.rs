@@ -1,8 +1,11 @@
 // 模块声明
 pub mod types;
-pub mod pproj;
-pub mod manager;
-pub mod commands;
+pub mod project;
+pub mod state;
+pub mod api;
+pub mod streaming;
+pub mod geo;
+pub mod playback;
 
 // 重新导出 pcap-io 库的核心类型
 pub use pcap_io::{
@@ -13,12 +16,15 @@ pub use pcap_io::{
 };
 
 // 重新导出应用类型
-pub use manager::ProjectManager;
-pub use pproj::{PprojReader, PprojWriter};
 pub use types::{AppDataPacket, PacketType, PlaybackError, Result};
+pub use project::loader::ProjectLoader;
+pub use state::app_state::AppState;
+pub use state::playback_state::PlaybackState;
 
 // Tauri相关导入
 use tauri::Manager;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 /// 初始化Tauri应用
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -26,11 +32,21 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
-            commands::open_project,
-            commands::get_project_info,
-            commands::list_datasets,
-            commands::get_dataset_stats,
-            commands::close_project,
+            api::project_commands::open_project,
+            api::project_commands::get_project_info,
+            api::project_commands::close_project,
+            api::config_commands::list_datasets,
+            api::config_commands::get_dataset_stats,
+            api::config_commands::get_dataset_info,
+            api::playback_commands::start_playback,
+            api::playback_commands::pause_playback,
+            api::playback_commands::stop_playback,
+            api::playback_commands::seek_to_time,
+            api::playback_commands::set_playback_speed,
+            api::playback_commands::get_playback_state,
+            api::geo_commands::get_map_tile,
+            api::geo_commands::get_geojson_data,
+            api::geo_commands::get_mvt_tile,
         ])
         .setup(|app| {
             // 初始化日志
@@ -38,9 +54,9 @@ pub fn run() {
                 .filter_level(log::LevelFilter::Info)
                 .init();
 
-            // 初始化项目管理器
-            let project_manager = std::sync::Mutex::new(ProjectManager::new());
-            app.manage(project_manager);
+            // 初始化应用状态
+            let app_state = Arc::new(Mutex::new(AppState::new()));
+            app.manage(app_state);
 
             log::info!("Tauri应用初始化完成，集成pcap-io库");
             Ok(())
