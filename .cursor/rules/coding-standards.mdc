@@ -194,7 +194,7 @@ pub async fn load_project(path: String) -> Result<ProjectInfo, String> {
 ### 文档注释规范
 
 ```rust
-/// 项目管理器
+/// 工程管理器
 ///
 /// 负责项目的加载、保存和状态管理。支持多种项目格式，
 /// 提供异步操作接口。

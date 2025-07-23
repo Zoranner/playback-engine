@@ -49,13 +49,13 @@ src/
 ├── lib.rs                # 公共模块声明
 ├── commands/             # 命令接口层
 │   ├── mod.rs            # 命令模块统一导出
-│   ├── project.rs        # 项目管理相关命令
+│   ├── project.rs        # 工程管理相关命令
 │   ├── dataset.rs        # 数据集操作命令
 │   ├── playback.rs       # 播放控制命令
 │   └── system.rs         # 系统操作命令
 ├── manager/              # 业务管理层
 │   ├── mod.rs            # 管理器模块统一导出
-│   ├── project.rs        # 项目管理器
+│   ├── project.rs        # 工程管理器
 │   ├── state.rs          # 全局状态管理
 │   └── cache.rs          # 缓存管理器
 ├── types/                # 类型定义
@@ -114,7 +114,7 @@ crates/                   # 独立模块
 /// 应用全局状态
 #[derive(Debug)]
 pub struct AppState {
-    /// 项目管理器
+    /// 工程管理器
     pub project_manager: Arc<Mutex<ProjectManager>>,
     /// 播放状态
     pub playback_state: Arc<Mutex<PlaybackState>>,

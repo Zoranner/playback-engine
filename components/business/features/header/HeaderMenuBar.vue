@@ -111,7 +111,7 @@ const projectMenuOpen = ref(false);
 const viewMenuOpen = ref(false);
 const toolsMenuOpen = ref(false);
 
-// 使用项目管理
+// 使用工程管理
 const { isProjectLoaded, openProject: openProjectAction, closeProject: closeProjectAction } = useProject();
 
 // 打开指定菜单（关闭其他菜单）

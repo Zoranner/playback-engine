@@ -65,7 +65,7 @@ import GroupBox from '~/components/display/GroupBox.vue';
 // 定义 emit 事件
 const emit = defineEmits(['dataset-selected', 'project-selected']);
 
-// 使用项目管理
+// 使用工程管理
 const { currentProject, projectName } = useProject();
 
 // 选中的项目（工程或数据集）
