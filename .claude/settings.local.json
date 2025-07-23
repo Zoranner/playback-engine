@@ -8,7 +8,8 @@
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
       "Bash(ls:*)",
-      "mcp__sequential-thinking__sequentialthinking"
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(grep:*)"
     ],
     "deny": []
   }
