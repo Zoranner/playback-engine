@@ -15,8 +15,12 @@
           :style="{ background: target.color }"
         />
         <div class="min-w-0 flex-1">
-          <div class="mb-0.5 text-subtitle font-semibold">{{ target.label }}</div>
-          <div class="text-monospace mb-0.5 opacity-70">{{ target.id }}</div>
+          <div class="mb-0.5 text-subtitle font-semibold">
+            {{ target.label }}
+          </div>
+          <div class="text-monospace mb-0.5 opacity-70">
+            {{ target.id }}
+          </div>
           <div class="mb-px flex items-center">
             <span class="min-w-8 text-caption">距离: </span>
             <span class="text-monospace">{{ target.distance }}海里</span>
@@ -68,7 +72,7 @@ const getStatusClasses = status => {
     unknown: 'bg-danger shadow-danger/30',
   };
 
-  return [baseClasses, statusVariants[status] || statusVariants.unknown];
+  return [baseClasses, statusVariants[status] ?? statusVariants.unknown];
 };
 
 const handleSelectTarget = target => {

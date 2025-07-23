@@ -7,7 +7,7 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   devServer: {
     port: process.env.TAURI_FRONTEND_PORT ? parseInt(process.env.TAURI_FRONTEND_PORT) : 32030,
-    host: 'localhost'
+    host: 'localhost',
   },
   vite: {
     clearScreen: false,

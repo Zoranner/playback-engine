@@ -46,7 +46,8 @@
       class="pointer-events-none fixed z-[9999] transform rounded border border-border bg-background-primary px-1 py-0.5 font-mono text-xs text-text-primary shadow-lg"
       :style="hoverTooltipStyle"
     >
-      {{ formatDate(hoverTime, 'MM-DD') }} {{ formatTimeOnly(hoverTime) }}
+      {{ formatDate(hoverTime, 'MM-DD') }}
+      {{ formatTimeOnly(hoverTime) }}
     </div>
   </div>
 </template>

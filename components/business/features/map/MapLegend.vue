@@ -85,7 +85,10 @@
             >
               <div
                 :class="getSymbolClasses('line', item.visible)"
-                :style="{ borderColor: item.color, borderStyle: item.style }"
+                :style="{
+                  borderColor: item.color,
+                  borderStyle: item.style,
+                }"
               />
               <span :class="getNameClasses(item.visible)">{{ item.name }}</span>
             </div>
@@ -195,15 +198,48 @@ const platformTypes = ref([
 ]);
 
 const trackTypes = ref([
-  { id: 'primary', name: '主航迹', color: '#60a5fa', style: 'solid', visible: true },
-  { id: 'secondary', name: '副航迹', color: '#34d399', style: 'dashed', visible: true },
-  { id: 'predicted', name: '预测航迹', color: '#fbbf24', style: 'dotted', visible: false },
+  {
+    id: 'primary',
+    name: '主航迹',
+    color: '#60a5fa',
+    style: 'solid',
+    visible: true,
+  },
+  {
+    id: 'secondary',
+    name: '副航迹',
+    color: '#34d399',
+    style: 'dashed',
+    visible: true,
+  },
+  {
+    id: 'predicted',
+    name: '预测航迹',
+    color: '#fbbf24',
+    style: 'dotted',
+    visible: false,
+  },
 ]);
 
 const zoneTypes = ref([
-  { id: 'patrol', name: '巡逻区', color: '#fbbf24', visible: true },
-  { id: 'restricted', name: '禁航区', color: '#ef4444', visible: true },
-  { id: 'safe', name: '安全区', color: '#22c55e', visible: false },
+  {
+    id: 'patrol',
+    name: '巡逻区',
+    color: '#fbbf24',
+    visible: true,
+  },
+  {
+    id: 'restricted',
+    name: '禁航区',
+    color: '#ef4444',
+    visible: true,
+  },
+  {
+    id: 'safe',
+    name: '安全区',
+    color: '#22c55e',
+    visible: false,
+  },
 ]);
 
 // 移除折叠图标样式类，改用GroupBox的actions插槽
@@ -225,7 +261,7 @@ const getSymbolClasses = (type, visible) => {
     zone: 'w-3 h-2.5 border-dashed bg-transparent rounded-xs',
   };
 
-  return [...baseClasses, typeClasses[type] || typeClasses.circle];
+  return [...baseClasses, typeClasses[type] ?? typeClasses.circle];
 };
 
 // 获取名称样式类

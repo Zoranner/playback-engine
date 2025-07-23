@@ -11,9 +11,13 @@
         @click="selectEvent(event.id)"
       >
         <div :class="getIndicatorClasses(event.level)" />
-        <div class="text-monospace mt-px min-w-12">{{ event.time }}</div>
+        <div class="text-monospace mt-px min-w-12">
+          {{ event.time }}
+        </div>
         <div class="min-w-0 flex-1">
-          <div class="mb-0.5 text-subtitle">{{ event.title }}</div>
+          <div class="mb-0.5 text-subtitle">
+            {{ event.title }}
+          </div>
           <div class="text-caption leading-snug">
             {{ event.description }}
           </div>
@@ -46,7 +50,7 @@ const getEventItemClasses = event => {
     low: 'border-l-3 border-l-text-muted',
   };
 
-  baseClasses.push(levelBorders[event.level] || levelBorders.normal);
+  baseClasses.push(levelBorders[event.level] ?? levelBorders.normal);
 
   if (selectedEvent.value === event.id) {
     baseClasses.push('bg-background-panel border-border-active shadow-glow');
@@ -68,7 +72,7 @@ const getIndicatorClasses = level => {
     low: 'bg-text-muted shadow-text-muted/30',
   };
 
-  return [baseClasses, levelVariants[level] || levelVariants.normal];
+  return [baseClasses, levelVariants[level] ?? levelVariants.normal];
 };
 
 const selectEvent = eventId => {

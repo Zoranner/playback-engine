@@ -6,7 +6,9 @@
       "Bash(cargo build:*)",
       "Bash(bun run:*)",
       "mcp__context7__resolve-library-id",
-      "mcp__context7__get-library-docs"
+      "mcp__context7__get-library-docs",
+      "Bash(ls:*)",
+      "mcp__sequential-thinking__sequentialthinking"
     ],
     "deny": []
   }

@@ -66,12 +66,12 @@ const overallActiveSegments = computed(() => {
   if (platforms.value.length === 0) return [];
 
   // 收集所有活动区间
-  const allSegments = platforms.value.flatMap(platform => platform.activeSegments || []);
+  const allSegments = platforms.value.flatMap((platform: any) => platform.activeSegments ?? []);
 
   if (allSegments.length === 0) return [];
 
   // 合并重叠的区间
-  const sortedSegments = allSegments.sort((a, b) => a.startTime - b.startTime);
+  const sortedSegments = allSegments.sort((a: any, b: any) => a.startTime - b.startTime);
   const mergedSegments = [];
   let currentSegment = { ...sortedSegments[0] };
 
@@ -132,7 +132,7 @@ watch(
     if (newPlatforms.length > 0) {
       console.log(
         '平台列表:',
-        newPlatforms.map(p => p.name)
+        newPlatforms.map(platform => platform.name)
       );
     }
   },

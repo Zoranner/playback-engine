@@ -5,27 +5,26 @@ bun.lock
 # 构建输出
 .nuxt/
 .output/
-dist/
 .vercel/
 
-# Tauri
-src-tauri/target/
-src-tauri/gen/
-
-# DotNet
-dotnet/
-
-# 文档（如果不需要格式化）
+# 文档
 docs/
 
+# Tauri
+src-tauri/
+
 # 配置文件
-*.config.js
-*.config.mjs
-*.config.ts
+# *.config.js
+# *.config.mjs
+# *.config.ts
+
+# 编辑器
+.vscode/
+.claude/
+.cursor/
 
 # 其他
 public/
-.vscode/
 coverage/
 *.min.js
 *.min.css

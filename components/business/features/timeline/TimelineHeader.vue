@@ -103,7 +103,7 @@ const canControl = computed(() => totalDuration.value > 0);
 
 // 当前倍速选项
 const currentSpeedOption = computed(() => {
-  return speedOptions.find(option => option.value === playbackSpeed.value) || speedOptions[0];
+  return speedOptions.find(option => option.value === playbackSpeed.value) ?? speedOptions[0];
 });
 
 // 倍速变化处理
@@ -118,6 +118,6 @@ const loadTestData = async () => {
 
   // 等待下一个tick确保DOM更新
   await nextTick();
-  console.log('数据更新完成，平台数量:', platforms?.value?.length || 0);
+  console.log('数据更新完成，平台数量:', platforms?.value?.length ?? 0);
 };
 </script>

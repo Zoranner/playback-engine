@@ -107,7 +107,7 @@ const trackClasses = computed(() => {
       warning: ['bg-warning border-warning'],
       danger: ['bg-danger border-danger'],
     };
-    baseClasses.push(...(variantClasses[props.variant] || variantClasses.primary));
+    baseClasses.push(...(variantClasses[props.variant] ?? variantClasses.primary));
   } else {
     baseClasses.push('bg-border border-border');
   }

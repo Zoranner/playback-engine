@@ -6,7 +6,9 @@
     <!-- 触发器 -->
     <div
       class="flex cursor-pointer select-none items-center gap-xs whitespace-nowrap rounded-xs bg-transparent px-sm py-xs transition-all duration-fast hover:bg-background-tertiary hover:shadow-glow-subtle"
-      :class="{ 'bg-background-tertiary shadow-glow-subtle': isOpen }"
+      :class="{
+        'bg-background-tertiary shadow-glow-subtle': isOpen,
+      }"
       @click="toggle"
     >
       <slot

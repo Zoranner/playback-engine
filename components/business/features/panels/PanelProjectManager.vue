@@ -78,10 +78,10 @@ console.log('PanelProjectManager 初始化，当前项目:', currentProject.valu
 const datasets = ref([]);
 
 // 统一的项目样式类
-const getProjectItemClasses = (isSelected) => {
+const getProjectItemClasses = isSelected => {
   const baseClasses = [
     'flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors',
-    'hover:bg-background-tertiary/70'
+    'hover:bg-background-tertiary/70',
   ];
 
   if (isSelected) {
@@ -94,10 +94,10 @@ const getProjectItemClasses = (isSelected) => {
 };
 
 // 统一的数据集样式类（带缩进）
-const getDatasetItemClasses = (isSelected) => {
+const getDatasetItemClasses = isSelected => {
   const baseClasses = [
     'flex items-center gap-2 px-3 py-2 ml-4 cursor-pointer transition-colors',
-    'hover:bg-background-tertiary/70'
+    'hover:bg-background-tertiary/70',
   ];
 
   if (isSelected) {
@@ -110,7 +110,7 @@ const getDatasetItemClasses = (isSelected) => {
 };
 
 // 获取文件图标
-const getFileIcon = (fileType) => {
+const getFileIcon = fileType => {
   switch (fileType) {
     case 'pcap':
       return 'heroicons:document-duplicate';
@@ -122,7 +122,7 @@ const getFileIcon = (fileType) => {
 };
 
 // 获取文件图标样式类
-const getFileIconClass = (fileType) => {
+const getFileIconClass = fileType => {
   switch (fileType) {
     case 'pcap':
       return 'text-success';
@@ -134,14 +134,14 @@ const getFileIconClass = (fileType) => {
 };
 
 // 格式化文件大小
-const formatFileSize = (bytes) => {
+const formatFileSize = bytes => {
   if (bytes === 0) return '0 B';
 
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 };
 
 // 选择工程
@@ -151,10 +151,10 @@ const selectProject = () => {
 };
 
 // 选择数据集
-const selectDataset = (dataset) => {
+const selectDataset = dataset => {
   selectedItem.value = dataset.name;
   // 清除之前的选中状态
-  datasets.value.forEach(d => d.selected = false);
+  datasets.value.forEach(d => (d.selected = false));
   // 设置当前选中
   dataset.selected = true;
   // 触发事件
@@ -162,7 +162,7 @@ const selectDataset = (dataset) => {
 };
 
 // 加载项目数据集
-const loadProjectDatasets = async (projectPath) => {
+const loadProjectDatasets = async projectPath => {
   try {
     console.log('正在加载项目数据集:', projectPath);
     // 调用后端API获取数据集信息
@@ -171,10 +171,10 @@ const loadProjectDatasets = async (projectPath) => {
       name: dataset.name,
       files: dataset.files.map(file => ({
         name: file.name,
-        type: file.type || getFileTypeFromName(file.name),
+        type: file.type ?? getFileTypeFromName(file.name),
         size: file.size,
-        path: file.path
-      }))
+        path: file.path,
+      })),
     }));
     console.log('数据集加载完成:', datasets.value);
 
@@ -186,24 +186,30 @@ const loadProjectDatasets = async (projectPath) => {
 };
 
 // 监听项目变化，加载数据集信息
-watch(currentProject, async (newProject) => {
-  console.log('PanelProjectManager watch 触发，新项目:', newProject);
-  if (newProject) {
-    console.log('项目已更新，正在加载数据集信息:', newProject);
-    await loadProjectDatasets(newProject.path);
-  } else {
-    console.log('项目已清空，清除数据集列表');
-    // 清除数据集列表
-    datasets.value = [];
-    selectedItem.value = null;
-  }
-}, { immediate: true });
+watch(
+  currentProject,
+  async newProject => {
+    console.log('PanelProjectManager watch 触发，新项目:', newProject);
+    if (newProject) {
+      console.log('项目已更新，正在加载数据集信息:', newProject);
+      await loadProjectDatasets(newProject.path);
+    } else {
+      console.log('项目已清空，清除数据集列表');
+      // 清除数据集列表
+      datasets.value = [];
+      selectedItem.value = null;
+    }
+  },
+  { immediate: true }
+);
 
 // 获取项目结构（调用后端API）
-const getProjectStructure = async (path) => {
+const getProjectStructure = async path => {
   try {
     console.log('调用后端 get_project_structure API，路径:', path);
-    const result = await invoke('get_project_structure', { projectPath: path });
+    const result = await invoke('get_project_structure', {
+      projectPath: path,
+    });
     console.log('后端返回的项目结构:', result);
     return {
       datasets: result.datasets.map(dataset => ({
@@ -212,9 +218,9 @@ const getProjectStructure = async (path) => {
           name: file.name,
           size: file.size,
           path: file.path,
-          type: file.type
-        }))
-      }))
+          type: file.type,
+        })),
+      })),
     };
   } catch (error) {
     console.error('获取项目结构失败:', error);
@@ -223,7 +229,7 @@ const getProjectStructure = async (path) => {
 };
 
 // 从文件名获取文件类型（作为后备方案）
-const getFileTypeFromName = (filename) => {
+const getFileTypeFromName = filename => {
   const ext = filename.toLowerCase().split('.').pop();
   switch (ext) {
     case 'pcap':
@@ -236,7 +242,7 @@ const getFileTypeFromName = (filename) => {
 };
 
 // 获取文件类型（保持向后兼容）
-const getFileType = (filename) => {
+const getFileType = filename => {
   return getFileTypeFromName(filename);
 };
 </script>

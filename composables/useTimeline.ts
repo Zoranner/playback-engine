@@ -1,4 +1,4 @@
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 
 // 播放状态类型
 export type PlaybackState = 'playing' | 'paused' | 'stopped';
@@ -291,7 +291,10 @@ export const useTimeline = () => {
         ],
         activeSegments: [
           { startTime: 0, endTime: 1 * 24 * 60 * 60 * 1000 }, // 第1天
-          { startTime: 1.5 * 24 * 60 * 60 * 1000, endTime: 6 * 24 * 60 * 60 * 1000 }, // 第1.5-6天
+          {
+            startTime: 1.5 * 24 * 60 * 60 * 1000,
+            endTime: 6 * 24 * 60 * 60 * 1000,
+          }, // 第1.5-6天
         ],
       },
       {
@@ -323,8 +326,14 @@ export const useTimeline = () => {
           },
         ],
         activeSegments: [
-          { startTime: 6 * 60 * 60 * 1000, endTime: 2 * 24 * 60 * 60 * 1000 }, // 6小时-第2天
-          { startTime: 2.5 * 24 * 60 * 60 * 1000, endTime: 6 * 24 * 60 * 60 * 1000 }, // 第2.5-6天
+          {
+            startTime: 6 * 60 * 60 * 1000,
+            endTime: 2 * 24 * 60 * 60 * 1000,
+          }, // 6小时-第2天
+          {
+            startTime: 2.5 * 24 * 60 * 60 * 1000,
+            endTime: 6 * 24 * 60 * 60 * 1000,
+          }, // 第2.5-6天
         ],
       },
       {
@@ -355,8 +364,14 @@ export const useTimeline = () => {
           },
         ],
         activeSegments: [
-          { startTime: 12 * 60 * 60 * 1000, endTime: 2 * 24 * 60 * 60 * 1000 }, // 12小时-第2天
-          { startTime: 3 * 24 * 60 * 60 * 1000, endTime: 5 * 24 * 60 * 60 * 1000 }, // 第3-5天
+          {
+            startTime: 12 * 60 * 60 * 1000,
+            endTime: 2 * 24 * 60 * 60 * 1000,
+          }, // 12小时-第2天
+          {
+            startTime: 3 * 24 * 60 * 60 * 1000,
+            endTime: 5 * 24 * 60 * 60 * 1000,
+          }, // 第3-5天
         ],
       },
       {
@@ -388,7 +403,10 @@ export const useTimeline = () => {
         ],
         activeSegments: [
           { startTime: 0, endTime: 1.5 * 24 * 60 * 60 * 1000 }, // 0-第1.5天
-          { startTime: 2 * 24 * 60 * 60 * 1000, endTime: 7 * 24 * 60 * 60 * 1000 }, // 第2-7天
+          {
+            startTime: 2 * 24 * 60 * 60 * 1000,
+            endTime: 7 * 24 * 60 * 60 * 1000,
+          }, // 第2-7天
         ],
       },
     ];
@@ -403,7 +421,7 @@ export const useTimeline = () => {
     }
 
     // 根据项目数据初始化平台信息
-    totalDuration.value = projectData.totalDuration || 0;
+    totalDuration.value = projectData.totalDuration ?? 0;
 
     // TODO: 根据实际数据结构解析平台信息
     platforms.value = [
@@ -414,7 +432,10 @@ export const useTimeline = () => {
         events: [],
         activeSegments: [
           { startTime: 0, endTime: totalDuration.value * 0.3 },
-          { startTime: totalDuration.value * 0.4, endTime: totalDuration.value * 0.9 },
+          {
+            startTime: totalDuration.value * 0.4,
+            endTime: totalDuration.value * 0.9,
+          },
         ],
       },
       {
@@ -424,7 +445,10 @@ export const useTimeline = () => {
         events: [],
         activeSegments: [
           { startTime: 0, endTime: totalDuration.value * 0.6 },
-          { startTime: totalDuration.value * 0.7, endTime: totalDuration.value },
+          {
+            startTime: totalDuration.value * 0.7,
+            endTime: totalDuration.value,
+          },
         ],
       },
       {
@@ -433,7 +457,10 @@ export const useTimeline = () => {
         isActive: true,
         events: [],
         activeSegments: [
-          { startTime: totalDuration.value * 0.1, endTime: totalDuration.value * 0.8 },
+          {
+            startTime: totalDuration.value * 0.1,
+            endTime: totalDuration.value * 0.8,
+          },
         ],
       },
       {
@@ -443,7 +470,10 @@ export const useTimeline = () => {
         events: [],
         activeSegments: [
           { startTime: 0, endTime: totalDuration.value * 0.4 },
-          { startTime: totalDuration.value * 0.6, endTime: totalDuration.value },
+          {
+            startTime: totalDuration.value * 0.6,
+            endTime: totalDuration.value,
+          },
         ],
       },
     ];

@@ -159,7 +159,7 @@ const getOptionClasses = option => {
 
 const displayValue = computed(() => {
   const selected = props.options.find(option => option.value === props.modelValue);
-  return selected?.label || props.placeholder;
+  return selected?.label ?? props.placeholder;
 });
 
 const toggleOpen = () => {

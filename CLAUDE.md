@@ -13,6 +13,7 @@
 ## 架构总览
 
 ### 前端
+
 - 框架：Nuxt 3.17.6 + Vue 3.5.17
 - 样式：Tailwind CSS（@nuxtjs/tailwindcss）
 - UI组件：@nuxt/ui 统一设计体系
@@ -21,6 +22,7 @@
 - SSR：关闭，仅SPA
 
 ### 后端
+
 - 核心：自研 PCAP 处理库 pcap-io（src-tauri/crates/pcap-io）
 - IPC：Tauri 命令系统，前后端通信
 - 异步：Tokio 运行时
@@ -82,6 +84,7 @@ graph TD
 ```
 
 ### 数据流说明
+
 - 前端通过 API 请求地图瓦片、GeoJSON、MVT 数据，后端 geo 模块响应
 - 用户通过工程管理面板选择/打开工程，后端 project/loader 解析工程结构
 - 回放引擎 playback/engine 控制时间推进、调度数据包，向前端推送进度
@@ -93,23 +96,24 @@ graph TD
 
 ## 模块职责表
 
-| 模块 | 职责/功能 | 技术栈/说明 |
-|---|---|---|
-| **geo/** | 地图数据服务 | 瓦片缓存、格式转换、API |
-| **playback/** | 回放引擎/时间控制 | 事件调度、进度管理、状态同步 |
-| **streaming/** | 网络流发送 | UDP广播/组播/单播、配置管理 |
-| **project/** | 工程管理 | 多数据集PCAP处理、结构解析 |
-| **state/** | 实时状态/配置同步 | 全局状态、回放/配置状态 |
-| **api/** | Tauri命令接口 | 前后端通信、参数校验 |
-| **components/** | 前端UI组件 | 地图、时间轴、面板、输入等 |
-| **composables/** | 前端状态管理 | useProject, useTimeline等 |
-| **types/** | 类型定义 | Rust/TS类型、协议结构 |
+| 模块             | 职责/功能         | 技术栈/说明                  |
+| ---------------- | ----------------- | ---------------------------- |
+| **geo/**         | 地图数据服务      | 瓦片缓存、格式转换、API      |
+| **playback/**    | 回放引擎/时间控制 | 事件调度、进度管理、状态同步 |
+| **streaming/**   | 网络流发送        | UDP广播/组播/单播、配置管理  |
+| **project/**     | 工程管理          | 多数据集PCAP处理、结构解析   |
+| **state/**       | 实时状态/配置同步 | 全局状态、回放/配置状态      |
+| **api/**         | Tauri命令接口     | 前后端通信、参数校验         |
+| **components/**  | 前端UI组件        | 地图、时间轴、面板、输入等   |
+| **composables/** | 前端状态管理      | useProject, useTimeline等    |
+| **types/**       | 类型定义          | Rust/TS类型、协议结构        |
 
 ---
 
 ## 开发命令
 
 ### 前端开发
+
 ```bash
 # 安装依赖
 bun install
@@ -124,12 +128,14 @@ bun run tauri:build       # 桌面构建
 ```
 
 ### 代码质量
+
 ```bash
 bun run format            # 格式化代码
 bun run format:fix        # 格式化并修复
 ```
 
 ### 后端开发
+
 ```bash
 cd src-tauri
 cargo test                # 运行所有测试
@@ -139,6 +145,7 @@ cargo run --example name  # 运行示例
 ```
 
 ### 测试
+
 - 前端：暂无专用测试框架
 - 后端：Rust单元测试 `src-tauri/crates/pcap-io/tests/`
 - 集成：大/小数据集、数据一致性测试

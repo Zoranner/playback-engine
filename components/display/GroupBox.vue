@@ -53,7 +53,7 @@ const groupboxClasses = computed(() => {
     raised: ['bg-gradient-to-b from-background-secondary to-background-tertiary', 'shadow-md'],
   };
 
-  return [...baseClasses, ...(variantClasses[props.variant] || variantClasses.default)];
+  return [...baseClasses, ...(variantClasses[props.variant] ?? variantClasses.default)];
 });
 
 // 内容区域样式类

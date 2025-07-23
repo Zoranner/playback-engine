@@ -133,7 +133,7 @@ const fillClasses = computed(() => {
     danger: ['bg-gradient-to-r from-danger to-danger-light', 'shadow-sm shadow-danger/30'],
   };
 
-  return [...baseClasses, ...(variantClasses[props.variant] || variantClasses.primary)];
+  return [...baseClasses, ...(variantClasses[props.variant] ?? variantClasses.primary)];
 });
 
 // 拖拽点样式类

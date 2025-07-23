@@ -3,11 +3,11 @@ import type { Config } from 'tailwindcss';
 export default <Partial<Config>>{
   content: [
     './components/**/*.{vue,js,ts}',
-    './layouts/**/*.vue', 
+    './layouts/**/*.vue',
     './pages/**/*.vue',
     './composables/**/*.{js,ts}',
     './plugins/**/*.{js,ts}',
-    './app.vue'
+    './app.vue',
   ],
   theme: {
     extend: {
@@ -16,7 +16,7 @@ export default <Partial<Config>>{
         primary: {
           DEFAULT: '#0ea5e9',
           50: '#f0f9ff',
-          100: '#e0f2fe', 
+          100: '#e0f2fe',
           200: '#bae6fd',
           300: '#7dd3fc',
           400: '#38bdf8',
@@ -72,63 +72,71 @@ export default <Partial<Config>>{
       },
       // 字体系统
       fontFamily: {
-        main: ['Microsoft YaHei', 'PingFang SC', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        main: [
+          'Microsoft YaHei',
+          'PingFang SC',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Roboto',
+          'sans-serif',
+        ],
         mono: ['Consolas', 'Monaco', 'Courier New', 'monospace'],
       },
       // 间距系统
       spacing: {
-        'xs': '4px',
-        'sm': '8px', 
-        'md': '12px',
-        'lg': '16px',
-        'xl': '20px',
+        xs: '4px',
+        sm: '8px',
+        md: '12px',
+        lg: '16px',
+        xl: '20px',
         '2xl': '24px',
-        'xxl': '32px',
-        'thin': '2px',
-        'divider': '1px',
+        xxl: '32px',
+        thin: '2px',
+        divider: '1px',
       },
       // 阴影系统
       boxShadow: {
-        'xs': '0 1px 2px rgba(0, 0, 0, 0.2)',
-        'sm': '0 1px 2px rgba(0, 0, 0, 0.4)',
-        'md': '0 4px 6px rgba(0, 0, 0, 0.3)',
-        'lg': '0 10px 15px rgba(0, 0, 0, 0.4)',
-        'xl': '0 20px 25px rgba(0, 0, 0, 0.5)',
-        'inner': 'inset 0 1px 3px rgba(0, 0, 0, 0.3)',
-        'glow': '0 0 8px rgba(56, 189, 248, 0.3)',
+        xs: '0 1px 2px rgba(0, 0, 0, 0.2)',
+        sm: '0 1px 2px rgba(0, 0, 0, 0.4)',
+        md: '0 4px 6px rgba(0, 0, 0, 0.3)',
+        lg: '0 10px 15px rgba(0, 0, 0, 0.4)',
+        xl: '0 20px 25px rgba(0, 0, 0, 0.5)',
+        inner: 'inset 0 1px 3px rgba(0, 0, 0, 0.3)',
+        glow: '0 0 8px rgba(56, 189, 248, 0.3)',
         'glow-strong': '0 0 12px rgba(56, 189, 248, 0.4)',
         'glow-subtle': '0 0 4px rgba(56, 189, 248, 0.2)',
-        'overlay': '0 8px 32px rgba(0, 0, 0, 0.6)',
+        overlay: '0 8px 32px rgba(0, 0, 0, 0.6)',
       },
       // 过渡动画
       transitionDuration: {
-        'fast': '0.15s',
-        'normal': '0.25s',
-        'slow': '0.35s',
+        fast: '0.15s',
+        normal: '0.25s',
+        slow: '0.35s',
       },
       // 尺寸系统
       height: {
-        'header': '56px',
-        'status': '28px',
+        header: '56px',
+        status: '28px',
         '5.5': '22px', // Toggle 轨道高度
-        'divider': '1px',
+        divider: '1px',
       },
       width: {
-        'panel': '280px',
+        panel: '280px',
         '4.5': '18px', // Toggle 滑块宽度
       },
       // 圆角系统
       borderRadius: {
-        'xs': '2px',
-        'sm': '3px',
-        'md': '6px',
-        'lg': '8px',
+        xs: '2px',
+        sm: '3px',
+        md: '6px',
+        lg: '8px',
       },
       // Z-index 系统
       zIndex: {
-        'header': '40',
-        'dropdown': '50',
-        'modal': '100',
+        header: '40',
+        dropdown: '50',
+        modal: '100',
       },
       // 渐变系统
       backgroundImage: {
@@ -142,10 +150,10 @@ export default <Partial<Config>>{
       },
       // 字体大小
       fontSize: {
-        'body': ['14px', '1.5'],
-        'title': ['16px', '1.4'],
-        'subtitle': ['13px', '1.4'],
-        'caption': ['12px', '1.3'],
+        body: ['14px', '1.5'],
+        title: ['16px', '1.4'],
+        subtitle: ['13px', '1.4'],
+        caption: ['12px', '1.3'],
       },
     },
   },

@@ -162,7 +162,7 @@ const buttonClasses = computed(() => {
 
   return [
     ...baseClasses.filter(Boolean),
-    ...(variantClasses[props.variant] || variantClasses.default),
+    ...(variantClasses[props.variant] ?? variantClasses.default),
   ];
 });
 

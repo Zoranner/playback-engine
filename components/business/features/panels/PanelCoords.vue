@@ -9,8 +9,12 @@
       class="equipment-info"
     >
       <div class="mb-sm border-b border-border-divider pb-xs">
-        <div class="mb-0.5 font-semibold text-text-primary">{{ selectedEquipment.name }}</div>
-        <div class="text-text-secondary">{{ selectedEquipment.type }}</div>
+        <div class="mb-0.5 font-semibold text-text-primary">
+          {{ selectedEquipment.name }}
+        </div>
+        <div class="text-text-secondary">
+          {{ selectedEquipment.type }}
+        </div>
       </div>
 
       <div class="mb-sm">

@@ -93,9 +93,9 @@ onMounted(() => {
     if (features.length > 0) {
       const feature = features[0];
       emit('equipment-selected', {
-        id: feature.id || feature.properties?.id,
-        name: feature.properties?.name || '未命名对象',
-        type: feature.layer?.type || '未知类型',
+        id: feature.id ?? feature.properties?.id,
+        name: feature.properties?.name ?? '未命名对象',
+        type: feature.layer?.type ?? '未知类型',
         properties: feature.properties,
       });
     }

@@ -6,7 +6,9 @@
       class="flex items-center justify-between border-b border-border px-md py-sm"
     >
       <slot name="header">
-        <h3 class="m-0 font-semibold text-text-primary">{{ title }}</h3>
+        <h3 class="m-0 font-semibold text-text-primary">
+          {{ title }}
+        </h3>
       </slot>
       <div
         v-if="$slots.actions"
@@ -82,7 +84,7 @@ const cardClasses = computed(() => {
 
   return [
     ...baseClasses,
-    ...(variantClasses[props.variant] || variantClasses.default).filter(Boolean),
+    ...(variantClasses[props.variant] ?? variantClasses.default).filter(Boolean),
   ];
 });
 

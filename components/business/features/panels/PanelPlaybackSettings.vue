@@ -4,7 +4,7 @@
     class="flex-none"
   >
     <!-- 固定高度的设置区域 -->
-    <div class="-m-sm flex flex-col min-h-fit max-h-60 overflow-y-auto gap-xs p-sm">
+    <div class="-m-sm flex max-h-60 min-h-fit flex-col gap-xs overflow-y-auto p-sm">
       <!-- 有工程且选中数据集时显示设置 -->
       <template v-if="currentProject && selectedDataset">
         <!-- 传输类型 -->
@@ -46,15 +46,19 @@
       <!-- 占位内容 -->
       <div
         v-else
-        class="flex flex-1 flex-col items-center justify-center gap-sm py-lg text-center text-text-muted min-h-64"
+        class="flex min-h-64 flex-1 flex-col items-center justify-center gap-sm py-lg text-center text-text-muted"
       >
         <Icon
           name="heroicons:cog-6-tooth"
           size="24"
           class="opacity-60"
         />
-        <div class="text-text-secondary">{{ getPlaceholderTitle() }}</div>
-        <div class="text-caption opacity-70">{{ getPlaceholderDescription() }}</div>
+        <div class="text-text-secondary">
+          {{ getPlaceholderTitle() }}
+        </div>
+        <div class="text-caption opacity-70">
+          {{ getPlaceholderDescription() }}
+        </div>
       </div>
     </div>
   </GroupBox>
@@ -70,8 +74,8 @@ import { useProject } from '~/composables/useProject';
 const props = defineProps({
   selectedDataset: {
     type: Object,
-    default: null
-  }
+    default: null,
+  },
 });
 
 // Events
@@ -84,14 +88,14 @@ const { currentProject } = useProject();
 const transportTypes = [
   { label: 'UDP广播', value: 'udp_broadcast' },
   { label: 'UDP单播', value: 'udp_unicast' },
-  { label: 'TCP', value: 'tcp' }
+  { label: 'TCP', value: 'tcp' },
 ];
 
 // 回放设置
 const playbackSettings = reactive({
   transportType: 'udp_broadcast',
   targetAddress: '192.168.1.255',
-  targetPort: 12345
+  targetPort: 12345,
 });
 
 // 获取占位内容标题
@@ -119,11 +123,11 @@ const getPlaceholderDescription = () => {
 // 监听设置变化
 watch(
   () => playbackSettings,
-  (newSettings) => {
+  newSettings => {
     if (currentProject.value && props.selectedDataset) {
       emit('settings-changed', {
-        dataset: props.selectedDataset?.name || null,
-        settings: { ...newSettings }
+        dataset: props.selectedDataset?.name ?? null,
+        settings: { ...newSettings },
       });
     }
   },

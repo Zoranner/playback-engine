@@ -23,6 +23,6 @@ const { currentProject } = useProject();
 
 // 显示的工程名称
 const displayProjectName = computed(() => {
-  return currentProject.value?.name || '未打开工程';
+  return currentProject.value?.name ?? '未打开工程';
 });
 </script>

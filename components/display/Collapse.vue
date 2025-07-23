@@ -179,13 +179,13 @@ const getHeaderClasses = item => {
   }
 
   // 激活状态
-  if (activeKeys.value.includes(item.key || (typeof index !== 'undefined' ? index : 0))) {
+  if (activeKeys.value.includes(item.key ?? (typeof index !== 'undefined' ? index : 0))) {
     if (!props.ghost) {
       baseClasses.push('from-primary/10 to-primary/5', 'border-primary/20 shadow-glow-subtle');
     }
   }
 
-  return [...baseClasses, sizeClasses[props.size] || sizeClasses.middle];
+  return [...baseClasses, sizeClasses[props.size] ?? sizeClasses.middle];
 };
 
 // 标题样式类
@@ -197,7 +197,7 @@ const getTitleClasses = item => {
   } else {
     baseClasses.push('text-text-primary');
     // 激活状态下的标题颜色
-    if (activeKeys.value.includes(item.key || 0)) {
+    if (activeKeys.value.includes(item.key ?? 0)) {
       baseClasses.push('text-text-accent');
     }
   }
@@ -213,7 +213,7 @@ const getArrowClasses = (item, index) => {
     'w-6 h-6 rounded-xs',
   ];
 
-  if (activeKeys.value.includes(item.key || index)) {
+  if (activeKeys.value.includes(item.key ?? index)) {
     baseClasses.push('rotate-180 text-primary');
   }
 
@@ -250,7 +250,7 @@ const bodyClasses = computed(() => {
     large: 'p-lg',
   };
 
-  return [...baseClasses, sizeClasses[props.size] || sizeClasses.middle];
+  return [...baseClasses, sizeClasses[props.size] ?? sizeClasses.middle];
 });
 
 // 监听 activeKey 变化

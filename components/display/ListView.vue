@@ -65,7 +65,9 @@
             <!-- 默认的简单列表项渲染 -->
             <div
               class="flex cursor-pointer items-start gap-sm rounded-sm border border-border bg-background-tertiary p-xs transition-all duration-fast hover:bg-background-panel"
-              :class="{ 'border-border-active bg-background-panel shadow-glow': isSelected(item) }"
+              :class="{
+                'border-border-active bg-background-panel shadow-glow': isSelected(item),
+              }"
             >
               <div class="flex-1 leading-normal">
                 {{ getItemLabel(item) }}
@@ -226,7 +228,7 @@ const filteredItems = computed(() => {
   return props.items.filter(item => {
     return props.searchFields.some(field => {
       const value = typeof item === 'object' ? item[field] : item;
-      return String(value || '')
+      return String(value ?? '')
         .toLowerCase()
         .includes(query);
     });

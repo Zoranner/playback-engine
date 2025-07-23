@@ -21,7 +21,7 @@ import PanelPlaybackSettings from './PanelPlaybackSettings.vue';
 const selectedDataset = ref(null);
 
 // 处理数据集选择
-const handleDatasetSelected = (dataset) => {
+const handleDatasetSelected = dataset => {
   selectedDataset.value = dataset;
   if (dataset) {
     console.log('数据集已选择:', dataset.name);
@@ -29,13 +29,13 @@ const handleDatasetSelected = (dataset) => {
 };
 
 // 处理工程选择
-const handleProjectSelected = (project) => {
+const handleProjectSelected = project => {
   selectedDataset.value = null; // 选择工程时清除数据集选择
   console.log('工程已选择:', project?.name);
 };
 
 // 处理设置变更
-const handleSettingsChanged = (data) => {
+const handleSettingsChanged = data => {
   console.log('回放设置已变更:', data);
   // 这里可以调用后端API保存设置或触发回放配置更新
 };

@@ -10,9 +10,9 @@ const error = ref<string | null>(null);
 export const useProject = () => {
   // 计算属性
   const isProjectLoaded = computed(() => currentProject.value !== null);
-  const projectName = computed(() => currentProject.value?.name || '');
-  const projectPath = computed(() => currentProject.value?.path || '');
-  const fileCount = computed(() => currentProject.value?.fileCount || 0);
+  const projectName = computed(() => currentProject.value?.name ?? '');
+  const projectPath = computed(() => currentProject.value?.path ?? '');
+  const fileCount = computed(() => currentProject.value?.fileCount ?? 0);
   const totalDurationSeconds = computed(() => {
     if (!currentProject.value) return 0;
     return currentProject.value.totalDuration / 1_000_000_000;
