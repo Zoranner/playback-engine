@@ -4,7 +4,7 @@
     class="flex-none"
   >
     <!-- 固定高度的设置区域 -->
-    <div class="-m-sm flex max-h-60 min-h-fit flex-col gap-xs overflow-y-auto p-sm">
+    <div class="flex max-h-60 min-h-fit flex-col gap-xs overflow-y-auto">
       <!-- 有工程且选中数据集时显示设置 -->
       <template v-if="currentProject && selectedDataset">
         <!-- 传输类型 -->
@@ -44,22 +44,12 @@
       </template>
 
       <!-- 占位内容 -->
-      <div
+      <EmptyPlaceholder
         v-else
-        class="flex min-h-64 flex-1 flex-col items-center justify-center gap-sm py-lg text-center text-text-muted"
-      >
-        <Icon
-          name="heroicons:cog-6-tooth"
-          size="24"
-          class="opacity-60"
-        />
-        <div class="text-text-secondary">
-          {{ getPlaceholderTitle() }}
-        </div>
-        <div class="text-caption opacity-70">
-          {{ getPlaceholderDescription() }}
-        </div>
-      </div>
+        icon="heroicons:cog-6-tooth"
+        :title="getPlaceholderTitle()"
+        :description="getPlaceholderDescription()"
+      />
     </div>
   </GroupBox>
 </template>
@@ -68,6 +58,7 @@
 import { ref, reactive, watch, computed } from 'vue';
 import Select from '~/components/input/Select.vue';
 import GroupBox from '~/components/display/GroupBox.vue';
+import EmptyPlaceholder from '~/components/display/EmptyPlaceholder.vue';
 import { useProject } from '~/composables/useProject';
 
 // Props

@@ -3,7 +3,7 @@
     title="环境信息"
     class="flex-none"
   >
-    <div class="-m-sm flex flex-col gap-xs p-sm">
+    <div class="flex flex-col gap-xs">
       <div
         v-for="item in environmentData"
         :key="item.label"

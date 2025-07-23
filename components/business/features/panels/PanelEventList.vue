@@ -3,7 +3,7 @@
     title="事件列表"
     class="flex flex-1 flex-col overflow-hidden"
   >
-    <div class="-m-sm flex flex-1 flex-col gap-xs overflow-y-auto p-sm">
+    <div class="flex flex-1 flex-col gap-xs overflow-y-auto">
       <div
         v-for="event in events"
         :key="event.id"

@@ -6,118 +6,50 @@
     <!-- 数据集目录树 -->
     <div
       v-if="currentProject"
-      class="flex flex-1 flex-col overflow-y-auto p-xs"
+      class="flex flex-1 flex-col overflow-y-auto"
     >
-      <!-- 工程项目列表 -->
-      <div class="flex-1 overflow-y-auto">
-        <!-- 工程根目录 -->
-        <div
-          :class="getItemClasses(selectedItem === 'project', false)"
-          @click="selectProject"
-        >
-          <Icon
-            name="heroicons:folder"
-            size="16"
-            class="text-primary"
-          />
-          <span class="text-sm font-medium">{{ projectName }}</span>
-          <Button
-            class="ml-auto"
-            variant="ghost"
-            size="small"
-            icon="heroicons:plus"
-            @click.stop="showCreateDatasetDialog = true"
-          />
-        </div>
-
-        <!-- 数据集列表和文件列表 -->
-        <template
-          v-for="dataset in datasets"
-          :key="dataset.name"
-        >
-          <div
-            :class="getItemClasses(selectedItem === dataset.name, true)"
-            @click="selectDataset(dataset)"
-          >
-            <Icon
-              name="heroicons:folder"
-              size="16"
-              class="text-warning"
-            />
-            <span class="text-sm">{{ dataset.name }}</span>
-            <span
-              v-if="dataset.files && dataset.files.length > 0"
-              class="ml-auto text-xs text-text-muted"
-            >
-              {{ dataset.files.length }} 个文件
-            </span>
-          </div>
-
-          <!-- 数据集文件列表 -->
-          <div
-            v-if="selectedItem === dataset.name"
-            :key="`${dataset.name}-files`"
-            class="ml-6 mt-xs flex flex-col gap-xs"
-          >
-            <div
-              v-for="file in dataset.files"
-              :key="file.path"
-              :class="getFileItemClasses(file)"
-              @click.stop="selectFile(file)"
-            >
-              <Icon
-                :name="getFileIcon(file.type)"
-                :class="getFileIconClass(file.type)"
-                size="14"
-              />
-              <div class="flex-1 truncate text-xs">
-                <span class="font-mono">{{ file.name }}</span>
-                <span class="ml-xs text-text-muted">({{ formatFileSize(file.size) }})</span>
-              </div>
-            </div>
-          </div>
-        </template>
-      </div>
+      <TreeView
+        :items="treeData"
+        :selected-items="selectedItems"
+        :expanded-items="expandedItems"
+        selection-mode="single"
+        item-key="id"
+        item-label="name"
+        item-children="children"
+        :item-icon="getIcon"
+        :item-icon-class="getIconClass"
+        @select="handleSelect"
+        @expand="handleExpand"
+        @collapse="handleCollapse"
+        @create-dataset="showCreateDatasetDialog = true"
+      />
     </div>
 
     <!-- 无工程时的提示 -->
-    <div
+    <EmptyPlaceholder
       v-else
-      class="flex flex-1 flex-col items-center justify-center gap-sm py-lg text-center text-text-muted"
-    >
-      <Icon
-        name="heroicons:folder-open"
-        size="32"
-        class="opacity-60"
-      />
-      <div class="text-text-secondary">未打开工程</div>
-      <div class="text-caption opacity-70">请先打开回放工程</div>
-    </div>
+      icon="heroicons:folder-open"
+      title="未打开工程"
+      description="请先打开回放工程"
+      icon-size="32"
+    />
 
     <!-- 创建数据集对话框 -->
     <Modal
-      v-model="showCreateDatasetDialog"
+      :visible="showCreateDatasetDialog"
       title="创建新数据集"
       confirm-text="确认创建"
       cancel-text="取消"
+      @update:visible="showCreateDatasetDialog = $event"
       @confirm="createDataset"
     >
-      <div class="mb-md">
-        <label class="mb-xs block text-sm font-medium text-text-secondary"> 数据集名称 </label>
-        <input
-          v-model="newDatasetName"
-          type="text"
-          class="w-full rounded-sm border border-border bg-background-secondary px-sm py-xs text-text-primary transition-colors duration-fast focus:border-border-active focus:outline-none focus:ring-1 focus:ring-primary"
-          placeholder="请输入数据集名称"
-          @keyup.enter="createDataset"
-        />
-        <div
-          v-if="datasetNameError"
-          class="mt-xs text-sm text-danger"
-        >
-          {{ datasetNameError }}
-        </div>
-      </div>
+      <Input
+        v-model="newDatasetName"
+        label="数据集名称"
+        placeholder="请输入数据集名称"
+        :error="datasetNameError"
+        @enter="createDataset"
+      />
     </Modal>
   </GroupBox>
 </template>
@@ -128,7 +60,10 @@ import { invoke } from '@tauri-apps/api/core';
 import { useProject } from '~/composables/useProject';
 import GroupBox from '~/components/display/GroupBox.vue';
 import Button from '~/components/base/Button.vue';
-import Modal from '~/components/base/modal/Modal.vue';
+import Modal from '~/components/base/Modal.vue';
+import Input from '~/components/base/Input.vue';
+import TreeView from '~/components/display/TreeView.vue';
+import EmptyPlaceholder from '~/components/display/EmptyPlaceholder.vue';
 
 // 定义 emit 事件
 const emit = defineEmits(['dataset-selected', 'project-selected', 'file-selected']);
@@ -136,8 +71,40 @@ const emit = defineEmits(['dataset-selected', 'project-selected', 'file-selected
 // 使用工程管理
 const { currentProject, projectName } = useProject();
 
-// 选中的项目（工程或数据集）
-const selectedItem = ref(null);
+// 选中的项目
+const selectedItems = ref([]);
+
+// 展开的项目
+const expandedItems = ref([]);
+
+// 树状数据
+const treeData = computed(() => {
+  if (!currentProject.value) return [];
+
+  // 构建工程项
+  const projectItem = {
+    id: 'project',
+    name: projectName.value,
+    type: 'project',
+    children: datasets.value.map(dataset => ({
+      id: `dataset-${dataset.name}`,
+      name: dataset.name,
+      type: 'dataset',
+      dataset,
+      children:
+        dataset.files?.map(file => ({
+          id: `file-${file.path}`,
+          name: file.name,
+          type: 'file',
+          file,
+          size: file.size,
+          fileType: file.type,
+        })) ?? [],
+    })),
+  };
+
+  return [projectItem];
+});
 
 // 创建数据集相关状态
 const showCreateDatasetDialog = ref(false);
@@ -150,100 +117,11 @@ console.log('PanelProjectManager 初始化，当前项目:', currentProject.valu
 // 模拟数据集数据（在实际项目中应该从后端获取）
 const datasets = ref([]);
 
-// 统一的项目样式类
-const getItemClasses = (isSelected, isDataset = false) => {
-  const baseClasses = [
-    'flex items-center gap-sm px-sm py-xs rounded-sm transition-all duration-fast relative',
-    'cursor-pointer select-none',
-    isDataset ? 'ml-4' : '',
-  ];
-
-  if (isSelected) {
-    baseClasses.push(
-      'bg-background-panel border border-border-active shadow-glow',
-      'text-text-primary font-medium'
-    );
-  } else {
-    baseClasses.push(
-      'bg-transparent border border-transparent',
-      'text-text-primary hover:bg-background-secondary hover:border-border hover:shadow-sm'
-    );
-  }
-
-  return baseClasses;
-};
-
-// 文件项样式类
-const getFileItemClasses = file => {
-  const baseClasses = [
-    'flex items-center gap-sm px-sm py-xs rounded-sm transition-all duration-fast relative',
-    'cursor-pointer select-none text-text-secondary',
-    'hover:bg-background-secondary hover:shadow-sm',
-  ];
-
-  // 如果文件被选中，添加选中样式
-  if (file.selected) {
-    baseClasses.push('bg-background-panel border border-border-active shadow-glow-subtle');
-  }
-
-  return baseClasses;
-};
-
-// 获取文件图标
-const getFileIcon = fileType => {
-  switch (fileType) {
-    case 'pcap':
-      return 'heroicons:document-duplicate';
-    case 'pidx':
-      return 'heroicons:document-magnifying-glass';
-    default:
-      return 'heroicons:document';
-  }
-};
-
-// 获取文件图标样式类
-const getFileIconClass = fileType => {
-  switch (fileType) {
-    case 'pcap':
-      return 'text-success';
-    case 'pidx':
-      return 'text-info';
-    default:
-      return 'text-text-muted';
-  }
-};
-
-// 格式化文件大小
-const formatFileSize = bytes => {
-  if (bytes === 0) return '0 B';
-
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
-};
-
-// 选择工程
-const selectProject = () => {
-  selectedItem.value = 'project';
-  emit('project-selected', currentProject.value);
-};
-
-// 选择数据集
-const selectDataset = dataset => {
-  // 如果点击的是已选中的数据集，则取消选中（折叠文件列表）
-  if (selectedItem.value === dataset.name) {
-    selectedItem.value = null;
-  } else {
-    selectedItem.value = dataset.name;
-    // 触发事件
-    emit('dataset-selected', dataset);
-  }
-};
-
-// 选择文件
-const selectFile = file => {
+// 处理选择事件
+const handleSelect = item => {
+  // 更新选中项状态
+  selectedItems.value = [item];
+  
   // 清除之前选中的文件状态
   datasets.value.forEach(dataset => {
     if (dataset.files) {
@@ -251,11 +129,71 @@ const selectFile = file => {
     }
   });
 
-  // 设置当前文件为选中状态
-  file.selected = true;
+  // 根据项目类型触发相应的事件
+  if (item.type === 'project') {
+    emit('project-selected', currentProject.value);
+  } else if (item.type === 'dataset') {
+    emit('dataset-selected', item.dataset);
+  } else if (item.type === 'file') {
+    // 设置当前文件为选中状态
+    item.file.selected = true;
+    emit('file-selected', item.file);
+  }
+};
 
-  // 触发事件
-  emit('file-selected', file);
+// 处理展开事件
+const handleExpand = item => {
+  // 将展开的项目添加到expandedItems数组中
+  expandedItems.value = [...expandedItems.value, item];
+};
+
+// 处理收起事件
+const handleCollapse = item => {
+  // 从expandedItems数组中移除收起的项目
+  const itemId = item.id;
+  expandedItems.value = expandedItems.value.filter(expanded => expanded.id !== itemId);
+};
+
+// 获取项目图标
+const getIcon = item => {
+  switch (item.type) {
+    case 'project':
+      return 'heroicons:folder';
+    case 'dataset':
+      return 'heroicons:folder';
+    case 'file':
+      switch (item.fileType) {
+        case 'pcap':
+          return 'heroicons:document-duplicate';
+        case 'pidx':
+          return 'heroicons:document-magnifying-glass';
+        default:
+          return 'heroicons:document';
+      }
+    default:
+      return 'heroicons:document';
+  }
+};
+
+// 获取图标样式类
+const getIconClass = item => {
+  switch (item.type) {
+    case 'project':
+      return 'text-primary';
+    case 'dataset':
+      return 'text-warning';
+    case 'file':
+      switch (item.fileType) {
+        case 'pcap':
+          return 'text-success';
+        case 'pidx':
+          return 'text-info';
+        default:
+          return 'text-text-muted';
+      }
+    default:
+      return 'text-text-muted';
+  }
 };
 
 // 验证数据集名称
@@ -306,7 +244,8 @@ const createDataset = async () => {
       newDatasetName.value = '';
       datasetNameError.value = '';
 
-      // 显示成功消息（如果项目中有消息提示组件的话）
+      // 展开工程项以显示新创建的数据集
+      // 由于treeData是计算属性，添加数据集后会自动更新
       console.log('数据集创建成功');
     } else {
       datasetNameError.value = result.error || '创建数据集失败';
@@ -334,8 +273,8 @@ const loadProjectDatasets = async projectPath => {
     }));
     console.log('数据集加载完成:', datasets.value);
 
-    // 默认选中工程
-    selectedItem.value = 'project';
+    // 不默认选中任何项，保持所有项样式一致
+    selectedItems.value = [];
   } catch (error) {
     console.error('加载项目数据集失败:', error);
   }
@@ -353,7 +292,7 @@ watch(
       console.log('项目已清空，清除数据集列表');
       // 清除数据集列表
       datasets.value = [];
-      selectedItem.value = null;
+      selectedItems.value = [];
     }
   },
   { immediate: true }
@@ -400,5 +339,16 @@ const getFileTypeFromName = filename => {
 // 获取文件类型（保持向后兼容）
 const getFileType = filename => {
   return getFileTypeFromName(filename);
+};
+
+// 格式化文件大小
+const formatFileSize = bytes => {
+  if (bytes === 0) return '0 B';
+
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 };
 </script>
