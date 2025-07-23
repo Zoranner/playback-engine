@@ -57,6 +57,7 @@ pub fn run() {
             api::project_commands::get_project_info,
             api::project_commands::close_project,
             api::project_commands::get_project_structure,
+            api::project_commands::create_dataset,
             api::config_commands::list_datasets,
             api::config_commands::get_dataset_stats,
             api::config_commands::get_dataset_info,

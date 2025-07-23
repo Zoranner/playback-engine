@@ -4,7 +4,7 @@
     <div class="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-border-light to-border" />
 
     <div
-      class="flex items-center justify-between border-b border-border-divider bg-background-header px-sm py-xs"
+      class="flex h-8 items-center justify-between border-b border-border-divider bg-background-header px-sm"
     >
       <h4 class="m-0 text-xs font-semibold uppercase tracking-wide text-text-secondary">
         {{ title }}

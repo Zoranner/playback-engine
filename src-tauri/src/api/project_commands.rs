@@ -154,3 +154,49 @@ pub async fn get_project_structure(
         }
     }
 }
+
+/// 创建数据集
+#[tauri::command]
+pub async fn create_dataset(
+    project_path: String,
+    dataset_name: String,
+) -> std::result::Result<serde_json::Value, String> {
+    use std::fs;
+    use std::path::Path;
+
+    info!("创建数据集: {} in project {}", dataset_name, project_path);
+
+    // 验证数据集名称
+    if dataset_name.is_empty() || dataset_name.len() > 50 {
+        return Err("数据集名称无效".to_string());
+    }
+
+    // 检查数据集名称是否包含非法字符
+    if dataset_name.contains('/') || dataset_name.contains('\\') || dataset_name.contains(':') {
+        return Err("数据集名称包含非法字符".to_string());
+    }
+
+    let dataset_path = Path::new(&project_path).join(&dataset_name);
+
+    // 检查数据集是否已存在
+    if dataset_path.exists() {
+        return Err("数据集已存在".to_string());
+    }
+
+    // 创建数据集目录
+    match fs::create_dir(&dataset_path) {
+        Ok(_) => {
+            info!("数据集目录创建成功: {:?}", dataset_path);
+            Ok(json!({
+                "success": true,
+                "message": "数据集创建成功",
+                "dataset_name": dataset_name,
+                "dataset_path": dataset_path.to_string_lossy()
+            }))
+        }
+        Err(e) => {
+            error!("创建数据集目录失败: {}", e);
+            Err(format!("创建数据集目录失败: {}", e))
+        }
+    }
+}
