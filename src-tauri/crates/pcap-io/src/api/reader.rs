@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 
 use crate::business::cache::{CacheStats, FileInfoCache};
 use crate::business::config::ReaderConfig;
-use crate::business::index::{IndexManager, PidxIndex};
+use crate::business::index::IndexManager;
 use crate::data::models::{
     DataPacket, DatasetInfo, FileInfo,
 };
@@ -348,7 +348,7 @@ impl PcapReader {
 
         let mut reader =
             crate::data::file_reader::PcapFileReader::new(
-                self.configuration.clone(),
+                self.configuration.common.clone(),
             );
         reader.open(&file_path)?;
 

@@ -9,7 +9,7 @@ pub mod processor;
 
 // 重新导出核心配置和索引类型
 pub use cache::{CacheStats, FileInfoCache};
-pub use config::Configuration;
+pub use config::{CommonConfig, ReaderConfig, WriterConfig};
 pub use index::{PacketIndexEntry, PcapFileIndex, PidxIndex};
 pub use processor::{PacketProcessor, ProcessedPacket, ProcessorStatistics, ValidationResult};
 

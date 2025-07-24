@@ -7,7 +7,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use crate::business::cache::{CacheStats, FileInfoCache};
-use crate::business::config::Configuration;
+use crate::business::config::WriterConfig;
 use crate::business::index::IndexManager;
 use crate::data::file_writer::PcapFileWriter;
 use crate::data::models::{
@@ -31,7 +31,7 @@ pub struct PcapWriter {
     /// 索引管理器
     index_manager: IndexManager,
     /// 配置信息
-    configuration: Configuration,
+    configuration: WriterConfig,
     /// 当前文件写入器
     current_writer: Option<PcapFileWriter>,
     /// 当前文件索引
@@ -70,7 +70,7 @@ impl PcapWriter {
         Self::new_with_config(
             base_path,
             dataset_name,
-            Configuration::default(),
+            WriterConfig::default(),
         )
     }
 
@@ -79,14 +79,14 @@ impl PcapWriter {
     /// # 参数
     /// - `base_path` - 基础路径
     /// - `dataset_name` - 数据集名称
-    /// - `configuration` - 配置信息
+    /// - `configuration` - 写入器配置信息
     ///
     /// # 返回
     /// 返回初始化后的写入器实例
     pub fn new_with_config<P: AsRef<Path>>(
         base_path: P,
         dataset_name: &str,
-        configuration: Configuration,
+        configuration: WriterConfig,
     ) -> Result<Self> {
         let dataset_path =
             base_path.as_ref().join(dataset_name);
@@ -166,7 +166,7 @@ impl PcapWriter {
         self.current_writer = None;
 
         // 如果启用索引缓存，生成索引
-        if self.configuration.enable_index_cache {
+        if self.configuration.common.enable_index_cache {
             self.regenerate_index()?;
         }
 
@@ -196,6 +196,7 @@ impl PcapWriter {
             modified_time: Utc::now().to_rfc3339(),
             has_index: self
                 .configuration
+                .common
                 .enable_index_cache,
         }
     }
@@ -295,8 +296,11 @@ impl PcapWriter {
         let file_path = self.dataset_path.join(&filename);
 
         // 创建新的写入器
-        let mut writer =
-            PcapFileWriter::new(self.configuration.clone());
+        let mut writer = PcapFileWriter::new(
+            self.configuration.common.clone(),
+            self.configuration.max_packets_per_file,
+            self.configuration.auto_flush,
+        );
         writer
             .create(&file_path)
             .map_err(|e| PcapError::InvalidFormat(e))?;

@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::{self, BufReader, Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 
-use crate::business::config::Configuration;
+use crate::business::config::CommonConfig;
 use crate::data::models::{DataPacket, DataPacketHeader, PcapFileHeader};
 use crate::foundation::error::{PcapError, Result};
 use crate::foundation::utils::calculate_crc32;
@@ -21,11 +21,11 @@ pub struct PcapFileReader {
     file_size: u64,
     header: Option<PcapFileHeader>,
     header_position: u64,
-    configuration: Configuration,
+    configuration: CommonConfig,
 }
 
 impl PcapFileReader {
-    pub(crate) fn new(configuration: Configuration) -> Self {
+    pub(crate) fn new(configuration: CommonConfig) -> Self {
         Self {
             file: None,
             reader: None,

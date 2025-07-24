@@ -4,7 +4,7 @@ use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::business::config::Configuration;
+use crate::business::config::CommonConfig;
 use crate::data::models::{DataPacket, PcapFileHeader};
 
 /// PCAP文件写入器
@@ -15,18 +15,20 @@ pub struct PcapFileWriter {
     packet_count: u64,
     total_size: u64,
     max_packets_per_file: usize,
-    configuration: Configuration,
+    auto_flush: bool,
+    configuration: CommonConfig,
 }
 
 impl PcapFileWriter {
-    pub(crate) fn new(configuration: Configuration) -> Self {
+    pub(crate) fn new(configuration: CommonConfig, max_packets_per_file: usize, auto_flush: bool) -> Self {
         Self {
             file: None,
             writer: None,
             file_path: None,
             packet_count: 0,
             total_size: 0,
-            max_packets_per_file: configuration.max_packets_per_file,
+            max_packets_per_file,
+            auto_flush,
             configuration,
         }
     }
@@ -55,7 +57,7 @@ impl PcapFileWriter {
             .write_all(&header.to_bytes())
             .map_err(|e| format!("写入文件头失败: {}", e))?;
 
-        if self.configuration.auto_flush {
+        if self.auto_flush {
             writer
                 .flush()
                 .map_err(|e| format!("刷新缓冲区失败: {}", e))?;
@@ -97,7 +99,7 @@ impl PcapFileWriter {
         self.packet_count += 1;
         self.total_size += packet_bytes.len() as u64;
 
-        if self.configuration.auto_flush {
+        if self.auto_flush {
             writer
                 .flush()
                 .map_err(|e| format!("刷新缓冲区失败: {}", e))?;

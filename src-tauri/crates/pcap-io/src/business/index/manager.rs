@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 
 use crate::foundation::error::{PcapError, Result};
 use crate::business::index::types::{PacketIndexEntry, PcapFileIndex, PidxIndex};
-use crate::business::config::Configuration;
+use crate::business::config::CommonConfig;
 use crate::data::file_reader::PcapFileReader;
 
 /// PIDX索引管理器
@@ -303,7 +303,7 @@ impl IndexManager {
         let file_size = fs::metadata(path).map_err(|e| PcapError::Io(e))?.len();
 
         // 打开PCAP文件并读取所有数据包
-        let mut reader = PcapFileReader::new(Configuration::default());
+        let mut reader = PcapFileReader::new(CommonConfig::default());
         reader.open(path)?;
         let mut packets = Vec::new();
         let mut packet_count = 0u64;

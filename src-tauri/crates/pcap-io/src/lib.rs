@@ -31,7 +31,8 @@
 //!
 //! ```rust
 //! use pcap_io::{
-//!     Configuration,
+//!     ReaderConfig,
+//!     WriterConfig,
 //!     DataPacket,
 //!     PcapReader,
 //!     PcapWriter,
@@ -39,11 +40,11 @@
 //! };
 //!
 //! fn main() -> Result<()> {
-//!     // 创建配置
-//!     let config = Configuration::default();
+//!     // 创建写入器配置
+//!     let writer_config = WriterConfig::default();
 //!
 //!     // 写入PCAP数据集
-//!     let mut writer = PcapWriter::new("./data", "example_dataset")?;
+//!     let mut writer = PcapWriter::new_with_config("./data", "example_dataset", writer_config)?;
 //!
 //!     let data = b"Hello, World!".to_vec();
 //!     let packet = DataPacket::from_datetime(
@@ -54,8 +55,11 @@
 //!     writer.write_packet(&packet)?;
 //!     writer.finalize()?;
 //!
+//!     // 创建读取器配置
+//!     let reader_config = ReaderConfig::default();
+//!
 //!     // 读取PCAP数据集
-//!     let mut reader = PcapReader::new("./data", "example_dataset")?;
+//!     let mut reader = PcapReader::new_with_config("./data", "example_dataset", reader_config)?;
 //!
 //!     while let Some(packet) = reader.read_packet()? {
 //!         println!("读取数据包: {:?}", packet);
@@ -71,16 +75,13 @@ pub mod business;
 pub mod data;
 pub mod foundation;
 
-// 重新导出主要类型和功能 - 按架构层次组织
-
-// 基础设施层导出
-pub use foundation::{Info, PcapError, Read, Result, Write};
-
-// 数据访问层导出
+// 重新导出核心类型和函数
+pub use business::{CommonConfig, ReaderConfig, WriterConfig, PacketIndexEntry, PcapFileIndex, PidxIndex};
 pub use data::{DataPacket, DataPacketHeader, DatasetInfo, FileInfo, PcapFileHeader};
+pub use foundation::{PcapError, Result};
 
-// 业务逻辑层导出
-pub use business::{Configuration, PacketIndexEntry, PcapFileIndex, PidxIndex, PidxReader, PidxWriter};
+// 重新导出traits
+pub use foundation::traits::{Read, Write};
 
 // 基础设施层类型导出
 pub use foundation::{constants, PcapErrorCode};

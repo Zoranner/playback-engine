@@ -7,11 +7,11 @@ use std::time::SystemTime;
 
 use crate::foundation::error::{PcapError, Result};
 use crate::data::models::DataPacket;
-use crate::business::config::Configuration;
+use crate::business::config::CommonConfig;
 
 /// 数据包处理器
 pub struct PacketProcessor {
-    config: Configuration,
+    config: CommonConfig,
     processed_count: u64,
     total_bytes: u64,
     first_timestamp: Option<u64>,
@@ -20,7 +20,7 @@ pub struct PacketProcessor {
 
 impl PacketProcessor {
     /// 创建新的数据包处理器
-    pub fn new(config: Configuration) -> Self {
+    pub fn new(config: CommonConfig) -> Self {
         Self {
             config,
             processed_count: 0,
