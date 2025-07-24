@@ -7,13 +7,13 @@ use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use crate::business::config::Configuration;
-use crate::foundation::error::{PcapError, Result};
-use crate::data::file_reader::PcapFileReader;
-use crate::business::index::{PidxIndex, PidxReader};
-use crate::data::models::{DataPacket, DatasetInfo, FileInfo};
-use crate::foundation::traits::{Info, Read};
 use crate::business::cache::{CacheStats, FileInfoCache};
+use crate::business::config::Configuration;
+use crate::business::index::{PidxIndex, PidxReader};
+use crate::data::file_reader::PcapFileReader;
+use crate::data::models::{DataPacket, DatasetInfo, FileInfo};
+use crate::foundation::error::{PcapError, Result};
+use crate::foundation::traits::{Info, Read};
 
 // 错误消息常量
 const ERR_READER_FINALIZED: &str = "读取器已完成，无法继续读取";
@@ -57,62 +57,70 @@ pub struct PcapReader {
 }
 
 impl PcapReader {
-    /// 创建新的数据集读取器
+    /// 创建新的数据集读取器（使用默认配置）
     ///
     /// # 参数
-    /// - `dataset_path` - 数据集目录路径
-    /// - `config` - PCAP配置
+    /// - `base_path` - 基础目录路径
+    /// - `dataset_name` - 数据集名称
+    ///
+    /// # 返回
+    /// 返回使用默认配置初始化的读取器实例
+    pub fn new<P: AsRef<Path>>(
+        base_path: P,
+        dataset_name: &str,
+    ) -> Result<Self> {
+        Self::new_with_config(base_path, dataset_name, None)
+    }
+
+    /// 创建新的数据集读取器（可指定配置）
+    ///
+    /// # 参数
+    /// - `base_path` - 基础目录路径
+    /// - `dataset_name` - 数据集名称
+    /// - `config` - PCAP配置（可选，默认使用Configuration::default()）
     ///
     /// # 返回
     /// 返回初始化后的读取器实例
-    pub fn new<P: AsRef<Path>>(dataset_path: P, config: Configuration) -> Result<Self> {
-        let path = dataset_path.as_ref().to_path_buf();
+    pub fn new_with_config<P: AsRef<Path>>(
+        base_path: P,
+        dataset_name: &str,
+        config: impl Into<Option<Configuration>>,
+    ) -> Result<Self> {
+        let base_path = base_path.as_ref().to_path_buf();
+        let dataset_path = base_path.join(dataset_name);
 
         // 验证数据集目录存在
-        if !path.exists() {
+        if !dataset_path.exists() {
             return Err(PcapError::DirectoryNotFound(format!(
                 "数据集目录不存在: {:?}",
-                path
+                dataset_path
             )));
         }
 
-        if !path.is_dir() {
+        if !dataset_path.is_dir() {
             return Err(PcapError::InvalidArgument(format!(
                 "指定路径不是目录: {:?}",
-                path
+                dataset_path
             )));
         }
 
-        // 获取数据集名称
-        let dataset_name = path
-            .file_name()
-            .and_then(|name| name.to_str())
-            .unwrap_or("unknown")
-            .to_string();
-
-        let base_path = path.parent().unwrap_or(&path).to_path_buf();
-
-        // 初始化数据集信息
-        let mut dataset_info = DatasetInfo::new(dataset_name.clone(), &path);
+        // 使用提供的配置或默认配置
+        let configuration = config.into().unwrap_or_default();
 
         // 扫描PCAP文件
-        let pcap_files = Self::scan_pcap_files(&path)?;
+        let pcap_files = Self::scan_pcap_files(&dataset_path)?;
         if pcap_files.is_empty() {
-            warn!("数据集目录中未找到PCAP文件: {:?}", path);
+            warn!("数据集目录中未找到PCAP文件: {:?}", dataset_path);
         }
 
-        // 初始化文件信息缓存
-        let file_info_cache = if config.enable_index_cache {
-            FileInfoCache::new(config.index_cache_size)
-        } else {
-            FileInfoCache::new(0)
-        };
+        // 关键变化：在实例化之前确保索引有效
+        let pidx_index = Self::ensure_valid_index(&dataset_path)?;
 
-        // 尝试加载PIDX索引
-        let pidx_index = Self::load_pidx_index(&path)?;
-
-        // 更新数据集信息
+        // 初始化数据集信息
+        let mut dataset_info = DatasetInfo::new(dataset_name.to_string(), &dataset_path);
         dataset_info.file_count = pcap_files.len();
+
+        // 从索引更新数据集信息
         if let Some(ref index) = pidx_index {
             dataset_info.total_packets = index.total_packets;
             dataset_info.start_timestamp = Some(index.start_timestamp);
@@ -120,13 +128,18 @@ impl PcapReader {
             dataset_info.has_index = true;
         }
 
-        let total_packets = dataset_info.total_packets;
+        // 初始化文件信息缓存
+        let file_info_cache = if configuration.enable_index_cache {
+            FileInfoCache::new(configuration.index_cache_size)
+        } else {
+            FileInfoCache::new(0)
+        };
 
         // 创建PcapReader实例
         let mut reader = Self {
             base_path,
-            dataset_name,
-            configuration: Arc::new(config),
+            dataset_name: dataset_name.to_string(),
+            configuration: Arc::new(configuration),
             pcap_files,
             current_file_index: 0,
             current_reader: None,
@@ -147,9 +160,9 @@ impl PcapReader {
 
         info!(
             "PcapReader已创建: {:?}, 文件数: {}, 数据包总数: {}",
-            path,
+            dataset_path,
             reader.pcap_files.len(),
-            total_packets
+            reader.dataset_info.total_packets
         );
 
         Ok(reader)
@@ -186,18 +199,113 @@ impl PcapReader {
         Ok(pcap_files)
     }
 
+    /// 确保数据集有有效的索引文件
+    ///
+    /// 检查、验证、生成和加载索引文件的统一入口点
+    /// 这个方法在PcapReader实例化之前调用，确保索引已经准备就绪
+    fn ensure_valid_index<P: AsRef<Path>>(dataset_path: P) -> Result<Option<PidxIndex>> {
+        let path = dataset_path.as_ref();
+
+        info!("正在检查数据集索引文件: {:?}", path);
+
+        // 1. 尝试查找现有的PIDX文件
+        match PidxReader::find_pidx_file(path) {
+            Ok(Some(pidx_path)) => {
+                info!("找到索引文件: {:?}", pidx_path);
+
+                // 2. 验证索引文件格式
+                if let Ok(true) = PidxReader::validate_pidx_format(&pidx_path) {
+                    // 3. 加载索引并验证有效性
+                    match PidxReader::load_index(&pidx_path) {
+                        Ok(index) => {
+                            // 4. 检查索引是否为空或需要重建
+                            if Self::is_index_valid(&index, path)? {
+                                info!("使用现有的有效索引文件");
+                                return Ok(Some(index));
+                            } else {
+                                info!("索引文件无效或过时，需要重新生成");
+                            }
+                        }
+                        Err(e) => {
+                            warn!("加载索引文件失败: {}, 将重新生成", e);
+                        }
+                    }
+                } else {
+                    warn!("索引文件格式无效，将重新生成");
+                }
+            }
+            Ok(None) => {
+                info!("未找到索引文件，将自动生成");
+            }
+            Err(e) => {
+                warn!("查找索引文件时出错: {}, 将尝试生成新索引", e);
+            }
+        }
+
+        // 5. 生成新的索引文件
+        Self::generate_index_for_dataset(path)
+    }
+
+    /// 验证索引是否有效
+    ///
+    /// 检查索引的完整性和时效性
+    fn is_index_valid<P: AsRef<Path>>(index: &PidxIndex, dataset_path: P) -> Result<bool> {
+        // 检查索引是否为空（允许空数据集）
+        let pcap_files = Self::scan_pcap_files(dataset_path.as_ref())?;
+
+        // 如果数据集为空，索引也应该为空，这是有效的
+        if pcap_files.is_empty() {
+            return Ok(index.data_files.files.is_empty());
+        }
+
+        // 如果数据集不为空，但索引为空，则无效
+        if index.data_files.files.is_empty() {
+            return Ok(false);
+        }
+
+        // 检查文件数量是否匹配
+        if pcap_files.len() != index.data_files.files.len() {
+            debug!(
+                "索引文件数量不匹配: 预期 {}, 实际 {}",
+                pcap_files.len(),
+                index.data_files.files.len()
+            );
+            return Ok(false);
+        }
+
+        // 检查是否需要重建（文件哈希等）
+        match PidxReader::needs_rebuild(index, dataset_path.as_ref()) {
+            Ok(needs_rebuild) => Ok(!needs_rebuild),
+            Err(_) => Ok(false), // 检查失败则认为无效
+        }
+    }
+
     /// 加载PIDX索引
+    ///
+    /// 简化版本，只负责加载现有的有效索引文件
+    /// 索引的生成逻辑已移至ensure_valid_index()
     fn load_pidx_index(dataset_path: &Path) -> Result<Option<PidxIndex>> {
-        // 尝试查找现有的PIDX文件
-        if let Some(pidx_path) = PidxReader::find_pidx_file(dataset_path)? {
-            match PidxReader::load_index(&pidx_path) {
-                Ok(index) => {
-                    info!("已加载PIDX索引文件: {:?}", pidx_path);
-                    return Ok(Some(index));
+        // 查找索引文件
+        match PidxReader::find_pidx_file(dataset_path) {
+            Ok(Some(pidx_path)) => {
+                // 验证并加载索引文件
+                if let Ok(true) = PidxReader::validate_pidx_format(&pidx_path) {
+                    match PidxReader::load_index(&pidx_path) {
+                        Ok(index) => {
+                            info!("已加载PIDX索引文件: {:?}", pidx_path);
+                            return Ok(Some(index));
+                        }
+                        Err(e) => {
+                            warn!("加载PIDX索引失败: {}", e);
+                        }
+                    }
                 }
-                Err(e) => {
-                    warn!("加载PIDX索引失败: {}", e);
-                }
+            }
+            Ok(None) => {
+                debug!("未找到PIDX索引文件");
+            }
+            Err(e) => {
+                warn!("查找PIDX索引文件时出错: {}", e);
             }
         }
 
@@ -266,6 +374,9 @@ impl PcapReader {
             return Ok(());
         }
 
+        // 索引处理已在new()方法中通过ensure_valid_index()完成
+        // 这里只需要处理缓存预加载等其他初始化工作
+
         // 预加载部分文件信息
         if self.configuration.enable_index_cache && !self.pcap_files.is_empty() {
             let preload_count = std::cmp::min(5, self.pcap_files.len());
@@ -292,6 +403,42 @@ impl PcapReader {
         *self.total_size_cache.borrow_mut() = None;
         debug!("缓存已清理");
         Ok(())
+    }
+
+    /// 为数据集生成新的索引文件
+    ///
+    /// 使用PidxWriter为指定的数据集目录生成索引文件
+    /// 支持空数据集的索引生成
+    fn generate_index_for_dataset<P: AsRef<Path>>(dataset_path: P) -> Result<Option<PidxIndex>> {
+        let path = dataset_path.as_ref();
+
+        info!("开始为数据集生成索引文件: {:?}", path);
+
+        // 使用PidxWriter生成索引
+        use crate::business::index::writer::PidxWriter;
+
+        let mut pidx_writer = PidxWriter::new(path)?;
+        match pidx_writer.generate_index() {
+            Ok(index_path) => {
+                info!("索引文件生成成功: {:?}", index_path);
+
+                // 加载生成的索引文件
+                match PidxReader::load_index(&index_path) {
+                    Ok(index) => {
+                        info!("新生成的索引文件已加载完成");
+                        Ok(Some(index))
+                    }
+                    Err(e) => {
+                        warn!("加载新生成的索引文件失败: {}", e);
+                        Ok(None)
+                    }
+                }
+            }
+            Err(e) => {
+                warn!("生成索引文件失败: {}", e);
+                Ok(None)
+            }
+        }
     }
 
     /// 生成索引（如果需要）

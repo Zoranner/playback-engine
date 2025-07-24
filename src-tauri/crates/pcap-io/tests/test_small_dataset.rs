@@ -2,7 +2,7 @@
 //!
 //! 测试无索引写入小规模数据（2000个数据包），验证基本的写入读取功能
 
-use pcap_io::{Configuration, DataPacket, Info, Read, PcapReader, Result, Write, PcapWriter};
+use pcap_io::{Configuration, DataPacket, Info, PcapReader, PcapWriter, Read, Result, Write};
 use std::path::Path;
 use std::time::SystemTime;
 use tempfile::TempDir;
@@ -11,7 +11,6 @@ use tempfile::TempDir;
 #[derive(Debug, Clone)]
 struct PacketInfo {
     index: usize,
-    capture_time: SystemTime,
     packet_length: u32,
     checksum: u32,
     first_bytes: Vec<u8>,
@@ -33,12 +32,11 @@ fn create_test_packet(sequence: usize, size: usize) -> Result<DataPacket> {
 /// 写入测试数据包
 fn write_test_packets(
     base_path: &Path,
-    project_name: &str,
+    dataset_name: &str,
     packet_count: usize,
     packet_size: usize,
 ) -> Result<Vec<PacketInfo>> {
-    let config = Configuration::default();
-    let mut writer = PcapWriter::new(base_path, project_name, config)?;
+    let mut writer = PcapWriter::new(base_path, dataset_name)?;
 
     let mut written_packets = Vec::new();
 
@@ -48,7 +46,6 @@ fn write_test_packets(
 
         written_packets.push(PacketInfo {
             index: i,
-            capture_time: packet.capture_time(),
             packet_length: packet.packet_length() as u32,
             checksum: packet.checksum(),
             first_bytes: packet.data.iter().take(16).cloned().collect(),
@@ -60,10 +57,8 @@ fn write_test_packets(
 }
 
 /// 读取测试数据包
-fn read_test_packets(base_path: &Path, project_name: &str) -> Result<Vec<PacketInfo>> {
-    let config = Configuration::default();
-    let dataset_path = base_path.join(project_name);
-    let mut reader = PcapReader::new(dataset_path, config)?;
+fn read_test_packets(base_path: &Path, dataset_name: &str) -> Result<Vec<PacketInfo>> {
+    let mut reader = PcapReader::new(base_path, dataset_name)?;
 
     let mut read_packets = Vec::new();
     let mut packet_index = 0;
@@ -71,7 +66,6 @@ fn read_test_packets(base_path: &Path, project_name: &str) -> Result<Vec<PacketI
     while let Some(packet) = reader.read_packet()? {
         read_packets.push(PacketInfo {
             index: packet_index,
-            capture_time: packet.capture_time(),
             packet_length: packet.packet_length() as u32,
             checksum: packet.checksum(),
             first_bytes: packet.data.iter().take(16).cloned().collect(),
@@ -109,13 +103,13 @@ fn test_small_dataset_basic_functionality() {
     // 创建临时目录
     let temp_dir = TempDir::new().expect("创建临时目录失败");
     let base_path = temp_dir.path();
-    let project_name = "small_test_project";
+    let dataset_name = "small_test_dataset";
 
     const PACKET_COUNT: usize = 2000;
     const PACKET_SIZE: usize = 1024;
 
     // 步骤1: 写入测试数据
-    let written_packets = write_test_packets(base_path, project_name, PACKET_COUNT, PACKET_SIZE)
+    let written_packets = write_test_packets(base_path, dataset_name, PACKET_COUNT, PACKET_SIZE)
         .expect("写入测试数据失败");
 
     assert_eq!(
@@ -125,7 +119,7 @@ fn test_small_dataset_basic_functionality() {
     );
 
     // 步骤2: 读取测试数据
-    let read_packets = read_test_packets(base_path, project_name).expect("读取测试数据失败");
+    let read_packets = read_test_packets(base_path, dataset_name).expect("读取测试数据失败");
 
     assert_eq!(read_packets.len(), PACKET_COUNT, "读取的数据包数量不正确");
 
@@ -141,13 +135,14 @@ fn test_small_dataset_multiple_files() {
     // 测试数据包分割到多个文件的功能
     let temp_dir = TempDir::new().expect("创建临时目录失败");
     let base_path = temp_dir.path();
-    let project_name = "multi_file_test";
+    let dataset_name = "multi_file_test";
 
     // 使用较小的文件大小限制来强制分割
     let mut config = Configuration::default();
     config.max_packets_per_file = 100; // 每个文件最多100个数据包
 
-    let mut writer = PcapWriter::new(base_path, project_name, config.clone()).expect("创建PcapWriter失败");
+    let mut writer =
+        PcapWriter::new(base_path, dataset_name).expect("创建PcapWriter失败");
 
     const PACKET_COUNT: usize = 350; // 应该分割为4个文件
     const PACKET_SIZE: usize = 512;
@@ -161,8 +156,7 @@ fn test_small_dataset_multiple_files() {
     writer.finalize().expect("完成写入失败");
 
     // 验证读取
-    let dataset_path = base_path.join(project_name);
-    let mut reader = PcapReader::new(dataset_path, config).expect("创建PcapReader失败");
+    let mut reader = PcapReader::new(base_path, dataset_name).expect("创建PcapReader失败");
 
     let dataset_info = reader.dataset_info();
     assert_eq!(
@@ -194,14 +188,13 @@ fn test_small_dataset_empty_and_edge_cases() {
     let base_path = temp_dir.path();
 
     // 测试空数据集
-    let project_name = "empty_test";
-    let config = Configuration::default();
-    let mut writer = PcapWriter::new(base_path, project_name, config.clone()).expect("创建PcapWriter失败");
+    let dataset_name = "empty_test";
+    let mut writer =
+        PcapWriter::new(base_path, dataset_name).expect("创建PcapWriter失败");
     writer.finalize().expect("完成空写入失败");
 
     // 尝试读取空数据集
-    let dataset_path = base_path.join(project_name);
-    let mut reader = PcapReader::new(dataset_path, config).expect("创建PcapReader失败");
+    let mut reader = PcapReader::new(base_path, dataset_name).expect("创建PcapReader失败");
 
     let dataset_info = reader.dataset_info();
     assert_eq!(dataset_info.total_packets, 0, "空数据集应该有0个数据包");

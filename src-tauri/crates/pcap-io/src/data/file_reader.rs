@@ -10,7 +10,6 @@ use crate::foundation::utils::calculate_crc32;
 
 // 错误消息常量
 const ERR_FILE_NOT_OPEN: &str = "文件未打开";
-const ERR_INVALID_POSITION: &str = "无效的文件位置";
 const ERR_CHECKSUM_MISMATCH: &str = "数据包校验和验证失败";
 
 /// PCAP文件读取器

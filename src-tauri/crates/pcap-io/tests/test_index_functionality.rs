@@ -2,9 +2,8 @@
 //!
 //! 测试有索引写入索引内容的正确性，验证PIDX索引系统
 
-use pcap_io::{Configuration, DataPacket, Info, Read, PcapReader, Result, Write, PcapWriter};
-use pcap_io::{PidxIndex, PidxReader, PidxWriter};
-use std::path::Path;
+use pcap_io::{Configuration, DataPacket, Info, PcapReader, PcapWriter, Result, Write};
+use pcap_io::{PidxReader, PidxWriter};
 use std::time::SystemTime;
 use tempfile::TempDir;
 
@@ -25,7 +24,7 @@ fn create_test_packet(sequence: usize, size: usize) -> Result<DataPacket> {
 fn test_index_generation_and_loading() {
     let temp_dir = TempDir::new().expect("创建临时目录失败");
     let base_path = temp_dir.path();
-    let project_name = "index_test_project";
+    let dataset_name = "index_test_dataset";
 
     const PACKET_COUNT: usize = 5000;
     const PACKET_SIZE: usize = 1024;
@@ -34,7 +33,7 @@ fn test_index_generation_and_loading() {
     let mut config = Configuration::default();
     config.enable_index_cache = true; // 启用索引缓存
 
-    let mut writer = PcapWriter::new(base_path, project_name, config.clone()).expect("创建PcapWriter失败");
+    let mut writer = PcapWriter::new(base_path, dataset_name).expect("创建PcapWriter失败");
 
     let mut written_timestamps = Vec::new();
 
@@ -47,7 +46,7 @@ fn test_index_generation_and_loading() {
     writer.finalize().expect("完成写入失败");
 
     // 步骤2: 验证自动生成的索引
-    let dataset_path = base_path.join(project_name);
+    let dataset_path = base_path.join(dataset_name);
 
     // 查找PIDX文件
     let pidx_path = PidxReader::find_pidx_file(&dataset_path)
@@ -92,7 +91,7 @@ fn test_index_generation_and_loading() {
 fn test_manual_index_generation() {
     let temp_dir = TempDir::new().expect("创建临时目录失败");
     let base_path = temp_dir.path();
-    let project_name = "manual_index_test";
+    let dataset_name = "manual_index_test";
 
     const PACKET_COUNT: usize = 3000;
     const PACKET_SIZE: usize = 512;
@@ -101,7 +100,8 @@ fn test_manual_index_generation() {
     let mut config = Configuration::default();
     config.enable_index_cache = false;
 
-    let mut writer = PcapWriter::new(base_path, project_name, config).expect("创建PcapWriter失败");
+    let mut writer =
+        PcapWriter::new_with_config(base_path, dataset_name, config).expect("创建PcapWriter失败");
 
     for i in 0..PACKET_COUNT {
         let packet = create_test_packet(i, PACKET_SIZE).expect("创建数据包失败");
@@ -111,7 +111,7 @@ fn test_manual_index_generation() {
     writer.finalize().expect("完成写入失败");
 
     // 步骤2: 手动生成索引
-    let dataset_path = base_path.join(project_name);
+    let dataset_path = base_path.join(dataset_name);
     let mut pidx_writer = PidxWriter::new(&dataset_path).expect("创建PidxWriter失败");
     let index_path = pidx_writer.generate_index().expect("生成索引失败");
 
@@ -128,8 +128,7 @@ fn test_manual_index_generation() {
     );
 
     // 验证索引与实际数据的一致性
-    let config = Configuration::default();
-    let reader = PcapReader::new(dataset_path, config).expect("创建PcapReader失败");
+    let reader = PcapReader::new(base_path, dataset_name).expect("创建PcapReader失败");
     let dataset_info = reader.dataset_info();
 
     assert_eq!(
@@ -144,14 +143,13 @@ fn test_manual_index_generation() {
 fn test_index_content_verification() {
     let temp_dir = TempDir::new().expect("创建临时目录失败");
     let base_path = temp_dir.path();
-    let project_name = "index_content_test";
+    let dataset_name = "index_content_test";
 
     const PACKET_COUNT: usize = 2000;
     const PACKET_SIZE: usize = 256;
 
     // 创建具有已知时间戳的数据包
-    let config = Configuration::default();
-    let mut writer = PcapWriter::new(base_path, project_name, config.clone()).expect("创建PcapWriter失败");
+    let mut writer = PcapWriter::new(base_path, dataset_name).expect("创建PcapWriter失败");
 
     let mut expected_timestamps = Vec::new();
 
@@ -164,7 +162,7 @@ fn test_index_content_verification() {
     writer.finalize().expect("完成写入失败");
 
     // 读取并验证索引内容
-    let dataset_path = base_path.join(project_name);
+    let dataset_path = base_path.join(dataset_name);
     let pidx_path = PidxReader::find_pidx_file(&dataset_path)
         .expect("查找PIDX文件失败")
         .expect("PIDX文件不存在");
@@ -202,14 +200,13 @@ fn test_index_content_verification() {
 fn test_index_query_functionality() {
     let temp_dir = TempDir::new().expect("创建临时目录失败");
     let base_path = temp_dir.path();
-    let project_name = "index_query_test";
+    let dataset_name = "index_query_test";
 
     const PACKET_COUNT: usize = 1500;
     const PACKET_SIZE: usize = 512;
 
     // 写入数据包
-    let config = Configuration::default();
-    let mut writer = PcapWriter::new(base_path, project_name, config.clone()).expect("创建PcapWriter失败");
+    let mut writer = PcapWriter::new(base_path, dataset_name).expect("创建PcapWriter失败");
 
     for i in 0..PACKET_COUNT {
         let packet = create_test_packet(i, PACKET_SIZE).expect("创建数据包失败");
@@ -219,7 +216,7 @@ fn test_index_query_functionality() {
     writer.finalize().expect("完成写入失败");
 
     // 加载索引
-    let dataset_path = base_path.join(project_name);
+    let dataset_path = base_path.join(dataset_name);
     let pidx_path = PidxReader::find_pidx_file(&dataset_path)
         .expect("查找PIDX文件失败")
         .expect("PIDX文件不存在");

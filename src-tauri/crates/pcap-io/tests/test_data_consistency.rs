@@ -2,10 +2,9 @@
 //!
 //! 测试写入和读取的一致性，确保数据完整性和可靠性
 
-use pcap_io::{Configuration, DataPacket, PcapReader, PcapWriter, Read, Write, Info, Result};
+use pcap_io::{DataPacket, PcapReader, PcapWriter, Read, Result, Write};
 use std::path::Path;
 use std::time::SystemTime;
-use std::collections::HashMap;
 use tempfile::TempDir;
 
 /// 数据包详细信息结构
@@ -69,12 +68,11 @@ fn create_packet_details(packet: &DataPacket, index: usize) -> PacketDetails {
 /// 写入测试数据包并返回详细信息
 fn write_detailed_test_data(
     base_path: &Path,
-    project_name: &str,
+    dataset_name: &str,
     packet_count: usize,
-    packet_size: usize
+    packet_size: usize,
 ) -> Result<Vec<PacketDetails>> {
-    let config = Configuration::default();
-    let mut writer = PcapWriter::new(base_path, project_name, config)?;
+    let mut writer = PcapWriter::new(base_path, dataset_name)?;
 
     let mut written_details = Vec::with_capacity(packet_count);
 
@@ -91,13 +89,8 @@ fn write_detailed_test_data(
 }
 
 /// 读取并验证数据包
-fn read_and_verify_test_data(
-    base_path: &Path,
-    project_name: &str
-) -> Result<Vec<PacketDetails>> {
-    let config = Configuration::default();
-    let dataset_path = base_path.join(project_name);
-    let mut reader = PcapReader::new(dataset_path, config)?;
+fn read_and_verify_test_data(base_path: &Path, dataset_name: &str) -> Result<Vec<PacketDetails>> {
+    let mut reader = PcapReader::new(base_path, dataset_name)?;
 
     let mut read_details = Vec::new();
     let mut packet_index = 0;
@@ -114,14 +107,18 @@ fn read_and_verify_test_data(
 /// 深度比较两个数据包详细信息列表
 fn deep_compare_packet_details(
     written: &[PacketDetails],
-    read: &[PacketDetails]
+    read: &[PacketDetails],
 ) -> (bool, Vec<String>) {
     let mut errors = Vec::new();
     let mut is_consistent = true;
 
     // 检查数量
     if written.len() != read.len() {
-        errors.push(format!("数据包数量不匹配：写入 {}，读取 {}", written.len(), read.len()));
+        errors.push(format!(
+            "数据包数量不匹配：写入 {}，读取 {}",
+            written.len(),
+            read.len()
+        ));
         is_consistent = false;
     }
 
@@ -135,23 +132,38 @@ fn deep_compare_packet_details(
             is_consistent = false;
 
             if w.index != r.index {
-                errors.push(format!("数据包 {}: 索引不匹配 (写入: {}, 读取: {})", i, w.index, r.index));
+                errors.push(format!(
+                    "数据包 {}: 索引不匹配 (写入: {}, 读取: {})",
+                    i, w.index, r.index
+                ));
             }
 
             if w.timestamp_ns != r.timestamp_ns {
-                errors.push(format!("数据包 {}: 时间戳不匹配 (写入: {}, 读取: {})", i, w.timestamp_ns, r.timestamp_ns));
+                errors.push(format!(
+                    "数据包 {}: 时间戳不匹配 (写入: {}, 读取: {})",
+                    i, w.timestamp_ns, r.timestamp_ns
+                ));
             }
 
             if w.packet_length != r.packet_length {
-                errors.push(format!("数据包 {}: 长度不匹配 (写入: {}, 读取: {})", i, w.packet_length, r.packet_length));
+                errors.push(format!(
+                    "数据包 {}: 长度不匹配 (写入: {}, 读取: {})",
+                    i, w.packet_length, r.packet_length
+                ));
             }
 
             if w.checksum != r.checksum {
-                errors.push(format!("数据包 {}: 校验和不匹配 (写入: 0x{:08X}, 读取: 0x{:08X})", i, w.checksum, r.checksum));
+                errors.push(format!(
+                    "数据包 {}: 校验和不匹配 (写入: 0x{:08X}, 读取: 0x{:08X})",
+                    i, w.checksum, r.checksum
+                ));
             }
 
             if w.data_hash != r.data_hash {
-                errors.push(format!("数据包 {}: 数据哈希不匹配 (写入: {}, 读取: {})", i, w.data_hash, r.data_hash));
+                errors.push(format!(
+                    "数据包 {}: 数据哈希不匹配 (写入: {}, 读取: {})",
+                    i, w.data_hash, r.data_hash
+                ));
             }
 
             if w.first_16_bytes != r.first_16_bytes {
@@ -171,18 +183,19 @@ fn deep_compare_packet_details(
 fn test_basic_data_consistency() {
     let temp_dir = TempDir::new().expect("创建临时目录失败");
     let base_path = temp_dir.path();
-    let project_name = "consistency_test";
+    let dataset_name = "consistency_test";
 
     const PACKET_COUNT: usize = 1000;
     const PACKET_SIZE: usize = 1024;
 
     // 写入测试数据
-    let written_details = write_detailed_test_data(base_path, project_name, PACKET_COUNT, PACKET_SIZE)
-        .expect("写入测试数据失败");
+    let written_details =
+        write_detailed_test_data(base_path, dataset_name, PACKET_COUNT, PACKET_SIZE)
+            .expect("写入测试数据失败");
 
     // 读取并验证数据
-    let read_details = read_and_verify_test_data(base_path, project_name)
-        .expect("读取测试数据失败");
+    let read_details =
+        read_and_verify_test_data(base_path, dataset_name).expect("读取测试数据失败");
 
     // 深度比较
     let (is_consistent, errors) = deep_compare_packet_details(&written_details, &read_details);
@@ -196,55 +209,68 @@ fn test_basic_data_consistency() {
         }
     }
 
-    assert!(is_consistent, "数据一致性测试失败，发现 {} 个错误", errors.len());
+    assert!(
+        is_consistent,
+        "数据一致性测试失败，发现 {} 个错误",
+        errors.len()
+    );
 
-    println!("✅ 基本数据一致性测试通过：{} 个数据包完全一致", PACKET_COUNT);
+    println!(
+        "✅ 基本数据一致性测试通过：{} 个数据包完全一致",
+        PACKET_COUNT
+    );
 }
 
 #[test]
 fn test_large_packet_consistency() {
     let temp_dir = TempDir::new().expect("创建临时目录失败");
     let base_path = temp_dir.path();
-    let project_name = "large_packet_consistency";
+    let dataset_name = "large_packet_consistency";
 
     const PACKET_COUNT: usize = 100;
     const PACKET_SIZE: usize = 64 * 1024; // 64KB大数据包
 
     // 写入大数据包
-    let written_details = write_detailed_test_data(base_path, project_name, PACKET_COUNT, PACKET_SIZE)
-        .expect("写入大数据包失败");
+    let written_details =
+        write_detailed_test_data(base_path, dataset_name, PACKET_COUNT, PACKET_SIZE)
+            .expect("写入大数据包失败");
 
     // 读取并验证
-    let read_details = read_and_verify_test_data(base_path, project_name)
-        .expect("读取大数据包失败");
+    let read_details =
+        read_and_verify_test_data(base_path, dataset_name).expect("读取大数据包失败");
 
     // 验证一致性
     let (is_consistent, errors) = deep_compare_packet_details(&written_details, &read_details);
 
     assert!(is_consistent, "大数据包一致性测试失败，错误: {:?}", errors);
 
-    println!("✅ 大数据包一致性测试通过：{} 个 {}KB 数据包", PACKET_COUNT, PACKET_SIZE / 1024);
+    println!(
+        "✅ 大数据包一致性测试通过：{} 个 {}KB 数据包",
+        PACKET_COUNT,
+        PACKET_SIZE / 1024
+    );
 }
 
 #[test]
 fn test_mixed_size_packet_consistency() {
     let temp_dir = TempDir::new().expect("创建临时目录失败");
     let base_path = temp_dir.path();
-    let project_name = "mixed_size_consistency";
+    let dataset_name = "mixed_size_consistency";
 
     // 创建不同大小的数据包
     let packet_sizes = vec![64, 256, 512, 1024, 2048, 4096, 8192];
     let packets_per_size = 50;
 
-    let config = Configuration::default();
-    let mut writer = PcapWriter::new(base_path, project_name, config.clone()).expect("创建Writer失败");
+    let mut writer =
+        PcapWriter::new(base_path, dataset_name).expect("创建Writer失败");
 
     let mut written_details = Vec::new();
     let mut packet_index = 0;
 
     for &size in &packet_sizes {
         for i in 0..packets_per_size {
-            let packet = create_detailed_test_packet(packet_index + i, size).expect("创建数据包失败");
+            let packet =
+                create_detailed_test_packet(packet_index + i, size).expect("创建数据包失败");
             let details = create_packet_details(&packet, packet_index);
 
             writer.write_packet(&packet).expect("写入数据包失败");
@@ -256,30 +282,37 @@ fn test_mixed_size_packet_consistency() {
     writer.finalize().expect("完成写入失败");
 
     // 读取并验证
-    let read_details = read_and_verify_test_data(base_path, project_name)
-        .expect("读取混合大小数据包失败");
+    let read_details =
+        read_and_verify_test_data(base_path, dataset_name).expect("读取混合大小数据包失败");
 
     // 验证一致性
     let (is_consistent, errors) = deep_compare_packet_details(&written_details, &read_details);
 
-    assert!(is_consistent, "混合大小数据包一致性测试失败，错误: {:?}", errors);
+    assert!(
+        is_consistent,
+        "混合大小数据包一致性测试失败，错误: {:?}",
+        errors
+    );
 
     let total_packets = packet_sizes.len() * packets_per_size;
-    println!("✅ 混合大小数据包一致性测试通过：{} 个不同大小数据包", total_packets);
+    println!(
+        "✅ 混合大小数据包一致性测试通过：{} 个不同大小数据包",
+        total_packets
+    );
 }
 
 #[test]
 fn test_timestamp_consistency() {
     let temp_dir = TempDir::new().expect("创建临时目录失败");
     let base_path = temp_dir.path();
-    let project_name = "timestamp_consistency";
+    let dataset_name = "timestamp_consistency";
 
     const PACKET_COUNT: usize = 500;
     const PACKET_SIZE: usize = 512;
 
     // 写入数据包，记录时间戳
-    let config = Configuration::default();
-    let mut writer = PcapWriter::new(base_path, project_name, config.clone()).expect("创建Writer失败");
+    let mut writer =
+        PcapWriter::new(base_path, dataset_name).expect("创建Writer失败");
 
     let mut written_timestamps = Vec::new();
 
@@ -295,8 +328,7 @@ fn test_timestamp_consistency() {
     writer.finalize().expect("完成写入失败");
 
     // 读取并验证时间戳
-    let dataset_path = base_path.join(project_name);
-    let mut reader = PcapReader::new(dataset_path, config).expect("创建Reader失败");
+    let mut reader = PcapReader::new(base_path, dataset_name).expect("创建Reader失败");
 
     let mut read_timestamps = Vec::new();
     while let Some(packet) = reader.read_packet().expect("读取数据包失败") {
@@ -304,11 +336,26 @@ fn test_timestamp_consistency() {
     }
 
     // 验证时间戳完全一致
-    assert_eq!(written_timestamps.len(), read_timestamps.len(), "时间戳数量不匹配");
+    assert_eq!(
+        written_timestamps.len(),
+        read_timestamps.len(),
+        "时间戳数量不匹配"
+    );
 
-    for (i, (&written_ts, &read_ts)) in written_timestamps.iter().zip(read_timestamps.iter()).enumerate() {
-        assert_eq!(written_ts, read_ts, "数据包 {} 时间戳不匹配：写入 {}，读取 {}", i, written_ts, read_ts);
+    for (i, (&written_ts, &read_ts)) in written_timestamps
+        .iter()
+        .zip(read_timestamps.iter())
+        .enumerate()
+    {
+        assert_eq!(
+            written_ts, read_ts,
+            "数据包 {} 时间戳不匹配：写入 {}，读取 {}",
+            i, written_ts, read_ts
+        );
     }
 
-    println!("✅ 时间戳一致性测试通过：{} 个数据包时间戳完全匹配", PACKET_COUNT);
+    println!(
+        "✅ 时间戳一致性测试通过：{} 个数据包时间戳完全匹配",
+        PACKET_COUNT
+    );
 }

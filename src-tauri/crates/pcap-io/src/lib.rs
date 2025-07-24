@@ -43,7 +43,7 @@
 //!     let config = Configuration::default();
 //!
 //!     // 写入PCAP数据集
-//!     let mut writer = PcapWriter::new("./data", "example_dataset", config.clone())?;
+//!     let mut writer = PcapWriter::new("./data", "example_dataset")?;
 //!
 //!     let data = b"Hello, World!".to_vec();
 //!     let packet = DataPacket::from_datetime(
@@ -55,7 +55,7 @@
 //!     writer.finalize()?;
 //!
 //!     // 读取PCAP数据集
-//!     let mut reader = PcapReader::new("./data/example_dataset", config)?;
+//!     let mut reader = PcapReader::new("./data", "example_dataset")?;
 //!
 //!     while let Some(packet) = reader.read_packet()? {
 //!         println!("读取数据包: {:?}", packet);

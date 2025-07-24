@@ -7,6 +7,7 @@ use crate::foundation::error::{PcapError, Result};
 use crate::data::file_reader::PcapFileReader;
 use crate::business::index::reader::PidxReader;
 use crate::business::index::types::{PacketIndexEntry, PcapFileIndex, PidxIndex};
+use crate::business::config::Configuration;
 
 /// PIDX文件写入器
 ///
@@ -54,6 +55,7 @@ impl PidxWriter {
     /// 生成并保存数据集的时间索引
     ///
     /// 生成当前数据集目录下所有PCAP文件的索引并保存到文件。
+    /// 支持空数据集，即使没有PCAP文件也会生成基础的索引结构。
     pub fn generate_index(&mut self) -> Result<PathBuf> {
         info!("开始生成数据集时间索引: {}", self.dataset_name);
 
@@ -63,9 +65,25 @@ impl PidxWriter {
         let pcap_files = PidxReader::scan_pcap_files(&self.dataset_path)?;
 
         if pcap_files.is_empty() {
-            return Err(PcapError::InvalidFormat(
-                "数据集目录中未找到PCAP文件".to_string(),
-            ));
+            info!("数据集目录中未找到PCAP文件，生成空索引结构");
+
+            // 对于空数据集，创建基础的空索引结构
+            index.start_timestamp = 0;
+            index.end_timestamp = 0;
+            index.total_packets = 0;
+            index.total_duration = 0;
+            // data_files.files 保持为空 Vec
+
+            // 保存空索引到文件
+            self.index = Some(index);
+            let pidx_filename = format!("{}.pidx", self.dataset_name);
+            let pidx_file_path = self.dataset_path.join(pidx_filename);
+
+            let xml_content = Self::serialize_to_xml(&self.index.as_ref().unwrap())?;
+            fs::write(&pidx_file_path, xml_content).map_err(|e| PcapError::Io(e))?;
+
+            info!("空索引文件已生成: {:?}", pidx_file_path);
+            return Ok(pidx_file_path);
         }
 
         info!("找到 {} 个PCAP文件，开始分析...", pcap_files.len());
@@ -101,8 +119,14 @@ impl PidxWriter {
         }
 
         // 设置全局时间信息
-        index.start_timestamp = global_start_timestamp;
-        index.end_timestamp = global_end_timestamp;
+        if global_start_timestamp != u64::MAX {
+            index.start_timestamp = global_start_timestamp;
+            index.end_timestamp = global_end_timestamp;
+        } else {
+            // 如果所有文件都分析失败，设置默认值
+            index.start_timestamp = 0;
+            index.end_timestamp = 0;
+        }
 
         // 更新统计信息
         index.update_time_range();
@@ -150,7 +174,7 @@ impl PidxWriter {
         let file_size = fs::metadata(path).map_err(|e| PcapError::Io(e))?.len();
 
         // 打开PCAP文件并读取所有数据包
-        let mut reader = PcapFileReader::new(crate::business::config::Configuration::default());
+        let mut reader = PcapFileReader::new(Configuration::default());
         reader.open(path)?;
         let mut packets = Vec::new();
         let mut packet_count = 0u64;

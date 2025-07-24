@@ -3,10 +3,7 @@
 //! 参照 PcapFile.IO.Example 的简洁结构，演示基本的写入、读取、验证功能。
 //! 新增索引文件的跳转和查询测试功能。
 
-use pcap_io::{
-    Configuration, DataPacket, PcapReader, PcapWriter,
-    Read, Write, Info, Result,
-};
+use pcap_io::{DataPacket, Info, PcapReader, PcapWriter, Read, Result, Write};
 use std::time::SystemTime;
 
 fn main() -> Result<()> {
@@ -16,26 +13,30 @@ fn main() -> Result<()> {
 
     // 配置参数
     const OUTPUT_DIRECTORY: &str = "data";
-    const PROJECT_NAME: &str = "test_project";
+    const DATASET_NAME: &str = "test_dataset";
     const PACKET_COUNT: usize = 2000;
     const PACKET_SIZE: usize = 1024;
 
     println!("程序根目录: {}", std::env::current_dir()?.display());
     println!("输出目录: {}", OUTPUT_DIRECTORY);
-    println!("数据集名称: {}", PROJECT_NAME);
-    println!("测试参数: {} 个数据包，每个 {} 字节", PACKET_COUNT, PACKET_SIZE);
+    println!("数据集名称: {}", DATASET_NAME);
+    println!(
+        "测试参数: {} 个数据包，每个 {} 字节",
+        PACKET_COUNT, PACKET_SIZE
+    );
     println!();
 
     // 步骤1: 写入测试数据
     println!("步骤 1/3: 写入测试数据");
     println!("========================");
-    let written_packets = write_test_data(OUTPUT_DIRECTORY, PROJECT_NAME, PACKET_COUNT, PACKET_SIZE)?;
+    let written_packets =
+        write_test_data(OUTPUT_DIRECTORY, DATASET_NAME, PACKET_COUNT, PACKET_SIZE)?;
     println!();
 
     // 步骤2: 读取测试数据
     println!("步骤 2/3: 读取测试数据");
     println!("========================");
-    let read_packets = read_test_data(OUTPUT_DIRECTORY, PROJECT_NAME)?;
+    let read_packets = read_test_data(OUTPUT_DIRECTORY, DATASET_NAME)?;
     println!();
 
     // 步骤3: 验证数据一致性
@@ -53,15 +54,14 @@ fn main() -> Result<()> {
 /// 写入测试数据包
 fn write_test_data(
     output_directory: &str,
-    project_name: &str,
+    dataset_name: &str,
     packet_count: usize,
     packet_size: usize,
 ) -> Result<Vec<PacketInfo>> {
     println!("=== PCAP文件写入示例 ===");
 
-    let config = Configuration::default();
     let base_path = std::path::Path::new(output_directory);
-    let mut writer = PcapWriter::new(base_path, project_name, config)?;
+    let mut writer = PcapWriter::new(base_path, dataset_name)?;
 
     println!("PCAP数据集已创建: {}", output_directory);
     println!("开始写入 {} 个数据包...", packet_count);
@@ -94,15 +94,13 @@ fn write_test_data(
 }
 
 /// 读取测试数据包
-fn read_test_data(output_directory: &str, project_name: &str) -> Result<Vec<PacketInfo>> {
+fn read_test_data(output_directory: &str, dataset_name: &str) -> Result<Vec<PacketInfo>> {
     println!("=== PCAP文件读取示例 ===");
 
-    let config = Configuration::default();
-    let dataset_path = std::path::Path::new(output_directory).join(project_name);
-    let mut reader = PcapReader::new(dataset_path, config)?;
+    let mut reader = PcapReader::new(output_directory, dataset_name)?;
 
     let dataset_info = reader.dataset_info();
-    println!("成功打开数据集: {}", project_name);
+    println!("成功打开数据集: {}", dataset_name);
     println!("数据集目录: {}", output_directory);
     println!("发现的文件数量: {}", dataset_info.file_count);
     println!("总数据包数量: {}", dataset_info.total_packets);
@@ -143,7 +141,11 @@ fn validate_data_consistency(written: &[PacketInfo], read: &[PacketInfo]) -> boo
 
     // 验证数据包数量
     if written.len() != read.len() {
-        errors.push(format!("数据包数量不匹配：写入 {}，读取 {}", written.len(), read.len()));
+        errors.push(format!(
+            "数据包数量不匹配：写入 {}，读取 {}",
+            written.len(),
+            read.len()
+        ));
         is_valid = false;
     }
 
@@ -154,17 +156,26 @@ fn validate_data_consistency(written: &[PacketInfo], read: &[PacketInfo]) -> boo
         let r = &read[i];
 
         if w.index != r.index {
-            errors.push(format!("数据包 {}: 索引不匹配 (写入: {}, 读取: {})", i, w.index, r.index));
+            errors.push(format!(
+                "数据包 {}: 索引不匹配 (写入: {}, 读取: {})",
+                i, w.index, r.index
+            ));
             is_valid = false;
         }
 
         if w.packet_length != r.packet_length {
-            errors.push(format!("数据包 {}: 长度不匹配 (写入: {}, 读取: {})", i, w.packet_length, r.packet_length));
+            errors.push(format!(
+                "数据包 {}: 长度不匹配 (写入: {}, 读取: {})",
+                i, w.packet_length, r.packet_length
+            ));
             is_valid = false;
         }
 
         if w.checksum != r.checksum {
-            errors.push(format!("数据包 {}: 校验和不匹配 (写入: 0x{:08X}, 读取: 0x{:08X})", i, w.checksum, r.checksum));
+            errors.push(format!(
+                "数据包 {}: 校验和不匹配 (写入: 0x{:08X}, 读取: 0x{:08X})",
+                i, w.checksum, r.checksum
+            ));
             is_valid = false;
         }
 
@@ -206,12 +217,14 @@ fn show_final_results(written: &[PacketInfo], read: &[PacketInfo], is_valid: boo
         let first_read = &read[0];
         let last_read = &read[read.len() - 1];
 
-                println!("时间范围 (写入): {:?} - {:?}",
-            first_written.capture_time,
-            last_written.capture_time);
-        println!("时间范围 (读取): {:?} - {:?}",
-            first_read.capture_time,
-            last_read.capture_time);
+        println!(
+            "时间范围 (写入): {:?} - {:?}",
+            first_written.capture_time, last_written.capture_time
+        );
+        println!(
+            "时间范围 (读取): {:?} - {:?}",
+            first_read.capture_time, last_read.capture_time
+        );
     }
 
     println!("测试状态: {}", if is_valid { "成功" } else { "失败" });

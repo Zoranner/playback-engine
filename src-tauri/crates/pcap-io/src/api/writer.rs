@@ -56,7 +56,22 @@ pub struct PcapWriter {
 }
 
 impl PcapWriter {
-    /// 创建新的数据集写入器
+    /// 创建新的数据集写入器（使用默认配置）
+    ///
+    /// # 参数
+    /// - `base_path` - 基础目录路径
+    /// - `dataset_name` - 数据集名称
+    ///
+    /// # 返回
+    /// 返回使用默认配置初始化的写入器实例
+    pub fn new<P: AsRef<Path>>(
+        base_path: P,
+        dataset_name: &str,
+    ) -> Result<Self> {
+        Self::new_with_config(base_path, dataset_name, Configuration::default())
+    }
+
+    /// 创建新的数据集写入器（可指定配置）
     ///
     /// # 参数
     /// - `base_path` - 基础目录路径
@@ -65,10 +80,10 @@ impl PcapWriter {
     ///
     /// # 返回
     /// 返回初始化后的写入器实例
-    pub fn new<P: AsRef<Path>>(
+    pub fn new_with_config<P: AsRef<Path>>(
         base_path: P,
         dataset_name: &str,
-        config: Configuration,
+        config: impl Into<Configuration>,
     ) -> Result<Self> {
         let base_path = base_path.as_ref().to_path_buf();
         let dataset_path = base_path.join(dataset_name);
@@ -106,6 +121,9 @@ impl PcapWriter {
                 dataset_path
             )));
         }
+
+        // 转换配置参数
+        let config = config.into();
 
         // 初始化数据集信息
         let dataset_info = DatasetInfo::new(dataset_name.to_string(), &dataset_path);

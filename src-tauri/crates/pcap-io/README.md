@@ -42,7 +42,7 @@ fn main() -> Result<()> {
     config.buffer_size = 64 * 1024; // 64KB
     
     // 写入数据集
-    let mut writer = Writer::new("my_dataset", config.clone())?;
+    let mut writer = Writer::new("my_dataset")?;
     
     let data = b"Hello, World!".to_vec();
     let packet = DataPacket::from_datetime(SystemTime::now(), data)?;
@@ -51,7 +51,7 @@ fn main() -> Result<()> {
     writer.flush()?;
     
     // 读取数据集
-    let mut reader = Reader::new("my_dataset", config)?;
+    let mut reader = Reader::new("my_dataset")?;
     
     while let Some(packet) = reader.read_packet()? {
         println!("读取数据包: {:?}", packet);
@@ -68,7 +68,7 @@ use pcap_io::{Configuration, DataPacket, Writer, Result};
 
 fn batch_operations() -> Result<()> {
     let config = Configuration::default();
-    let mut writer = Writer::new("batch_dataset", config)?;
+    let mut writer = Writer::new("batch_dataset")?;
     
     // 批量写入
     let mut packets = Vec::new();
@@ -82,7 +82,7 @@ fn batch_operations() -> Result<()> {
     writer.flush()?;
     
     // 获取数据集信息（简化接口）
-    let reader = Reader::new("batch_dataset", config)?;
+    let reader = Reader::new("batch_dataset")?;
     let info = reader.dataset_info();
     println!("数据集信息: {:?}", info);
     
@@ -207,7 +207,7 @@ pub struct Reader {
 }
 
 impl Reader {
-    pub fn new<P: AsRef<Path>>(dataset_path: P, config: PcapConfiguration) -> Result<Self>;
+    pub fn new<P: AsRef<Path>>(dataset_path: P: PcapConfiguration) -> Result<Self>;
     // 自动初始化，无需手动调用
 }
 
@@ -233,7 +233,7 @@ pub struct Writer {
 }
 
 impl Writer {
-    pub fn new<P: AsRef<Path>>(dataset_path: P, config: Configuration) -> Result<Self>;
+    pub fn new<P: AsRef<Path>>(dataset_path: P: Configuration) -> Result<Self>;
     // finalize() 自动在Drop中调用，无需手动调用
 }
 

@@ -55,43 +55,6 @@ impl Default for Configuration {
 }
 
 impl Configuration {
-    /// 获取高性能配置（适用于大量数据处理）
-    pub fn high_performance() -> Self {
-        Self {
-            max_packets_per_file: 2000,
-            buffer_size: 64 * 1024, // 64KB
-            auto_flush: false,
-            index_cache_size: 5000,
-            enable_index_cache: true,
-            ..Default::default()
-        }
-    }
-
-    /// 获取低内存配置（适用于内存受限环境）
-    pub fn low_memory() -> Self {
-        Self {
-            max_packets_per_file: 100,
-            buffer_size: 2048, // 2KB
-            auto_flush: true,
-            index_cache_size: 100,
-            enable_index_cache: false,
-            ..Default::default()
-        }
-    }
-
-    /// 获取调试配置（启用所有验证和详细日志）
-    pub fn debug() -> Self {
-        Self {
-            max_packets_per_file: 50,
-            buffer_size: 4096,
-            auto_flush: true,
-            enable_validation: true,
-            index_cache_size: 50,
-            enable_index_cache: true,
-            ..Default::default()
-        }
-    }
-
     /// 验证配置的有效性
     pub fn validate(&self) -> Result<(), String> {
         if self.max_packets_per_file == 0 {
