@@ -86,6 +86,7 @@ pub use business::{Configuration, PacketIndexEntry, PcapFileIndex, PidxIndex, Pi
 pub use foundation::{constants, PcapErrorCode};
 
 // 用户接口层导出（主要API）
+// 索引功能通过 PcapReader.index() 和 PcapWriter.index() 访问
 pub use api::{PcapReader, PcapWriter};
 
 // 版本信息
