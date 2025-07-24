@@ -6,5 +6,5 @@ pub mod reader;
 pub mod writer;
 
 // 重新导出用户API
-pub use reader::Reader;
-pub use writer::Writer;
+pub use reader::PcapReader;
+pub use writer::PcapWriter;

@@ -2,7 +2,7 @@
 //!
 //! 测试写入和读取的一致性，确保数据完整性和可靠性
 
-use pcap_io::{Configuration, DataPacket, Reader, Writer, Read, Write, Info, Result};
+use pcap_io::{Configuration, DataPacket, PcapReader, PcapWriter, Read, Write, Info, Result};
 use std::path::Path;
 use std::time::SystemTime;
 use std::collections::HashMap;
@@ -74,7 +74,7 @@ fn write_detailed_test_data(
     packet_size: usize
 ) -> Result<Vec<PacketDetails>> {
     let config = Configuration::default();
-    let mut writer = Writer::new(base_path, project_name, config)?;
+    let mut writer = PcapWriter::new(base_path, project_name, config)?;
 
     let mut written_details = Vec::with_capacity(packet_count);
 
@@ -97,7 +97,7 @@ fn read_and_verify_test_data(
 ) -> Result<Vec<PacketDetails>> {
     let config = Configuration::default();
     let dataset_path = base_path.join(project_name);
-    let mut reader = Reader::new(dataset_path, config)?;
+    let mut reader = PcapReader::new(dataset_path, config)?;
 
     let mut read_details = Vec::new();
     let mut packet_index = 0;
@@ -237,7 +237,7 @@ fn test_mixed_size_packet_consistency() {
     let packets_per_size = 50;
 
     let config = Configuration::default();
-    let mut writer = Writer::new(base_path, project_name, config.clone()).expect("创建Writer失败");
+    let mut writer = PcapWriter::new(base_path, project_name, config.clone()).expect("创建Writer失败");
 
     let mut written_details = Vec::new();
     let mut packet_index = 0;
@@ -279,7 +279,7 @@ fn test_timestamp_consistency() {
 
     // 写入数据包，记录时间戳
     let config = Configuration::default();
-    let mut writer = Writer::new(base_path, project_name, config.clone()).expect("创建Writer失败");
+    let mut writer = PcapWriter::new(base_path, project_name, config.clone()).expect("创建Writer失败");
 
     let mut written_timestamps = Vec::new();
 
@@ -296,7 +296,7 @@ fn test_timestamp_consistency() {
 
     // 读取并验证时间戳
     let dataset_path = base_path.join(project_name);
-    let mut reader = Reader::new(dataset_path, config).expect("创建Reader失败");
+    let mut reader = PcapReader::new(dataset_path, config).expect("创建Reader失败");
 
     let mut read_timestamps = Vec::new();
     while let Some(packet) = reader.read_packet().expect("读取数据包失败") {

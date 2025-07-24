@@ -20,9 +20,9 @@ pub use pcap_io::{
     PidxReader,
     PidxWriter,
     Read,
-    Reader as PcapReader,
+    PcapReader,
     Write,
-    Writer as PcapWriter,
+    PcapWriter,
 };
 
 // 重新导出应用类型

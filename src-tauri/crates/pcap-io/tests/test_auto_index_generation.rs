@@ -2,7 +2,7 @@
 //!
 //! 测试无索引写入和读取是否能自动生成索引并验证索引的正确性
 
-use pcap_io::{Configuration, DataPacket, Reader, Writer, Read, Write, Info, Result};
+use pcap_io::{Configuration, DataPacket, PcapReader, PcapWriter, Read, Write, Info, Result};
 use pcap_io::{PidxReader, PidxWriter};
 use std::path::Path;
 use std::time::SystemTime;
@@ -43,7 +43,7 @@ fn test_auto_index_generation_on_write() {
     let mut config = Configuration::default();
     config.enable_index_cache = true;
 
-    let mut writer = Writer::new(base_path, project_name, config).expect("创建Writer失败");
+    let mut writer = PcapWriter::new(base_path, project_name, config).expect("创建Writer失败");
 
     // 写入数据包
     for i in 0..PACKET_COUNT {
@@ -85,7 +85,7 @@ fn test_auto_index_generation_on_read() {
     let mut config = Configuration::default();
     config.enable_index_cache = false;
 
-    let mut writer = Writer::new(base_path, project_name, config).expect("创建Writer失败");
+    let mut writer = PcapWriter::new(base_path, project_name, config).expect("创建Writer失败");
 
     for i in 0..PACKET_COUNT {
         let packet = create_test_packet(i, PACKET_SIZE).expect("创建数据包失败");
@@ -100,7 +100,7 @@ fn test_auto_index_generation_on_read() {
 
     // 步骤2: 读取时自动生成索引
     let config = Configuration::default(); // 启用索引缓存
-    let mut reader = Reader::new(dataset_path.clone(), config).expect("创建Reader失败");
+    let mut reader = PcapReader::new(dataset_path.clone(), config).expect("创建Reader失败");
 
     // 读取所有数据包
     let mut read_count = 0;
@@ -139,7 +139,7 @@ fn test_manual_index_generation_after_write() {
     let mut config = Configuration::default();
     config.enable_index_cache = false;
 
-    let mut writer = Writer::new(base_path, project_name, config).expect("创建Writer失败");
+    let mut writer = PcapWriter::new(base_path, project_name, config).expect("创建Writer失败");
 
     for i in 0..PACKET_COUNT {
         let packet = create_test_packet(i, PACKET_SIZE).expect("创建数据包失败");
@@ -168,7 +168,7 @@ fn test_manual_index_generation_after_write() {
 
     // 步骤3: 使用索引读取验证
     let config = Configuration::default();
-    let reader = Reader::new(dataset_path, config).expect("使用索引创建Reader失败");
+    let reader = PcapReader::new(dataset_path, config).expect("使用索引创建Reader失败");
 
     let dataset_info = reader.dataset_info();
     assert_eq!(dataset_info.total_packets, PACKET_COUNT as u64, "使用索引的数据集信息不正确");
@@ -187,7 +187,7 @@ fn test_index_accuracy_verification() {
 
     // 写入数据包并自动生成索引
     let config = Configuration::default();
-    let mut writer = Writer::new(base_path, project_name, config.clone()).expect("创建Writer失败");
+    let mut writer = PcapWriter::new(base_path, project_name, config.clone()).expect("创建Writer失败");
 
     let mut expected_timestamps = Vec::new();
 
@@ -230,7 +230,7 @@ fn test_index_accuracy_verification() {
     assert_eq!(total_indexed_packets, PACKET_COUNT as u64, "索引文件中数据包总数不匹配");
 
     // 使用索引读取并验证
-    let mut reader = Reader::new(dataset_path, config).expect("使用索引创建Reader失败");
+    let mut reader = PcapReader::new(dataset_path, config).expect("使用索引创建Reader失败");
 
     let mut actual_read_count = 0;
     let mut actual_timestamps = Vec::new();
@@ -257,7 +257,7 @@ fn test_index_performance_benefits() {
 
     // 写入数据包
     let config = Configuration::default();
-    let mut writer = Writer::new(base_path, project_name, config.clone()).expect("创建Writer失败");
+    let mut writer = PcapWriter::new(base_path, project_name, config.clone()).expect("创建Writer失败");
 
     for i in 0..PACKET_COUNT {
         let packet = create_test_packet(i, PACKET_SIZE).expect("创建数据包失败");
@@ -270,7 +270,7 @@ fn test_index_performance_benefits() {
 
     // 测试使用索引的性能
     let start_time = std::time::Instant::now();
-    let reader = Reader::new(dataset_path.clone(), config.clone()).expect("创建有索引的Reader失败");
+    let reader = PcapReader::new(dataset_path.clone(), config.clone()).expect("创建有索引的Reader失败");
     let dataset_info = reader.dataset_info();
     let indexed_info_time = start_time.elapsed();
 

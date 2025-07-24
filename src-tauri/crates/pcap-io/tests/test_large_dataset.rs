@@ -2,7 +2,7 @@
 //!
 //! 测试大规模数据（10万个数据包）的写入读取功能和性能
 
-use pcap_io::{Configuration, DataPacket, Info, Read, Reader, Result, Write, Writer};
+use pcap_io::{Configuration, DataPacket, Info, Read, PcapReader, Result, Write, PcapWriter};
 use std::path::Path;
 use std::time::{Instant, SystemTime};
 use tempfile::TempDir;
@@ -28,7 +28,7 @@ fn write_large_dataset(
     packet_size: usize,
 ) -> Result<(u64, std::time::Duration)> {
     let config = Configuration::high_performance(); // 使用高性能配置
-    let mut writer = Writer::new(base_path, project_name, config)?;
+    let mut writer = PcapWriter::new(base_path, project_name, config)?;
 
     let start_time = Instant::now();
 
@@ -49,7 +49,7 @@ fn write_large_dataset(
     let dataset_info = {
         let config = Configuration::high_performance();
         let dataset_path = base_path.join(project_name);
-        let reader = Reader::new(dataset_path, config)?;
+        let reader = PcapReader::new(dataset_path, config)?;
         reader.dataset_info()
     };
 
@@ -63,7 +63,7 @@ fn read_large_dataset(
 ) -> Result<(usize, std::time::Duration)> {
     let config = Configuration::high_performance(); // 使用高性能配置
     let dataset_path = base_path.join(project_name);
-    let mut reader = Reader::new(dataset_path, config)?;
+    let mut reader = PcapReader::new(dataset_path, config)?;
 
     let start_time = Instant::now();
     let mut read_count = 0;
@@ -150,7 +150,7 @@ fn test_large_dataset_memory_usage() {
 
     // 使用低内存配置
     let config = Configuration::low_memory();
-    let mut writer = Writer::new(base_path, project_name, config.clone()).expect("创建Writer失败");
+    let mut writer = PcapWriter::new(base_path, project_name, config.clone()).expect("创建PcapWriter失败");
 
     // 写入数据包（一次只在内存中保存少量数据）
     for i in 0..PACKET_COUNT {
@@ -166,7 +166,7 @@ fn test_large_dataset_memory_usage() {
 
     // 验证读取（低内存模式）
     let dataset_path = base_path.join(project_name);
-    let mut reader = Reader::new(dataset_path, config).expect("创建Reader失败");
+    let mut reader = PcapReader::new(dataset_path, config).expect("创建PcapReader失败");
 
     let mut read_count = 0;
     while let Some(_packet) = reader.read_packet().expect("读取数据包失败") {
@@ -196,7 +196,7 @@ fn test_large_dataset_file_segmentation() {
     let mut config = Configuration::default();
     config.max_packets_per_file = 1000; // 每个文件1000个数据包
 
-    let mut writer = Writer::new(base_path, project_name, config.clone()).expect("创建Writer失败");
+    let mut writer = PcapWriter::new(base_path, project_name, config.clone()).expect("创建PcapWriter失败");
 
     // 写入数据包
     for i in 0..PACKET_COUNT {
@@ -208,7 +208,7 @@ fn test_large_dataset_file_segmentation() {
 
     // 验证文件分割
     let dataset_path = base_path.join(project_name);
-    let reader = Reader::new(dataset_path, config).expect("创建Reader失败");
+    let reader = PcapReader::new(dataset_path, config).expect("创建PcapReader失败");
 
     let dataset_info = reader.dataset_info();
     let expected_files = (PACKET_COUNT + 999) / 1000; // 向上取整

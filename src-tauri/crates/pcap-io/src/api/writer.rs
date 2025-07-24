@@ -22,7 +22,7 @@ const ERR_WRITER_NOT_INIT: &str = "文件写入器未初始化";
 /// 数据集写入器
 ///
 /// 提供对整个PCAP数据集的统一写入接口，支持多文件自动切换、索引生成等功能。
-pub struct Writer {
+pub struct PcapWriter {
     /// 基础路径
     base_path: PathBuf,
     /// 数据集名称
@@ -55,7 +55,7 @@ pub struct Writer {
     is_finalized: bool,
 }
 
-impl Writer {
+impl PcapWriter {
     /// 创建新的数据集写入器
     ///
     /// # 参数
@@ -117,7 +117,7 @@ impl Writer {
             10 // 默认预分配10个文件
         };
 
-        info!("数据集写入器已初始化: {:?}", dataset_path);
+        info!("数据集PcapWriter已初始化: {:?}", dataset_path);
 
         Ok(Self {
             base_path,
@@ -339,7 +339,7 @@ impl Writer {
 
         self.is_finalized = true;
         info!(
-            "数据集写入已完成，总文件数: {}, 总数据包数: {}",
+            "数据集PcapWriter已完成，总文件数: {}, 总数据包数: {}",
             self.created_files.len(),
             self.total_packet_count
         );
@@ -368,7 +368,7 @@ impl Writer {
     }
 }
 
-impl Write for Writer {
+impl Write for PcapWriter {
     fn write_packet(&mut self, packet: &DataPacket) -> Result<()> {
         if self.is_finalized {
             return Err(PcapError::InvalidState(ERR_WRITER_FINALIZED.to_string()));
@@ -470,7 +470,7 @@ impl Write for Writer {
     }
 }
 
-impl Info for Writer {
+impl Info for PcapWriter {
     fn dataset_info(&self) -> DatasetInfo {
         let mut info = self.dataset_info.clone();
 
@@ -510,7 +510,7 @@ impl Info for Writer {
     }
 }
 
-impl Drop for Writer {
+impl Drop for PcapWriter {
     fn drop(&mut self) {
         if !self.is_finalized {
             if let Err(e) = self.finalize() {

@@ -6,15 +6,15 @@
 //! ## 架构设计
 //!
 //! ```
-//! ┌─────────────────────────────────────┐
-//! │    用户接口层 (API Layer)           │  ← 对外提供服务接口
-//! ├─────────────────────────────────────┤
-//! │    业务逻辑层 (Business Layer)      │  ← 核心业务逻辑实现
-//! ├─────────────────────────────────────┤
-//! │    数据访问层 (Data Layer)          │  ← 数据操作和格式处理
-//! ├─────────────────────────────────────┤
-//! │    基础设施层 (Foundation)          │  ← 工具函数和通用组件
-//! └─────────────────────────────────────┘
+//! +-------------------------------------+
+//! |    用户接口层 (API Layer)           |  <- 对外提供服务接口
+//! +-------------------------------------+
+//! |    业务逻辑层 (Business Layer)      |  <- 核心业务逻辑实现
+//! +-------------------------------------+
+//! |    数据访问层 (Data Layer)          |  <- 数据操作和格式处理
+//! +-------------------------------------+
+//! |    基础设施层 (Foundation)          |  <- 工具函数和通用组件
+//! +-------------------------------------+
 //! ```
 //!
 //! ## 特性
@@ -33,18 +33,17 @@
 //! use pcap_io::{
 //!     Configuration,
 //!     DataPacket,
-//!     Reader,
-//!     Writer,
+//!     PcapReader,
+//!     PcapWriter,
 //!     Result,
 //! };
 //!
-//! #[tokio::main]
-//! async fn main() -> Result<()> {
+//! fn main() -> Result<()> {
 //!     // 创建配置
 //!     let config = Configuration::default();
 //!
 //!     // 写入PCAP数据集
-//!     let mut writer = Writer::new("./data", "example_dataset", config.clone())?;
+//!     let mut writer = PcapWriter::new("./data", "example_dataset", config.clone())?;
 //!
 //!     let data = b"Hello, World!".to_vec();
 //!     let packet = DataPacket::from_datetime(
@@ -56,7 +55,7 @@
 //!     writer.finalize()?;
 //!
 //!     // 读取PCAP数据集
-//!     let mut reader = Reader::new("./data/example_dataset", config)?;
+//!     let mut reader = PcapReader::new("./data/example_dataset", config)?;
 //!
 //!     while let Some(packet) = reader.read_packet()? {
 //!         println!("读取数据包: {:?}", packet);
@@ -87,7 +86,7 @@ pub use business::{Configuration, PacketIndexEntry, PcapFileIndex, PidxIndex, Pi
 pub use foundation::{constants, PcapErrorCode};
 
 // 用户接口层导出（主要API）
-pub use api::{Reader, Writer};
+pub use api::{PcapReader, PcapWriter};
 
 // 版本信息
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

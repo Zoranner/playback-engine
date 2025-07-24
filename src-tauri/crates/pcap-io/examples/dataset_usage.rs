@@ -4,7 +4,7 @@
 //! 新增索引文件的跳转和查询测试功能。
 
 use pcap_io::{
-    Configuration, DataPacket, Reader, Writer,
+    Configuration, DataPacket, PcapReader, PcapWriter,
     Read, Write, Info, Result,
 };
 use std::time::SystemTime;
@@ -61,7 +61,7 @@ fn write_test_data(
 
     let config = Configuration::default();
     let base_path = std::path::Path::new(output_directory);
-    let mut writer = Writer::new(base_path, project_name, config)?;
+    let mut writer = PcapWriter::new(base_path, project_name, config)?;
 
     println!("PCAP数据集已创建: {}", output_directory);
     println!("开始写入 {} 个数据包...", packet_count);
@@ -99,7 +99,7 @@ fn read_test_data(output_directory: &str, project_name: &str) -> Result<Vec<Pack
 
     let config = Configuration::default();
     let dataset_path = std::path::Path::new(output_directory).join(project_name);
-    let mut reader = Reader::new(dataset_path, config)?;
+    let mut reader = PcapReader::new(dataset_path, config)?;
 
     let dataset_info = reader.dataset_info();
     println!("成功打开数据集: {}", project_name);

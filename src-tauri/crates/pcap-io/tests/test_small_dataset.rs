@@ -2,7 +2,7 @@
 //!
 //! 测试无索引写入小规模数据（2000个数据包），验证基本的写入读取功能
 
-use pcap_io::{Configuration, DataPacket, Info, Read, Reader, Result, Write, Writer};
+use pcap_io::{Configuration, DataPacket, Info, Read, PcapReader, Result, Write, PcapWriter};
 use std::path::Path;
 use std::time::SystemTime;
 use tempfile::TempDir;
@@ -38,7 +38,7 @@ fn write_test_packets(
     packet_size: usize,
 ) -> Result<Vec<PacketInfo>> {
     let config = Configuration::default();
-    let mut writer = Writer::new(base_path, project_name, config)?;
+    let mut writer = PcapWriter::new(base_path, project_name, config)?;
 
     let mut written_packets = Vec::new();
 
@@ -63,7 +63,7 @@ fn write_test_packets(
 fn read_test_packets(base_path: &Path, project_name: &str) -> Result<Vec<PacketInfo>> {
     let config = Configuration::default();
     let dataset_path = base_path.join(project_name);
-    let mut reader = Reader::new(dataset_path, config)?;
+    let mut reader = PcapReader::new(dataset_path, config)?;
 
     let mut read_packets = Vec::new();
     let mut packet_index = 0;
@@ -147,7 +147,7 @@ fn test_small_dataset_multiple_files() {
     let mut config = Configuration::default();
     config.max_packets_per_file = 100; // 每个文件最多100个数据包
 
-    let mut writer = Writer::new(base_path, project_name, config.clone()).expect("创建Writer失败");
+    let mut writer = PcapWriter::new(base_path, project_name, config.clone()).expect("创建PcapWriter失败");
 
     const PACKET_COUNT: usize = 350; // 应该分割为4个文件
     const PACKET_SIZE: usize = 512;
@@ -162,7 +162,7 @@ fn test_small_dataset_multiple_files() {
 
     // 验证读取
     let dataset_path = base_path.join(project_name);
-    let mut reader = Reader::new(dataset_path, config).expect("创建Reader失败");
+    let mut reader = PcapReader::new(dataset_path, config).expect("创建PcapReader失败");
 
     let dataset_info = reader.dataset_info();
     assert_eq!(
@@ -196,12 +196,12 @@ fn test_small_dataset_empty_and_edge_cases() {
     // 测试空数据集
     let project_name = "empty_test";
     let config = Configuration::default();
-    let mut writer = Writer::new(base_path, project_name, config.clone()).expect("创建Writer失败");
+    let mut writer = PcapWriter::new(base_path, project_name, config.clone()).expect("创建PcapWriter失败");
     writer.finalize().expect("完成空写入失败");
 
     // 尝试读取空数据集
     let dataset_path = base_path.join(project_name);
-    let mut reader = Reader::new(dataset_path, config).expect("创建Reader失败");
+    let mut reader = PcapReader::new(dataset_path, config).expect("创建PcapReader失败");
 
     let dataset_info = reader.dataset_info();
     assert_eq!(dataset_info.total_packets, 0, "空数据集应该有0个数据包");

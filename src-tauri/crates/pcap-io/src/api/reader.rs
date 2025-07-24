@@ -21,7 +21,7 @@ const ERR_READER_FINALIZED: &str = "读取器已完成，无法继续读取";
 /// 数据集读取器
 ///
 /// 提供对整个PCAP数据集的统一读取接口，支持多文件自动切换、索引查询等功能。
-pub struct Reader {
+pub struct PcapReader {
     /// 基础路径
     base_path: PathBuf,
     /// 数据集名称
@@ -56,7 +56,7 @@ pub struct Reader {
     is_finalized: bool,
 }
 
-impl Reader {
+impl PcapReader {
     /// 创建新的数据集读取器
     ///
     /// # 参数
@@ -122,7 +122,7 @@ impl Reader {
 
         let total_packets = dataset_info.total_packets;
 
-        // 创建Reader实例
+        // 创建PcapReader实例
         let mut reader = Self {
             base_path,
             dataset_name,
@@ -146,7 +146,7 @@ impl Reader {
         reader.auto_initialize()?;
 
         info!(
-            "数据集读取器已创建: {:?}, 文件数: {}, 数据包总数: {}",
+            "PcapReader已创建: {:?}, 文件数: {}, 数据包总数: {}",
             path,
             reader.pcap_files.len(),
             total_packets
@@ -318,7 +318,7 @@ impl Reader {
     }
 }
 
-impl Read for Reader {
+impl Read for PcapReader {
     fn read_packet(&mut self) -> Result<Option<DataPacket>> {
         if self.is_finalized {
             return Err(PcapError::InvalidState(ERR_READER_FINALIZED.to_string()));
@@ -393,7 +393,7 @@ impl Read for Reader {
     }
 }
 
-impl Info for Reader {
+impl Info for PcapReader {
     fn dataset_info(&self) -> DatasetInfo {
         let mut info = self.dataset_info.clone();
 
@@ -425,7 +425,7 @@ impl Info for Reader {
     }
 }
 
-impl Drop for Reader {
+impl Drop for PcapReader {
     fn drop(&mut self) {
         if !self.is_finalized {
             // 关闭当前文件

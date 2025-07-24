@@ -5,7 +5,7 @@ use log::{info, warn};
 
 use crate::types::{ProjectInfo, PlaybackError, Result, PprojConfig, DatasetConfig};
 use crate::pproj::{PprojReader, PprojWriter};
-use pcap_io::{Reader as PcapReader, Configuration, Read};
+use pcap_io::{PcapReader, Configuration, Read};
 
 /// 数据集读取器信息
 #[derive(Debug, Clone)]
