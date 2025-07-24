@@ -1,237 +1,47 @@
-//! PCAP文件读写示例
+//! 数据集使用示例
 //!
-//! 参照 PcapFile.IO.Example 的简洁结构，演示基本的写入、读取、验证功能。
-//! 新增索引文件的跳转和查询测试功能。
+//! 演示如何使用PCAP-IO库进行数据集读写操作，包括：
+//! - 通过Writer创建数据集并生成索引
+//! - 通过Reader读取数据集并访问索引信息
+//! - 索引管理和验证
 
-use pcap_io::{DataPacket, Info, PcapReader, PcapWriter, Read, Result, Write};
-use std::time::SystemTime;
+use pcap_io::{
+    DataPacket, PcapReader, PcapWriter, Read, ReaderConfig,
+    Result, Write, WriterConfig,
+};
+use std::{path::Path, time::SystemTime};
 
 fn main() -> Result<()> {
-    println!("PcapFile.IO 示例程序 - 写入读取验证测试");
-    println!("=========================================");
-    println!();
+    // 设置数据集路径
+    let dataset_path =
+        Path::new("example_output").join("sample_dataset");
 
-    // 配置参数
-    const OUTPUT_DIRECTORY: &str = "data";
-    const DATASET_NAME: &str = "test_dataset";
-    const PACKET_COUNT: usize = 2000;
-    const PACKET_SIZE: usize = 1024;
+    // 确保目录存在
+    if dataset_path.exists() {
+        std::fs::remove_dir_all(&dataset_path)?;
+    }
+    std::fs::create_dir_all(&dataset_path)?;
 
-    println!("程序根目录: {}", std::env::current_dir()?.display());
-    println!("输出目录: {}", OUTPUT_DIRECTORY);
-    println!("数据集名称: {}", DATASET_NAME);
-    println!(
-        "测试参数: {} 个数据包，每个 {} 字节",
-        PACKET_COUNT, PACKET_SIZE
-    );
-    println!();
+    println!("=== PCAP-IO 数据集使用示例 ===\n");
 
-    // 步骤1: 写入测试数据
-    println!("步骤 1/3: 写入测试数据");
-    println!("========================");
-    let written_packets =
-        write_test_data(OUTPUT_DIRECTORY, DATASET_NAME, PACKET_COUNT, PACKET_SIZE)?;
-    println!();
+    // 第一步：创建数据集并写入数据包
+    create_dataset(&dataset_path)?;
 
-    // 步骤2: 读取测试数据
-    println!("步骤 2/3: 读取测试数据");
-    println!("========================");
-    let read_packets = read_test_data(OUTPUT_DIRECTORY, DATASET_NAME)?;
-    println!();
+    // 第二步：读取数据集并访问索引信息
+    read_dataset(&dataset_path)?;
 
-    // 步骤3: 验证数据一致性
-    println!("步骤 3/3: 验证数据一致性");
-    println!("========================");
-    let is_valid = validate_data_consistency(&written_packets, &read_packets);
-    println!();
+    // 第三步：演示索引管理功能
+    demonstrate_index_management(&dataset_path)?;
 
-    // 显示最终结果
-    show_final_results(&written_packets, &read_packets, is_valid);
-
+    println!("\n=== 示例完成 ===");
     Ok(())
 }
 
-/// 写入测试数据包
-fn write_test_data(
-    output_directory: &str,
-    dataset_name: &str,
-    packet_count: usize,
-    packet_size: usize,
-) -> Result<Vec<PacketInfo>> {
-    println!("=== PCAP文件写入示例 ===");
-
-    let base_path = std::path::Path::new(output_directory);
-    let mut writer = PcapWriter::new(base_path, dataset_name)?;
-
-    println!("PCAP数据集已创建: {}", output_directory);
-    println!("开始写入 {} 个数据包...", packet_count);
-
-    let mut written_packets = Vec::new();
-    let start_time = SystemTime::now();
-
-    for i in 0..packet_count {
-        let packet = create_test_packet(i, packet_size)?;
-        writer.write_packet(&packet)?;
-
-        written_packets.push(PacketInfo {
-            index: i,
-            capture_time: packet.capture_time(),
-            packet_length: packet.packet_length() as u32,
-            checksum: packet.checksum(),
-            first_bytes: packet.data.iter().take(16).cloned().collect(),
-        });
-
-        if i % 20 == 0 || i == packet_count - 1 {
-            println!("已写入: {}/{} 个数据包", i + 1, packet_count);
-        }
-    }
-
-    writer.finalize()?;
-    let elapsed = start_time.elapsed().unwrap();
-    println!("写入完成，耗时: {} 毫秒", elapsed.as_millis());
-
-    Ok(written_packets)
-}
-
-/// 读取测试数据包
-fn read_test_data(output_directory: &str, dataset_name: &str) -> Result<Vec<PacketInfo>> {
-    println!("=== PCAP文件读取示例 ===");
-
-    let mut reader = PcapReader::new(output_directory, dataset_name)?;
-
-    let dataset_info = reader.dataset_info();
-    println!("成功打开数据集: {}", dataset_name);
-    println!("数据集目录: {}", output_directory);
-    println!("发现的文件数量: {}", dataset_info.file_count);
-    println!("总数据包数量: {}", dataset_info.total_packets);
-
-    let mut read_packets = Vec::new();
-    let start_time = SystemTime::now();
-    let mut packet_index = 0;
-
-    while let Some(packet) = reader.read_packet()? {
-        read_packets.push(PacketInfo {
-            index: packet_index,
-            capture_time: packet.capture_time(),
-            packet_length: packet.packet_length() as u32,
-            checksum: packet.checksum(),
-            first_bytes: packet.data.iter().take(16).cloned().collect(),
-        });
-
-        if packet_index % 20 == 0 {
-            println!("已读取: {} 个数据包", packet_index + 1);
-        }
-
-        packet_index += 1;
-    }
-
-    let elapsed = start_time.elapsed().unwrap();
-    println!("读取完成，总共读取了 {} 个数据包", read_packets.len());
-    println!("读取耗时: {} 毫秒", elapsed.as_millis());
-
-    Ok(read_packets)
-}
-
-/// 验证数据一致性
-fn validate_data_consistency(written: &[PacketInfo], read: &[PacketInfo]) -> bool {
-    println!("正在验证数据一致性...");
-
-    let mut is_valid = true;
-    let mut errors = Vec::new();
-
-    // 验证数据包数量
-    if written.len() != read.len() {
-        errors.push(format!(
-            "数据包数量不匹配：写入 {}，读取 {}",
-            written.len(),
-            read.len()
-        ));
-        is_valid = false;
-    }
-
-    // 验证每个数据包
-    let min_count = written.len().min(read.len());
-    for i in 0..min_count {
-        let w = &written[i];
-        let r = &read[i];
-
-        if w.index != r.index {
-            errors.push(format!(
-                "数据包 {}: 索引不匹配 (写入: {}, 读取: {})",
-                i, w.index, r.index
-            ));
-            is_valid = false;
-        }
-
-        if w.packet_length != r.packet_length {
-            errors.push(format!(
-                "数据包 {}: 长度不匹配 (写入: {}, 读取: {})",
-                i, w.packet_length, r.packet_length
-            ));
-            is_valid = false;
-        }
-
-        if w.checksum != r.checksum {
-            errors.push(format!(
-                "数据包 {}: 校验和不匹配 (写入: 0x{:08X}, 读取: 0x{:08X})",
-                i, w.checksum, r.checksum
-            ));
-            is_valid = false;
-        }
-
-        if w.first_bytes != r.first_bytes {
-            errors.push(format!("数据包 {}: 数据内容不匹配", i));
-            is_valid = false;
-        }
-    }
-
-    // 显示验证结果
-    if is_valid {
-        println!("数据一致性验证通过！");
-        println!("  成功验证了 {} 个数据包", min_count);
-        println!("  所有数据包的长度、校验和、内容和时间戳都匹配");
-    } else {
-        println!("数据一致性验证失败！");
-        for error in errors.iter().take(10) {
-            println!("  - {}", error);
-        }
-        if errors.len() > 10 {
-            println!("  ... 还有 {} 个错误", errors.len() - 10);
-        }
-    }
-
-    is_valid
-}
-
-/// 显示最终测试结果
-fn show_final_results(written: &[PacketInfo], read: &[PacketInfo], is_valid: bool) {
-    println!("最终测试结果");
-    println!("============");
-    println!("写入数据包数量: {}", written.len());
-    println!("读取数据包数量: {}", read.len());
-    println!("数据一致性: {}", if is_valid { "通过" } else { "失败" });
-
-    if !written.is_empty() && !read.is_empty() {
-        let first_written = &written[0];
-        let last_written = &written[written.len() - 1];
-        let first_read = &read[0];
-        let last_read = &read[read.len() - 1];
-
-        println!(
-            "时间范围 (写入): {:?} - {:?}",
-            first_written.capture_time, last_written.capture_time
-        );
-        println!(
-            "时间范围 (读取): {:?} - {:?}",
-            first_read.capture_time, last_read.capture_time
-        );
-    }
-
-    println!("测试状态: {}", if is_valid { "成功" } else { "失败" });
-}
-
 /// 创建测试数据包
-fn create_test_packet(sequence: usize, size: usize) -> Result<DataPacket> {
+fn create_test_packet(
+    sequence: usize,
+    size: usize,
+) -> Result<DataPacket> {
     let mut data = vec![0u8; size];
 
     // 填充测试数据模式
@@ -243,12 +53,132 @@ fn create_test_packet(sequence: usize, size: usize) -> Result<DataPacket> {
     Ok(DataPacket::from_datetime(capture_time, data)?)
 }
 
-/// 数据包信息结构，用于验证
-#[derive(Debug)]
-struct PacketInfo {
-    index: usize,
-    capture_time: std::time::SystemTime,
-    packet_length: u32,
-    checksum: u32,
-    first_bytes: Vec<u8>,
+/// 创建数据集并写入数据包
+fn create_dataset(dataset_path: &Path) -> Result<()> {
+    println!("1. 创建数据集并写入数据包...");
+
+    // 配置写入器
+    let mut config = WriterConfig::default();
+    config.common.enable_index_cache = true; // 启用自动索引生成
+    config.max_packets_per_file = 1000; // 每1000个数据包一个文件
+
+    let mut writer = PcapWriter::new_with_config(
+        dataset_path,
+        "test_dataset",
+        config,
+    )?;
+
+    // 写入2500个测试数据包
+    for i in 0..2500 {
+        let packet = create_test_packet(i, 256)?;
+        writer.write_packet(&packet)?;
+
+        if i % 500 == 0 {
+            println!("   已写入 {} 个数据包", i + 1);
+        }
+    }
+
+    // 完成写入（自动生成索引）
+    writer.finalize()?;
+
+    // 通过writer访问索引信息
+    println!("   数据集信息：");
+    let dataset_info = writer.get_dataset_info();
+    println!(
+        "     - 文件数量: {}",
+        dataset_info.file_count
+    );
+    println!(
+        "     - 数据包总数: {}",
+        dataset_info.total_packets
+    );
+    println!(
+        "     - 数据集大小: {} 字节",
+        dataset_info.total_size
+    );
+
+    println!("   ✅ 数据集创建完成\n");
+    Ok(())
+}
+
+/// 读取数据集并访问索引信息
+fn read_dataset(dataset_path: &Path) -> Result<()> {
+    println!("2. 读取数据集并访问索引信息...");
+
+    let mut reader = PcapReader::new_with_config(
+        dataset_path,
+        "test_dataset",
+        ReaderConfig::default(),
+    )?;
+
+    // 获取数据集信息
+    let dataset_info = reader.get_dataset_info()?;
+    println!("   数据集基本信息：");
+    println!(
+        "     - 文件数量: {}",
+        dataset_info.file_count
+    );
+    println!(
+        "     - 数据包总数: {}",
+        dataset_info.total_packets
+    );
+    println!(
+        "     - 数据集大小: {} 字节",
+        dataset_info.total_size
+    );
+
+    // 读取所有数据包
+    let mut packet_count = 0;
+    while let Some(_packet) = reader.read_packet()? {
+        packet_count += 1;
+
+        if packet_count % 500 == 0 {
+            println!("   已读取 {} 个数据包", packet_count);
+        }
+    }
+
+    println!("   总共读取: {} 个数据包", packet_count);
+    println!("   ✅ 数据集读取完成\n");
+    Ok(())
+}
+
+/// 演示索引管理功能
+fn demonstrate_index_management(
+    dataset_path: &Path,
+) -> Result<()> {
+    println!("3. 演示索引管理功能...");
+
+    let mut reader =
+        PcapReader::new(dataset_path, "test_dataset")?;
+
+    // 获取详细文件信息
+    let file_list = reader.get_file_info_list()?;
+    println!("   文件详情：");
+    for (i, file_info) in file_list.iter().enumerate() {
+        println!(
+            "     文件 {}: {} ({} 数据包, {} 字节)",
+            i + 1,
+            file_info.file_name,
+            file_info.packet_count,
+            file_info.file_size
+        );
+    }
+
+    // 显示数据集统计信息
+    let dataset_info = reader.get_dataset_info()?;
+    if let (Some(start), Some(end)) = (
+        dataset_info.start_timestamp,
+        dataset_info.end_timestamp,
+    ) {
+        println!("   时间范围：");
+        println!("     - 开始时间戳: {} ns", start);
+        println!("     - 结束时间戳: {} ns", end);
+        println!(
+            "     - 时间跨度: {:.2} 秒",
+            (end - start) as f64 / 1_000_000_000.0
+        );
+    }
+
+    println!("   ✅ 索引管理演示完成\n");
+    Ok(())
 }
