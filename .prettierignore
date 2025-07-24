@@ -7,9 +7,6 @@ bun.lock
 .output/
 .vercel/
 
-# 文档
-docs/
-
 # Tauri
 src-tauri/
 
@@ -19,9 +16,9 @@ src-tauri/
 # *.config.ts
 
 # 编辑器
-.vscode/
-.claude/
-.cursor/
+# .vscode/
+# .claude/
+# .cursor/
 
 # 其他
 public/
