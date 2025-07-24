@@ -93,7 +93,6 @@
         :item-children="itemChildren"
         :item-icon="itemIcon"
         :item-icon-class="itemIconClass"
-        :variant="variant"
         :expand-on-click="expandOnClick"
         @click="bubbleEvent('click', $event)"
         @toggle-expand="bubbleEvent('toggle-expand', $event)"
@@ -158,10 +157,6 @@ const props = defineProps({
   itemIconClass: {
     type: [String, Function],
     default: null,
-  },
-  variant: {
-    type: String,
-    default: 'default',
   },
   expandOnClick: {
     type: Boolean,
