@@ -7,6 +7,6 @@ pub mod types;
 pub mod utils;
 
 // 重新导出核心类型
-pub use error::{PcapError, Result};
+pub use error::{PcapError, PcapResult};
 pub use types::{constants, PcapErrorCode};
 pub use utils::{binary_converter, calculate_crc32, ByteArrayExtensions, DateTimeExtensions};

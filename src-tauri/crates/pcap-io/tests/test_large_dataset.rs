@@ -3,7 +3,7 @@
 //! 测试大规模数据（10万个数据包）的写入读取功能和性能
 
 use pcap_io::{
-    DataPacket, PcapReader, PcapWriter, Result, WriterConfig,
+    DataPacket, PcapReader, PcapWriter, PcapResult, WriterConfig,
 };
 use std::path::Path;
 use std::time::{Instant, SystemTime};
@@ -13,7 +13,7 @@ use tempfile::TempDir;
 fn create_test_packet(
     sequence: usize,
     size: usize,
-) -> Result<DataPacket> {
+) -> PcapResult<DataPacket> {
     let mut data = vec![0u8; size];
 
     // 填充测试数据模式 - 使用更复杂的模式以避免压缩
@@ -31,7 +31,7 @@ fn write_large_dataset(
     dataset_name: &str,
     packet_count: usize,
     packet_size: usize,
-) -> Result<(u64, std::time::Duration)> {
+) -> PcapResult<(u64, std::time::Duration)> {
     let config = WriterConfig {
         max_packets_per_file: 2000,
         auto_flush: false,
@@ -81,7 +81,7 @@ fn write_large_dataset(
 fn read_large_dataset(
     base_path: &Path,
     dataset_name: &str,
-) -> Result<(usize, std::time::Duration)> {
+) -> PcapResult<(usize, std::time::Duration)> {
     let mut reader =
         PcapReader::new(base_path, dataset_name)?;
 

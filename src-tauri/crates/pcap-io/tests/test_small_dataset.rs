@@ -4,7 +4,7 @@
 
 use pcap_io::{
     DataPacket, PcapReader, PcapWriter, ReaderConfig,
-    Result, WriterConfig,
+    PcapResult, WriterConfig,
 };
 use std::path::Path;
 use std::time::SystemTime;
@@ -23,7 +23,7 @@ struct PacketInfo {
 fn create_test_packet(
     sequence: usize,
     size: usize,
-) -> Result<DataPacket> {
+) -> PcapResult<DataPacket> {
     let mut data = vec![0u8; size];
 
     // 填充测试数据
@@ -41,7 +41,7 @@ fn write_small_dataset(
     dataset_name: &str,
     packet_count: usize,
     packet_size: usize,
-) -> Result<Vec<PacketInfo>> {
+) -> PcapResult<Vec<PacketInfo>> {
     let config = WriterConfig::default();
     let mut writer = PcapWriter::new_with_config(
         base_path,
@@ -76,7 +76,7 @@ fn write_small_dataset(
 fn read_test_packets(
     base_path: &Path,
     dataset_name: &str,
-) -> Result<Vec<PacketInfo>> {
+) -> PcapResult<Vec<PacketInfo>> {
     let mut reader = PcapReader::new_with_config(
         base_path,
         dataset_name,

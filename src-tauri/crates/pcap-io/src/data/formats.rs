@@ -2,7 +2,7 @@
 //!
 //! 负责PCAP文件格式的序列化和反序列化操作，提供底层数据格式处理功能。
 
-use crate::foundation::error::{PcapError, Result};
+use crate::foundation::error::{PcapError, PcapResult};
 use crate::data::models::{DataPacket, DataPacketHeader, PcapFileHeader};
 
 /// PCAP格式处理器
@@ -10,7 +10,7 @@ pub struct PcapFormatProcessor;
 
 impl PcapFormatProcessor {
     /// 解析PCAP文件头
-    pub fn parse_file_header(data: &[u8]) -> Result<PcapFileHeader> {
+    pub fn parse_file_header(data: &[u8]) -> PcapResult<PcapFileHeader> {
         PcapFileHeader::from_bytes(data)
             .map_err(|e| PcapError::InvalidFormat(format!("解析文件头失败: {}", e)))
     }
@@ -21,7 +21,7 @@ impl PcapFormatProcessor {
     }
 
     /// 解析数据包头
-    pub fn parse_packet_header(data: &[u8]) -> Result<DataPacketHeader> {
+    pub fn parse_packet_header(data: &[u8]) -> PcapResult<DataPacketHeader> {
         DataPacketHeader::from_bytes(data)
             .map_err(|e| PcapError::InvalidFormat(format!("解析数据包头失败: {}", e)))
     }
@@ -32,7 +32,7 @@ impl PcapFormatProcessor {
     }
 
     /// 解析完整数据包
-    pub fn parse_packet(header_data: &[u8], payload_data: &[u8]) -> Result<DataPacket> {
+    pub fn parse_packet(header_data: &[u8], payload_data: &[u8]) -> PcapResult<DataPacket> {
         let header = Self::parse_packet_header(header_data)?;
 
         if payload_data.len() != header.packet_length as usize {
@@ -53,7 +53,7 @@ impl PcapFormatProcessor {
     }
 
     /// 验证PCAP文件格式
-    pub fn validate_file_format(data: &[u8]) -> Result<()> {
+    pub fn validate_file_format(data: &[u8]) -> PcapResult<()> {
         if data.len() < PcapFileHeader::HEADER_SIZE {
             return Err(PcapError::InvalidFormat(
                 "文件太小，不是有效的PCAP文件".to_string()

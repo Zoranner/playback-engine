@@ -83,7 +83,7 @@ impl PcapError {
 }
 
 /// 结果类型别名
-pub type Result<T> = std::result::Result<T, PcapError>;
+pub type PcapResult<T> = std::result::Result<T, PcapError>;
 
 /// 从字符串错误转换为PcapError
 impl From<String> for PcapError {

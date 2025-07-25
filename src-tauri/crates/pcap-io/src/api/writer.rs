@@ -13,7 +13,7 @@ use crate::data::file_writer::PcapFileWriter;
 use crate::data::models::{
     DataPacket, DatasetInfo, FileInfo,
 };
-use crate::foundation::error::{PcapError, Result};
+use crate::foundation::error::{PcapError, PcapResult};
 
 /// PCAP数据集写入器
 ///
@@ -65,7 +65,7 @@ impl PcapWriter {
     pub fn new<P: AsRef<Path>>(
         base_path: P,
         dataset_name: &str,
-    ) -> Result<Self> {
+    ) -> PcapResult<Self> {
         Self::new_with_config(
             base_path,
             dataset_name,
@@ -86,7 +86,7 @@ impl PcapWriter {
         base_path: P,
         dataset_name: &str,
         configuration: WriterConfig,
-    ) -> Result<Self> {
+    ) -> PcapResult<Self> {
         let dataset_path =
             base_path.as_ref().join(dataset_name);
 
@@ -134,7 +134,7 @@ impl PcapWriter {
     }
 
     /// 初始化写入器
-    pub fn initialize(&mut self) -> Result<()> {
+    pub fn initialize(&mut self) -> PcapResult<()> {
         if self.is_initialized {
             return Ok(());
         }
@@ -150,7 +150,7 @@ impl PcapWriter {
     }
 
     /// 完成写入并生成索引
-    pub fn finalize(&mut self) -> Result<()> {
+    pub fn finalize(&mut self) -> PcapResult<()> {
         if self.is_finalized {
             return Ok(());
         }
@@ -233,7 +233,7 @@ impl PcapWriter {
     }
 
     /// 强制重新生成索引
-    pub fn regenerate_index(&mut self) -> Result<PathBuf> {
+    pub fn regenerate_index(&mut self) -> PcapResult<PathBuf> {
         info!("重新生成索引...");
         let index_path =
             self.index_manager.regenerate_index()?;
@@ -274,7 +274,7 @@ impl PcapWriter {
     pub fn write_packet(
         &mut self,
         packet: &DataPacket,
-    ) -> Result<()> {
+    ) -> PcapResult<()> {
         if self.is_finalized {
             return Err(PcapError::InvalidState(
                 "写入器已完成，无法继续写入".to_string(),
@@ -323,7 +323,7 @@ impl PcapWriter {
     pub fn write_packets(
         &mut self,
         packets: &[DataPacket],
-    ) -> Result<()> {
+    ) -> PcapResult<()> {
         for packet in packets {
             self.write_packet(packet)?;
         }
@@ -333,7 +333,7 @@ impl PcapWriter {
     /// 刷新当前文件
     ///
     /// 将当前文件的缓冲区数据写入磁盘，确保数据完整性。
-    pub fn flush(&mut self) -> Result<()> {
+    pub fn flush(&mut self) -> PcapResult<()> {
         if let Some(ref mut writer) = self.current_writer {
             writer.flush()?;
             debug!("缓冲区已刷新");
@@ -347,7 +347,7 @@ impl PcapWriter {
     }
 
     /// 清理缓存
-    pub fn clear_cache(&mut self) -> Result<()> {
+    pub fn clear_cache(&mut self) -> PcapResult<()> {
         let _ = self.file_info_cache.clear();
         self.cache_stats = CacheStats::new();
         debug!("缓存已清理");
@@ -359,7 +359,7 @@ impl PcapWriter {
     // =================================================================
 
     /// 创建新的PCAP文件
-    fn create_new_file(&mut self) -> Result<()> {
+    fn create_new_file(&mut self) -> PcapResult<()> {
         // 生成文件名
         let filename = if self.current_file_index == 0 {
             format!("{}.pcap", self.dataset_name)
@@ -419,7 +419,7 @@ impl PcapWriter {
     }
 
     /// 切换到新文件
-    fn switch_to_new_file(&mut self) -> Result<()> {
+    fn switch_to_new_file(&mut self) -> PcapResult<()> {
         self.current_file_index += 1;
         self.create_new_file()
     }

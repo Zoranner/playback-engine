@@ -7,11 +7,11 @@
 
 use pcap_io::{
     DataPacket, PcapReader, PcapWriter, ReaderConfig,
-    Result, WriterConfig,
+    PcapResult, WriterConfig,
 };
 use std::{path::Path, time::SystemTime};
 
-fn main() -> Result<()> {
+fn main() -> PcapResult<()> {
     // 设置数据集路径
     let dataset_path =
         Path::new("example_output").join("sample_dataset");
@@ -41,7 +41,7 @@ fn main() -> Result<()> {
 fn create_test_packet(
     sequence: usize,
     size: usize,
-) -> Result<DataPacket> {
+) -> PcapResult<DataPacket> {
     let mut data = vec![0u8; size];
 
     // 填充测试数据模式
@@ -54,7 +54,7 @@ fn create_test_packet(
 }
 
 /// 创建数据集并写入数据包
-fn create_dataset(dataset_path: &Path) -> Result<()> {
+fn create_dataset(dataset_path: &Path) -> PcapResult<()> {
     println!("1. 创建数据集并写入数据包...");
 
     // 配置写入器
@@ -102,7 +102,7 @@ fn create_dataset(dataset_path: &Path) -> Result<()> {
 }
 
 /// 读取数据集并访问索引信息
-fn read_dataset(dataset_path: &Path) -> Result<()> {
+fn read_dataset(dataset_path: &Path) -> PcapResult<()> {
     println!("2. 读取数据集并访问索引信息...");
 
     let mut reader = PcapReader::new_with_config(
@@ -145,7 +145,7 @@ fn read_dataset(dataset_path: &Path) -> Result<()> {
 /// 演示索引管理功能
 fn demonstrate_index_management(
     dataset_path: &Path,
-) -> Result<()> {
+) -> PcapResult<()> {
     println!("3. 演示索引管理功能...");
 
     let mut reader =

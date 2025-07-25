@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 
 use crate::business::config::CommonConfig;
 use crate::data::models::{DataPacket, DataPacketHeader, PcapFileHeader};
-use crate::foundation::error::{PcapError, Result};
+use crate::foundation::error::{PcapError, PcapResult};
 use crate::foundation::utils::calculate_crc32;
 
 // 错误消息常量
@@ -39,7 +39,7 @@ impl PcapFileReader {
     }
 
     /// 打开PCAP文件
-    pub(crate) fn open<P: AsRef<Path>>(&mut self, file_path: P) -> Result<()> {
+    pub(crate) fn open<P: AsRef<Path>>(&mut self, file_path: P) -> PcapResult<()> {
         let path = file_path.as_ref();
 
         if !path.exists() {
@@ -74,7 +74,7 @@ impl PcapFileReader {
     }
 
     /// 读取并验证文件头
-    fn read_and_validate_header(&self, reader: &mut BufReader<File>) -> Result<PcapFileHeader> {
+    fn read_and_validate_header(&self, reader: &mut BufReader<File>) -> PcapResult<PcapFileHeader> {
         let mut header_bytes = [0u8; PcapFileHeader::HEADER_SIZE];
         reader
             .read_exact(&mut header_bytes)
@@ -91,7 +91,7 @@ impl PcapFileReader {
     }
 
     /// 读取下一个数据包
-    pub(crate) fn read_packet(&mut self) -> Result<Option<DataPacket>> {
+    pub(crate) fn read_packet(&mut self) -> PcapResult<Option<DataPacket>> {
         let reader = self
             .reader
             .as_mut()
@@ -134,7 +134,7 @@ impl PcapFileReader {
     }
 
     /// 重置读取位置到数据区开始位置
-    pub(crate) fn reset(&mut self) -> Result<()> {
+    pub(crate) fn reset(&mut self) -> PcapResult<()> {
         let reader = self
             .reader
             .as_mut()
@@ -152,7 +152,7 @@ impl PcapFileReader {
     }
 
     /// 移动到指定的字节位置
-    pub(crate) fn seek(&mut self, position: u64) -> Result<()> {
+    pub(crate) fn seek(&mut self, position: u64) -> PcapResult<()> {
         let reader = self
             .reader
             .as_mut()
@@ -220,7 +220,7 @@ impl PcapFileReader {
     }
 
     /// 获取当前读取位置（内部使用）
-    pub(crate) fn current_position(&mut self) -> Result<u64> {
+    pub(crate) fn current_position(&mut self) -> PcapResult<u64> {
         let reader = self
             .reader
             .as_mut()

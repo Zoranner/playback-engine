@@ -84,7 +84,7 @@ pub use data::{
     DataPacket, DataPacketHeader, DatasetInfo, FileInfo,
     PcapFileHeader,
 };
-pub use foundation::{PcapError, Result};
+pub use foundation::{PcapError, PcapResult};
 
 // 基础设施层类型导出
 pub use foundation::{constants, PcapErrorCode};

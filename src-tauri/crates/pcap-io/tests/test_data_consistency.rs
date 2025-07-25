@@ -2,7 +2,7 @@
 //!
 //! 测试写入和读取的一致性，确保数据完整性和可靠性
 
-use pcap_io::{DataPacket, PcapReader, PcapWriter, Result};
+use pcap_io::{DataPacket, PcapReader, PcapWriter, PcapResult};
 use std::path::Path;
 use std::time::SystemTime;
 use tempfile::TempDir;
@@ -30,7 +30,7 @@ fn calculate_data_hash(data: &[u8]) -> String {
 }
 
 /// 创建具有特定模式的测试数据包
-fn create_detailed_test_packet(sequence: usize, size: usize) -> Result<DataPacket> {
+fn create_detailed_test_packet(sequence: usize, size: usize) -> PcapResult<DataPacket> {
     let mut data = vec![0u8; size];
 
     // 创建具有清晰模式的数据，以便检测损坏
@@ -71,7 +71,7 @@ fn write_detailed_test_data(
     dataset_name: &str,
     packet_count: usize,
     packet_size: usize,
-) -> Result<Vec<PacketDetails>> {
+) -> PcapResult<Vec<PacketDetails>> {
     let mut writer = PcapWriter::new(base_path, dataset_name)?;
 
     let mut written_details = Vec::with_capacity(packet_count);
@@ -89,7 +89,7 @@ fn write_detailed_test_data(
 }
 
 /// 读取并验证数据包
-fn read_and_verify_test_data(base_path: &Path, dataset_name: &str) -> Result<Vec<PacketDetails>> {
+fn read_and_verify_test_data(base_path: &Path, dataset_name: &str) -> PcapResult<Vec<PacketDetails>> {
     let mut reader = PcapReader::new(base_path, dataset_name)?;
 
     let mut read_details = Vec::new();

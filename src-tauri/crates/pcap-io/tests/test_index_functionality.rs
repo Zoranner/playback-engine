@@ -5,14 +5,14 @@ use std::path::Path;
 
 use pcap_io::{
     DataPacket, PcapReader, PcapWriter, ReaderConfig,
-    Result, WriterConfig,
+    PcapResult, WriterConfig,
 };
 
 const TEST_BASE_PATH: &str = "test_output";
 const TEST_DATASET_NAME: &str = "test_index";
 
 /// 设置测试环境
-fn setup_test_environment() -> Result<()> {
+fn setup_test_environment() -> PcapResult<()> {
     let base_path = Path::new(TEST_BASE_PATH);
     if base_path.exists() {
         fs::remove_dir_all(base_path)
@@ -36,7 +36,7 @@ fn setup_test_environment() -> Result<()> {
 fn create_test_packet(
     sequence: u32,
     size: usize,
-) -> Result<DataPacket> {
+) -> PcapResult<DataPacket> {
     let mut data = vec![0u8; size];
 
     // 填充测试数据

@@ -13,7 +13,7 @@ use crate::data::file_reader::PcapFileReader;
 use crate::data::models::{
     DataPacket, DatasetInfo, FileInfo,
 };
-use crate::foundation::error::{PcapError, Result};
+use crate::foundation::error::{PcapError, PcapResult};
 
 // 错误消息常量
 const ERROR_DATASET_NOT_FOUND: &str = "数据集目录不存在";
@@ -63,7 +63,7 @@ impl PcapReader {
     pub fn new<P: AsRef<Path>>(
         base_path: P,
         dataset_name: &str,
-    ) -> Result<Self> {
+    ) -> PcapResult<Self> {
         Self::new_with_config(
             base_path,
             dataset_name,
@@ -84,7 +84,7 @@ impl PcapReader {
         base_path: P,
         dataset_name: &str,
         configuration: ReaderConfig,
-    ) -> Result<Self> {
+    ) -> PcapResult<Self> {
         let dataset_path =
             base_path.as_ref().join(dataset_name);
 
@@ -128,7 +128,7 @@ impl PcapReader {
     /// 初始化读取器
     ///
     /// 确保索引可用并准备好读取操作
-    pub fn initialize(&mut self) -> Result<()> {
+    pub fn initialize(&mut self) -> PcapResult<()> {
         if self.is_initialized {
             return Ok(());
         }
@@ -146,7 +146,7 @@ impl PcapReader {
     /// 获取数据集信息
     pub fn get_dataset_info(
         &mut self,
-    ) -> Result<DatasetInfo> {
+    ) -> PcapResult<DatasetInfo> {
         self.initialize()?;
 
         let index = self
@@ -185,7 +185,7 @@ impl PcapReader {
     /// 获取文件信息列表
     pub fn get_file_info_list(
         &mut self,
-    ) -> Result<Vec<FileInfo>> {
+    ) -> PcapResult<Vec<FileInfo>> {
         self.initialize()?;
 
         let index = self
@@ -255,7 +255,7 @@ impl PcapReader {
     /// - `Err(error)` - 读取过程中发生错误
     pub fn read_packet(
         &mut self,
-    ) -> Result<Option<DataPacket>> {
+    ) -> PcapResult<Option<DataPacket>> {
         self.initialize()?;
 
         // 确保当前文件已打开
@@ -296,7 +296,7 @@ impl PcapReader {
     pub fn read_packets(
         &mut self,
         count: usize,
-    ) -> Result<Vec<DataPacket>> {
+    ) -> PcapResult<Vec<DataPacket>> {
         self.initialize()?;
 
         let mut packets = Vec::with_capacity(count);
@@ -316,7 +316,7 @@ impl PcapReader {
     /// 重置读取器到数据集开始位置
     ///
     /// 将读取器重置到数据集的开始位置，后续读取将从第一个数据包开始。
-    pub fn reset(&mut self) -> Result<()> {
+    pub fn reset(&mut self) -> PcapResult<()> {
         self.initialize()?;
 
         // 重置当前读取位置到数据集开始
@@ -360,7 +360,7 @@ impl PcapReader {
     }
 
     /// 强制重新生成索引
-    pub fn regenerate_index(&mut self) -> Result<PathBuf> {
+    pub fn regenerate_index(&mut self) -> PcapResult<PathBuf> {
         info!("强制重新生成索引...");
         let index_path =
             self.index_manager.regenerate_index()?;
@@ -374,7 +374,7 @@ impl PcapReader {
     }
 
     /// 清理缓存
-    pub fn clear_cache(&mut self) -> Result<()> {
+    pub fn clear_cache(&mut self) -> PcapResult<()> {
         let _ = self.file_info_cache.clear();
         self.cache_stats = CacheStats::new();
         *self.total_size_cache.borrow_mut() = None;
@@ -387,7 +387,7 @@ impl PcapReader {
     // =================================================================
 
     /// 获取数据集总大小
-    fn get_total_size(&self) -> Result<u64> {
+    fn get_total_size(&self) -> PcapResult<u64> {
         if let Some(cached_size) =
             *self.total_size_cache.borrow()
         {
@@ -419,7 +419,7 @@ impl PcapReader {
     fn open_file(
         &mut self,
         file_index: usize,
-    ) -> Result<()> {
+    ) -> PcapResult<()> {
         let index = self
             .index_manager
             .get_index()
@@ -459,7 +459,7 @@ impl PcapReader {
     }
 
     /// 切换到下一个文件
-    fn switch_to_next_file(&mut self) -> Result<bool> {
+    fn switch_to_next_file(&mut self) -> PcapResult<bool> {
         let index = self
             .index_manager
             .get_index()
@@ -481,7 +481,7 @@ impl PcapReader {
     }
 
     /// 确保当前文件已打开
-    fn ensure_current_file_open(&mut self) -> Result<()> {
+    fn ensure_current_file_open(&mut self) -> PcapResult<()> {
         if self.current_reader.is_none() {
             let index = self
                 .index_manager

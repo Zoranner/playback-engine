@@ -5,7 +5,7 @@
 use log::{debug, info, warn};
 use std::time::SystemTime;
 
-use crate::foundation::error::{PcapError, Result};
+use crate::foundation::error::{PcapError, PcapResult};
 use crate::data::models::DataPacket;
 use crate::business::config::CommonConfig;
 
@@ -31,7 +31,7 @@ impl PacketProcessor {
     }
 
     /// 处理单个数据包
-    pub fn process_packet(&mut self, packet: &DataPacket) -> Result<ProcessedPacket> {
+    pub fn process_packet(&mut self, packet: &DataPacket) -> PcapResult<ProcessedPacket> {
         // 业务验证
         self.validate_packet(packet)?;
 
@@ -51,7 +51,7 @@ impl PacketProcessor {
     }
 
     /// 批量处理数据包
-    pub fn process_batch(&mut self, packets: &[DataPacket]) -> Result<Vec<ProcessedPacket>> {
+    pub fn process_batch(&mut self, packets: &[DataPacket]) -> PcapResult<Vec<ProcessedPacket>> {
         let mut results = Vec::with_capacity(packets.len());
 
         for packet in packets {
@@ -73,7 +73,7 @@ impl PacketProcessor {
     }
 
     /// 验证数据包
-    fn validate_packet(&self, packet: &DataPacket) -> Result<()> {
+    fn validate_packet(&self, packet: &DataPacket) -> PcapResult<()> {
         if !self.config.enable_validation {
             return Ok(());
         }

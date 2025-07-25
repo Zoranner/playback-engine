@@ -5,7 +5,7 @@ use std::fs::{self, File};
 use std::io::{BufReader, Read};
 use std::path::{Path, PathBuf};
 
-use crate::foundation::error::{PcapError, Result};
+use crate::foundation::error::{PcapError, PcapResult};
 use crate::business::index::types::{PacketIndexEntry, PcapFileIndex, PidxIndex};
 use crate::business::config::CommonConfig;
 use crate::data::file_reader::PcapFileReader;
@@ -36,7 +36,7 @@ impl IndexManager {
     ///
     /// # 返回
     /// 返回初始化后的管理器实例
-    pub fn new<P: AsRef<Path>>(dataset_path: P) -> Result<Self> {
+    pub fn new<P: AsRef<Path>>(dataset_path: P) -> PcapResult<Self> {
         let path = dataset_path.as_ref().to_path_buf();
 
         if !path.exists() {
@@ -73,7 +73,7 @@ impl IndexManager {
     /// 2. 验证索引有效性
     /// 3. 如果无效则重新生成
     /// 4. 返回可用的索引
-    pub fn ensure_index(&mut self) -> Result<&PidxIndex> {
+    pub fn ensure_index(&mut self) -> PcapResult<&PidxIndex> {
         info!("正在检查数据集索引: {}", self.dataset_name);
 
         // 1. 尝试加载现有索引
@@ -110,7 +110,7 @@ impl IndexManager {
     }
 
     /// 强制重新生成索引
-    pub fn regenerate_index(&mut self) -> Result<PathBuf> {
+    pub fn regenerate_index(&mut self) -> PcapResult<PathBuf> {
         self.index = None;
         self.generate_index()
     }
@@ -121,7 +121,7 @@ impl IndexManager {
     }
 
     /// 验证索引是否需要重建
-    pub fn needs_rebuild(&self) -> Result<bool> {
+    pub fn needs_rebuild(&self) -> PcapResult<bool> {
         if let Some(index) = &self.index {
             let current_files = self.scan_pcap_files()?;
 
@@ -156,7 +156,7 @@ impl IndexManager {
     }
 
     /// 异步验证索引文件的有效性
-    pub async fn verify_index_validity(&self) -> Result<bool> {
+    pub async fn verify_index_validity(&self) -> PcapResult<bool> {
         if let Some(index) = &self.index {
             info!("验证索引文件有效性...");
 
@@ -196,7 +196,7 @@ impl IndexManager {
     // =================================================================
 
     /// 生成并保存数据集的时间索引
-    fn generate_index(&mut self) -> Result<PathBuf> {
+    fn generate_index(&mut self) -> PcapResult<PathBuf> {
         info!("开始生成数据集时间索引: {}", self.dataset_name);
 
         let mut index = PidxIndex::new(Some(format!("数据集: {}", self.dataset_name)));
@@ -288,7 +288,7 @@ impl IndexManager {
     }
 
     /// 为单个PCAP文件生成索引
-    fn index_pcap_file<P: AsRef<Path>>(&self, file_path: P) -> Result<PcapFileIndex> {
+    fn index_pcap_file<P: AsRef<Path>>(&self, file_path: P) -> PcapResult<PcapFileIndex> {
         let path = file_path.as_ref();
         let file_name = path
             .file_name()
@@ -361,7 +361,7 @@ impl IndexManager {
     // =================================================================
 
     /// 从PIDX文件加载索引
-    fn load_index<P: AsRef<Path>>(&self, pidx_file_path: P) -> Result<PidxIndex> {
+    fn load_index<P: AsRef<Path>>(&self, pidx_file_path: P) -> PcapResult<PidxIndex> {
         let xml_content =
             fs::read_to_string(pidx_file_path.as_ref()).map_err(|e| PcapError::Io(e))?;
 
@@ -373,7 +373,7 @@ impl IndexManager {
     }
 
     /// 从数据集目录查找PIDX文件
-    fn find_pidx_file(&self) -> Result<Option<PathBuf>> {
+    fn find_pidx_file(&self) -> PcapResult<Option<PathBuf>> {
         let entries = fs::read_dir(&self.dataset_path).map_err(|e| PcapError::Io(e))?;
 
         for entry in entries {
@@ -393,7 +393,7 @@ impl IndexManager {
     }
 
     /// 验证索引是否有效
-    fn is_index_valid(&self, index: &PidxIndex) -> Result<bool> {
+    fn is_index_valid(&self, index: &PidxIndex) -> PcapResult<bool> {
         // 检查是否需要重建
         let current_files = self.scan_pcap_files()?;
 
@@ -425,7 +425,7 @@ impl IndexManager {
     }
 
     /// 快速验证PIDX文件格式
-    fn validate_pidx_format<P: AsRef<Path>>(&self, pidx_file_path: P) -> Result<bool> {
+    fn validate_pidx_format<P: AsRef<Path>>(&self, pidx_file_path: P) -> PcapResult<bool> {
         let xml_content =
             fs::read_to_string(pidx_file_path.as_ref()).map_err(|e| PcapError::Io(e))?;
 
@@ -440,7 +440,7 @@ impl IndexManager {
     // =================================================================
 
     /// 扫描目录中的PCAP文件
-    fn scan_pcap_files(&self) -> Result<Vec<PathBuf>> {
+    fn scan_pcap_files(&self) -> PcapResult<Vec<PathBuf>> {
         let mut pcap_files = Vec::new();
         let entries = fs::read_dir(&self.dataset_path).map_err(|e| PcapError::Io(e))?;
 
@@ -463,7 +463,7 @@ impl IndexManager {
     }
 
     /// 计算文件的SHA256哈希值
-    fn calculate_file_hash<P: AsRef<Path>>(&self, file_path: P) -> Result<String> {
+    fn calculate_file_hash<P: AsRef<Path>>(&self, file_path: P) -> PcapResult<String> {
         let file = File::open(file_path.as_ref()).map_err(|e| PcapError::Io(e))?;
         let mut reader = BufReader::new(file);
         let mut hasher = Sha256::new();
@@ -482,13 +482,13 @@ impl IndexManager {
     }
 
     /// 验证PCAP文件是否与索引中的哈希值匹配
-    fn verify_file_hash<P: AsRef<Path>>(&self, file_path: P, expected_hash: &str) -> Result<bool> {
+    fn verify_file_hash<P: AsRef<Path>>(&self, file_path: P, expected_hash: &str) -> PcapResult<bool> {
         let actual_hash = self.calculate_file_hash(file_path)?;
         Ok(actual_hash == expected_hash)
     }
 
     /// 从XML格式反序列化索引
-    fn deserialize_from_xml(&self, xml_content: &str) -> Result<PidxIndex> {
+    fn deserialize_from_xml(&self, xml_content: &str) -> PcapResult<PidxIndex> {
         let mut index: PidxIndex = serde_xml_rs::from_str(xml_content)
             .map_err(|e| PcapError::InvalidFormat(format!("XML反序列化失败: {}", e)))?;
         index.build_timestamp_index();
@@ -496,14 +496,14 @@ impl IndexManager {
     }
 
     /// 将索引序列化为XML格式
-    fn serialize_to_xml(&self, index: &PidxIndex) -> Result<String> {
+    fn serialize_to_xml(&self, index: &PidxIndex) -> PcapResult<String> {
         let xml_content = serde_xml_rs::to_string(index)
             .map_err(|e| PcapError::InvalidFormat(format!("XML序列化失败: {}", e)))?;
         Ok(xml_content)
     }
 
     /// 保存索引到文件
-    fn save_index_to_file(&self, pidx_file_path: &PathBuf) -> Result<()> {
+    fn save_index_to_file(&self, pidx_file_path: &PathBuf) -> PcapResult<()> {
         if let Some(index) = &self.index {
             let xml_content = self.serialize_to_xml(index)?;
             fs::write(pidx_file_path, xml_content).map_err(|e| PcapError::Io(e))?;

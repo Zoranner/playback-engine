@@ -7,13 +7,13 @@ use std::path::Path;
 
 use pcap_io::{
     DataPacket, PcapReader, PcapWriter, ReaderConfig,
-    Result, WriterConfig,
+    PcapResult, WriterConfig,
 };
 
 /// 清理指定数据集目录
 fn clean_dataset_directory<P: AsRef<Path>>(
     dataset_path: P,
-) -> Result<()> {
+) -> PcapResult<()> {
     let path = dataset_path.as_ref();
     if path.exists() {
         fs::remove_dir_all(path)
@@ -28,7 +28,7 @@ fn clean_dataset_directory<P: AsRef<Path>>(
 fn create_test_packet(
     sequence: u32,
     size: usize,
-) -> Result<DataPacket> {
+) -> PcapResult<DataPacket> {
     let mut data = vec![0u8; size];
     for i in 0..size {
         data[i] = (i + sequence as usize) as u8;
