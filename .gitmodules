@@ -1,0 +1,3 @@
+[submodule "src-tauri/crates/pcapfile-io"]
+	path = src-tauri/crates/pcapfile-io
+	url = https://github.com/Zoranner/pcapfile-io.git
