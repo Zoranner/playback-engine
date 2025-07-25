@@ -2,7 +2,7 @@
 //!
 //! 测试写入和读取的一致性，确保数据完整性和可靠性
 
-use pcap_io::{DataPacket, PcapReader, PcapWriter, Read, Result, Write};
+use pcap_io::{DataPacket, PcapReader, PcapWriter, Result};
 use std::path::Path;
 use std::time::SystemTime;
 use tempfile::TempDir;

@@ -14,7 +14,6 @@ use crate::data::models::{
     DataPacket, DatasetInfo, FileInfo,
 };
 use crate::foundation::error::{PcapError, Result};
-use crate::foundation::traits::Write;
 
 /// PCAP数据集写入器
 ///
@@ -264,6 +263,84 @@ impl PcapWriter {
         &self.dataset_name
     }
 
+    /// 写入单个数据包
+    ///
+    /// # 参数
+    /// - `packet` - 要写入的数据包
+    ///
+    /// # 返回
+    /// - `Ok(())` - 成功写入数据包
+    /// - `Err(error)` - 写入过程中发生错误
+    pub fn write_packet(
+        &mut self,
+        packet: &DataPacket,
+    ) -> Result<()> {
+        if self.is_finalized {
+            return Err(PcapError::InvalidState(
+                "写入器已完成，无法继续写入".to_string(),
+            ));
+        }
+
+        // 确保初始化
+        if !self.is_initialized {
+            self.initialize()?;
+        }
+
+        // 检查是否需要切换文件
+        if self.should_switch_file() {
+            self.switch_to_new_file()?;
+        }
+
+        // 写入数据包
+        if let Some(ref mut writer) = self.current_writer {
+            writer.write_packet(packet)?;
+
+            // 更新统计信息
+            self.current_file_size +=
+                packet.packet_length() as u64 + 16; // 16字节包头
+            self.current_file_packet_count += 1;
+            self.total_packet_count += 1;
+
+            debug!(
+                "已写入数据包，当前文件大小: {} 字节",
+                self.current_file_size
+            );
+        } else {
+            return Err(PcapError::InvalidState(
+                "没有可用的写入器".to_string(),
+            ));
+        }
+
+        Ok(())
+    }
+
+    /// 批量写入多个数据包
+    ///
+    /// # 参数
+    /// - `packets` - 要写入的数据包列表
+    ///
+    /// # 返回
+    pub fn write_packets(
+        &mut self,
+        packets: &[DataPacket],
+    ) -> Result<()> {
+        for packet in packets {
+            self.write_packet(packet)?;
+        }
+        Ok(())
+    }
+
+    /// 刷新当前文件
+    ///
+    /// 将当前文件的缓冲区数据写入磁盘，确保数据完整性。
+    pub fn flush(&mut self) -> Result<()> {
+        if let Some(ref mut writer) = self.current_writer {
+            writer.flush()?;
+            debug!("缓冲区已刷新");
+        }
+        Ok(())
+    }
+
     /// 获取缓存统计信息
     pub fn get_cache_stats(&self) -> &CacheStats {
         &self.cache_stats
@@ -357,69 +434,6 @@ impl PcapWriter {
                     .unwrap_or(0)
             })
             .sum()
-    }
-}
-
-impl Write for PcapWriter {
-    fn write_packet(
-        &mut self,
-        packet: &DataPacket,
-    ) -> Result<()> {
-        if self.is_finalized {
-            return Err(PcapError::InvalidState(
-                "写入器已完成，无法继续写入".to_string(),
-            ));
-        }
-
-        // 确保初始化
-        if !self.is_initialized {
-            self.initialize()?;
-        }
-
-        // 检查是否需要切换文件
-        if self.should_switch_file() {
-            self.switch_to_new_file()?;
-        }
-
-        // 写入数据包
-        if let Some(ref mut writer) = self.current_writer {
-            writer.write_packet(packet)?;
-
-            // 更新统计信息
-            self.current_file_size +=
-                packet.packet_length() as u64 + 16; // 16字节包头
-            self.current_file_packet_count += 1;
-            self.total_packet_count += 1;
-
-            debug!(
-                "已写入数据包，当前文件大小: {} 字节",
-                self.current_file_size
-            );
-        } else {
-            return Err(PcapError::InvalidState(
-                "没有可用的写入器".to_string(),
-            ));
-        }
-
-        Ok(())
-    }
-
-    fn write_packets(
-        &mut self,
-        packets: &[DataPacket],
-    ) -> Result<()> {
-        for packet in packets {
-            self.write_packet(packet)?;
-        }
-        Ok(())
-    }
-
-    fn flush(&mut self) -> Result<()> {
-        if let Some(ref mut writer) = self.current_writer {
-            writer.flush()?;
-            debug!("缓冲区已刷新");
-        }
-        Ok(())
     }
 }
 

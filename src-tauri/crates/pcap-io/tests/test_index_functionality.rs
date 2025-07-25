@@ -5,7 +5,7 @@ use std::path::Path;
 
 use pcap_io::{
     DataPacket, PcapReader, PcapWriter, ReaderConfig,
-    Result, Write, WriterConfig,
+    Result, WriterConfig,
 };
 
 const TEST_BASE_PATH: &str = "test_output";

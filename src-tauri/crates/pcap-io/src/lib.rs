@@ -76,12 +76,15 @@ pub mod data;
 pub mod foundation;
 
 // 重新导出核心类型和函数
-pub use business::{CommonConfig, ReaderConfig, WriterConfig, PacketIndexEntry, PcapFileIndex, PidxIndex};
-pub use data::{DataPacket, DataPacketHeader, DatasetInfo, FileInfo, PcapFileHeader};
+pub use business::{
+    CommonConfig, PacketIndexEntry, PcapFileIndex,
+    PidxIndex, ReaderConfig, WriterConfig,
+};
+pub use data::{
+    DataPacket, DataPacketHeader, DatasetInfo, FileInfo,
+    PcapFileHeader,
+};
 pub use foundation::{PcapError, Result};
-
-// 重新导出traits
-pub use foundation::traits::{Read, Write};
 
 // 基础设施层类型导出
 pub use foundation::{constants, PcapErrorCode};

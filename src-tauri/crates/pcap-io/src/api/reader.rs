@@ -9,11 +9,11 @@ use std::path::{Path, PathBuf};
 use crate::business::cache::{CacheStats, FileInfoCache};
 use crate::business::config::ReaderConfig;
 use crate::business::index::IndexManager;
+use crate::data::file_reader::PcapFileReader;
 use crate::data::models::{
     DataPacket, DatasetInfo, FileInfo,
 };
 use crate::foundation::error::{PcapError, Result};
-use crate::foundation::traits::Read;
 
 // 错误消息常量
 const ERROR_DATASET_NOT_FOUND: &str = "数据集目录不存在";
@@ -36,8 +36,7 @@ pub struct PcapReader {
     /// 配置信息
     configuration: ReaderConfig,
     /// 当前文件读取器
-    current_reader:
-        Option<crate::data::file_reader::PcapFileReader>,
+    current_reader: Option<PcapFileReader>,
     /// 当前文件索引
     current_file_index: usize,
     /// 当前读取位置（全局数据包索引）
@@ -248,6 +247,106 @@ impl PcapReader {
         &self.dataset_name
     }
 
+    /// 读取下一个数据包
+    ///
+    /// # 返回
+    /// - `Ok(Some(packet))` - 成功读取到数据包
+    /// - `Ok(None)` - 到达文件末尾，无更多数据包
+    /// - `Err(error)` - 读取过程中发生错误
+    pub fn read_packet(
+        &mut self,
+    ) -> Result<Option<DataPacket>> {
+        self.initialize()?;
+
+        // 确保当前文件已打开
+        self.ensure_current_file_open()?;
+
+        loop {
+            if let Some(ref mut reader) =
+                self.current_reader
+            {
+                match reader.read_packet() {
+                    Ok(Some(packet)) => {
+                        self.current_position += 1;
+                        return Ok(Some(packet));
+                    }
+                    Ok(None) => {
+                        // 当前文件读取完毕，尝试切换到下一个文件
+                        if !self.switch_to_next_file()? {
+                            // 没有更多文件
+                            return Ok(None);
+                        }
+                        continue;
+                    }
+                    Err(e) => return Err(e),
+                }
+            } else {
+                // 没有可读取的文件
+                return Ok(None);
+            }
+        }
+    }
+
+    /// 批量读取多个数据包
+    ///
+    /// # 参数
+    /// - `count` - 要读取的数据包数量
+    ///
+    /// # 返回
+    pub fn read_packets(
+        &mut self,
+        count: usize,
+    ) -> Result<Vec<DataPacket>> {
+        self.initialize()?;
+
+        let mut packets = Vec::with_capacity(count);
+
+        // 批量读取指定数量的数据包
+        for _ in 0..count {
+            if let Some(packet) = self.read_packet()? {
+                packets.push(packet);
+            } else {
+                break; // 没有更多数据包
+            }
+        }
+
+        Ok(packets)
+    }
+
+    /// 重置读取器到数据集开始位置
+    ///
+    /// 将读取器重置到数据集的开始位置，后续读取将从第一个数据包开始。
+    pub fn reset(&mut self) -> Result<()> {
+        self.initialize()?;
+
+        // 重置当前读取位置到数据集开始
+        self.current_position = 0;
+        self.current_file_index = 0;
+
+        // 关闭当前文件
+        if let Some(ref mut reader) = self.current_reader {
+            reader.close();
+        }
+        self.current_reader = None;
+
+        // 重新打开第一个文件（如果存在）
+        let index = self
+            .index_manager
+            .get_index()
+            .ok_or_else(|| {
+                PcapError::InvalidState(
+                    "索引未加载".to_string(),
+                )
+            })?;
+
+        if !index.data_files.files.is_empty() {
+            self.open_file(0)?;
+        }
+
+        info!("读取器已重置到数据集开始位置");
+        Ok(())
+    }
+
     /// 获取索引管理器的引用
     /// 允许外部通过 reader.index().method() 的方式访问索引功能
     pub fn index(&self) -> &IndexManager {
@@ -397,93 +496,6 @@ impl PcapReader {
                 self.open_file(0)?;
             }
         }
-        Ok(())
-    }
-}
-
-impl Read for PcapReader {
-    fn read_packet(
-        &mut self,
-    ) -> Result<Option<DataPacket>> {
-        self.initialize()?;
-
-        // 确保当前文件已打开
-        self.ensure_current_file_open()?;
-
-        loop {
-            if let Some(ref mut reader) =
-                self.current_reader
-            {
-                match reader.read_packet() {
-                    Ok(Some(packet)) => {
-                        self.current_position += 1;
-                        return Ok(Some(packet));
-                    }
-                    Ok(None) => {
-                        // 当前文件读取完毕，尝试切换到下一个文件
-                        if !self.switch_to_next_file()? {
-                            // 没有更多文件
-                            return Ok(None);
-                        }
-                        continue;
-                    }
-                    Err(e) => return Err(e),
-                }
-            } else {
-                // 没有可读取的文件
-                return Ok(None);
-            }
-        }
-    }
-
-    fn read_packets(
-        &mut self,
-        count: usize,
-    ) -> Result<Vec<DataPacket>> {
-        self.initialize()?;
-
-        let mut packets = Vec::with_capacity(count);
-
-        // 批量读取指定数量的数据包
-        for _ in 0..count {
-            if let Some(packet) = self.read_packet()? {
-                packets.push(packet);
-            } else {
-                break; // 没有更多数据包
-            }
-        }
-
-        Ok(packets)
-    }
-
-    fn reset(&mut self) -> Result<()> {
-        self.initialize()?;
-
-        // 重置当前读取位置到数据集开始
-        self.current_position = 0;
-        self.current_file_index = 0;
-
-        // 关闭当前文件
-        if let Some(ref mut reader) = self.current_reader {
-            reader.close();
-        }
-        self.current_reader = None;
-
-        // 重新打开第一个文件（如果存在）
-        let index = self
-            .index_manager
-            .get_index()
-            .ok_or_else(|| {
-                PcapError::InvalidState(
-                    "索引未加载".to_string(),
-                )
-            })?;
-
-        if !index.data_files.files.is_empty() {
-            self.open_file(0)?;
-        }
-
-        info!("读取器已重置到数据集开始位置");
         Ok(())
     }
 }

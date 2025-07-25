@@ -3,8 +3,8 @@
 //! 测试基本的读写功能和索引生成
 
 use pcap_io::{
-    DataPacket, PcapReader, PcapWriter, Read, ReaderConfig,
-    Result, Write, WriterConfig,
+    DataPacket, PcapReader, PcapWriter, ReaderConfig,
+    Result, WriterConfig,
 };
 use std::path::Path;
 use std::time::SystemTime;

@@ -6,8 +6,8 @@
 //! - 索引管理和验证
 
 use pcap_io::{
-    DataPacket, PcapReader, PcapWriter, Read, ReaderConfig,
-    Result, Write, WriterConfig,
+    DataPacket, PcapReader, PcapWriter, ReaderConfig,
+    Result, WriterConfig,
 };
 use std::{path::Path, time::SystemTime};
 

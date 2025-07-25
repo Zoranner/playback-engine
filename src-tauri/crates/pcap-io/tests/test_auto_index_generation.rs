@@ -7,7 +7,7 @@ use std::path::Path;
 
 use pcap_io::{
     DataPacket, PcapReader, PcapWriter, ReaderConfig,
-    Result, Write, WriterConfig,
+    Result, WriterConfig,
 };
 
 /// 清理指定数据集目录
