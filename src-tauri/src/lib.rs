@@ -7,24 +7,6 @@ pub mod state;
 pub mod streaming;
 pub mod types;
 
-// 重新导出 pcap-io 库的核心类型
-pub use pcap_io::{
-    Configuration as PcapConfiguration,
-    DataPacket,
-    DataPacketHeader,
-    // 索引相关类型
-    PacketIndexEntry,
-    PcapFileHeader,
-    PcapFileIndex,
-    PidxIndex,
-    PidxReader,
-    PidxWriter,
-    Read,
-    PcapReader,
-    Write,
-    PcapWriter,
-};
-
 // 重新导出应用类型
 pub use project::loader::ProjectLoader;
 pub use state::app_state::AppState;
@@ -33,10 +15,8 @@ pub use types::{AppDataPacket, PacketType, PlaybackError, Result};
 
 // Tauri相关导入
 use dotenvy::dotenv;
-use std::sync::Arc;
 use tauri::Manager;
 use tauri::{webview::WebviewWindowBuilder, WebviewUrl};
-use tokio::sync::Mutex;
 
 /// 通过环境变量获取前端URL
 fn get_frontend_url() -> String {
