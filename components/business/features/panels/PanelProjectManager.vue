@@ -121,7 +121,7 @@ const datasets = ref([]);
 const handleSelect = item => {
   // 更新选中项状态
   selectedItems.value = [item];
-  
+
   // 清除之前选中的文件状态
   datasets.value.forEach(dataset => {
     if (dataset.files) {
