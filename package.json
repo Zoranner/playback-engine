@@ -5,10 +5,8 @@
   "scripts": {
     "format": "prettier --write .",
     "format:fix": "prettier --write . && eslint . --fix",
-    "nuxt": "nuxt",
     "nuxt:dev": "nuxt dev",
     "nuxt:build": "nuxt build",
-    "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build"
   },
