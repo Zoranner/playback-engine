@@ -17,11 +17,24 @@ pub use types::{AppDataPacket, PacketType, PlaybackError, Result};
 use dotenvy::dotenv;
 use tauri::Manager;
 use tauri::{webview::WebviewWindowBuilder, WebviewUrl};
+use crate::geo::tile_service::TileService;
 
 /// 通过环境变量获取前端URL
 fn get_frontend_url() -> String {
     let port = std::env::var("TAURI_FRONTEND_PORT").unwrap_or_else(|_| "32030".to_string());
     format!("http://localhost:{}", port)
+}
+
+/// 启动瓦片代理服务
+async fn start_tile_service() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    let tile_service = TileService::new()?;
+    let service_url = tile_service.get_service_url();
+    log::info!("启动瓦片代理服务: {}", service_url);
+
+    // 启动服务器
+    tile_service.start_server().await?;
+
+    Ok(())
 }
 
 /// 初始化Tauri应用
@@ -47,9 +60,6 @@ pub fn run() {
             api::playback_commands::seek_to_time,
             api::playback_commands::set_playback_speed,
             api::playback_commands::get_playback_state,
-            api::geo_commands::get_map_tile,
-            api::geo_commands::get_geojson_data,
-            api::geo_commands::get_mvt_tile,
         ])
         .setup(|app| {
             // 初始化日志
@@ -70,6 +80,17 @@ pub fn run() {
                 .maximized(true)
                 .build()
                 .expect("创建窗口失败");
+
+            // 在窗口创建后启动瓦片代理服务
+            std::thread::spawn(move || {
+                let rt = tokio::runtime::Runtime::new().unwrap();
+                rt.block_on(async {
+                    match start_tile_service().await {
+                        Ok(_) => log::info!("瓦片服务正常退出"),
+                        Err(e) => log::error!("瓦片服务启动失败: {}", e),
+                    }
+                });
+            });
 
             Ok(())
         })

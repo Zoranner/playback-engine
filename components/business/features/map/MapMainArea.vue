@@ -23,8 +23,16 @@ const emit = defineEmits([
 let map = null;
 const mapContainer = ref();
 
+// 获取瓦片服务端口
+const getTileServicePort = () => {
+  // 从环境变量获取端口，默认8080
+  return import.meta.env.VITE_TILE_SERVICE_PORT ?? '8080';
+};
+
 // 初始化地图
 onMounted(() => {
+  const tilePort = getTileServicePort();
+
   map = new maplibregl.Map({
     container: mapContainer.value,
     zoom: 3, // 调整缩放级别以显示杭州区域
@@ -40,9 +48,7 @@ onMounted(() => {
       sources: {
         'arcgis-satellite': {
           type: 'raster',
-          tiles: [
-            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-          ],
+          tiles: [`http://127.0.0.1:${tilePort}/tile/{z}/{x}/{y}`],
           tileSize: 256,
           attribution: 'KimoTech',
         },
