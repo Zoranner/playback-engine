@@ -35,7 +35,7 @@ alwaysApply: true
 
 **核心服务层** - 底层功能实现
 - 文件系统操作和数据处理
-- 外部库集成（如 pcap-io）
+- 外部库集成（如 pcapfile-io）
 - 系统资源管理
 - 配置管理和持久化
 
@@ -69,7 +69,7 @@ src/
     └── writer.rs         # 项目写入器
 
 crates/                   # 独立模块
-└── pcap-io/              # PCAP处理模块
+└── pcapfile-io/              # PCAP处理模块
     ├── src/
     │   ├── api/          # 用户接口层
     │   ├── business/     # 业务逻辑层
@@ -98,7 +98,7 @@ crates/                   # 独立模块
 - 前后端类型共享
 - 错误类型定义
 
-**PCAP模块 (`crates/pcap-io/`)**：
+**PCAP模块 (`crates/pcapfile-io/`)**：
 - 高性能数据处理
 - 文件格式解析
 - 索引管理
@@ -181,7 +181,7 @@ pub async fn load_project(
 - **合理缓存**：在内存使用和性能之间找到平衡
 - **及时释放**：使用RAII模式自动管理资源
 
-### PCAP-IO 集成优化
+### pcapfile-io 集成优化
 
 ```rust
 /// 优化的PCAP数据读取
@@ -192,7 +192,7 @@ pub async fn read_pcap_optimized(
     let config = Configuration::high_performance();
 
     // 创建读取器
-    let mut reader = pcap_io::Reader::new(dataset_path, config)?;
+    let mut reader = pcapfile_io::Reader::new(dataset_path, config)?;
 
     // 批量读取，减少系统调用
     let packets = reader.read_batch(1000)?;
@@ -203,11 +203,11 @@ pub async fn read_pcap_optimized(
 
 ## 🔗 外部库集成规范
 
-### PCAP-IO 库集成
+### pcapfile-io 库集成
 
 ```rust
 // 在 lib.rs 中统一重导出
-pub use pcap_io::{
+pub use pcapfile_io::{
     Configuration as PcapConfiguration,
     DataPacket,
     Reader as PcapReader,

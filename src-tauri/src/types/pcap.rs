@@ -1,5 +1,5 @@
-// 重新导出 pcap-io 库的类型，并添加应用特定的扩展
-pub use pcap_io::{DataPacket, DataPacketHeader as PcapPacketHeader, PcapFileHeader};
+// 重新导出 pcapfile-io 库的类型，并添加应用特定的扩展
+pub use pcapfile_io::{DataPacket, DataPacketHeader as PcapPacketHeader, PcapFileHeader};
 
 use serde::{Deserialize, Serialize};
 
@@ -12,7 +12,7 @@ pub enum PacketType {
     Unknown,      // 未知类型
 }
 
-/// 应用级数据包结构 - 对 pcap-io 的 DataPacket 的包装
+/// 应用级数据包结构 - 对 pcapfile-io 的 DataPacket 的包装
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppDataPacket {
     /// 基础数据包信息
@@ -32,7 +32,7 @@ impl AppDataPacket {
 
     /// 获取时间戳（纳秒）
     pub fn get_timestamp_ns(&self) -> u64 {
-        // 使用 pcap-io 的时间戳方法
+        // 使用 pcapfile-io 的时间戳方法
         self.base_packet.get_timestamp_ns()
     }
 

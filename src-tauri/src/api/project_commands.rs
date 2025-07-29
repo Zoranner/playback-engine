@@ -4,8 +4,8 @@ use serde_json::json;
 
 use crate::project::loader::ProjectLoader;
 use crate::project::structure::ProjectStructure;
-use crate::types::common::ProjectInfo;
 use crate::state::app_state::AppState;
+use crate::types::ProjectInfo;
 
 /// 选择项目目录
 #[tauri::command]

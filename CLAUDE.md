@@ -23,7 +23,7 @@
 
 ### 后端
 
-- 核心：自研 PCAP 处理库 pcap-io（src-tauri/crates/pcap-io）
+- 核心：自研 PCAP 处理库 pcapfile-io（src-tauri/crates/pcapfile-io）
 - IPC：Tauri 命令系统，前后端通信
 - 异步：Tokio 运行时
 - 错误处理：thiserror 自定义错误类型
@@ -44,7 +44,7 @@ playback-engine/
 │   │   ├── state/                # 全局状态管理
 │   │   └── types/                # 类型定义
 │   ├── crates/                   # 独立核心库
-│   │   └── pcap-io/              # PCAP处理库
+│   │   └── pcapfile-io/              # PCAP处理库
 │   └── Cargo.toml               # Rust配置
 ├── components/                   # 前端组件 (Vue/Nuxt)
 │   ├── base/                     # 基础组件
@@ -147,14 +147,14 @@ cargo run --example name  # 运行示例
 ### 测试
 
 - 前端：暂无专用测试框架
-- 后端：Rust单元测试 `src-tauri/crates/pcap-io/tests/`
+- 后端：Rust单元测试 `src-tauri/crates/pcapfile-io/tests/`
 - 集成：大/小数据集、数据一致性测试
 
 ---
 
 ## 关键技术
 
-- **PCAP处理**：自研pcap-io高性能数据包处理库
+- **PCAP处理**：自研pcapfile-io高性能数据包处理库
 - **桌面应用**：Tauri v2 跨平台桌面
 - **前端**：Nuxt 3 + Vue 3 Composition API
 - **样式**：Tailwind CSS + 设计系统

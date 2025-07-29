@@ -132,8 +132,8 @@ async fn test_pcap_processing() {
     let dataset_path = temp_dir.path().join("test_dataset");
 
     // 测试PCAP数据处理流程
-    let config = pcap_io::Configuration::default();
-    let mut writer = pcap_io::Writer::new(&dataset_path, "test", config.clone()).unwrap();
+    let config = pcapfile_io::Configuration::default();
+    let mut writer = pcapfile_io::Writer::new(&dataset_path, "test", config.clone()).unwrap();
 
     // 写入测试数据
     for i in 0..100 {
@@ -143,7 +143,7 @@ async fn test_pcap_processing() {
     writer.finalize().unwrap();
 
     // 读取并验证数据
-    let mut reader = pcap_io::Reader::new(&dataset_path, config).unwrap();
+    let mut reader = pcapfile_io::Reader::new(&dataset_path, config).unwrap();
     let mut count = 0;
     while let Some(_packet) = reader.read_packet().unwrap() {
         count += 1;
@@ -163,7 +163,7 @@ mod tests {
             name: "test_dataset".to_string(),
             dataset_type: crate::types::DatasetType::Environment,
             pcap_files: vec![PathBuf::from("test.pcap")],
-            config: pcap_io::Configuration::default(),
+            config: pcapfile_io::Configuration::default(),
         };
 
         assert!(validate_dataset_config(&config).is_ok());
@@ -221,8 +221,8 @@ fn benchmark_pcap_processing(c: &mut Criterion) {
     c.bench_function("pcap_read_1k_packets", |b| {
         b.to_async(&rt).iter(|| async {
             let dataset_path = create_test_dataset(1000).await;
-            let config = pcap_io::Configuration::default();
-            let mut reader = pcap_io::Reader::new(&dataset_path, config).unwrap();
+            let config = pcapfile_io::Configuration::default();
+            let mut reader = pcapfile_io::Reader::new(&dataset_path, config).unwrap();
 
             let mut count = 0;
             while let Some(_packet) = reader.read_packet().unwrap() {
@@ -306,7 +306,7 @@ use log::{info, warn, error, debug, trace};
 
 fn init_logging() {
     let env = env_logger::Env::default()
-        .filter_or("RUST_LOG", "info,playback_engine=debug,pcap_io=debug");
+        .filter_or("RUST_LOG", "info,playback_engine=debug,pcapfile_io=debug");
 
     env_logger::Builder::from_env(env)
         .format_timestamp(Some(env_logger::fmt::TimestampPrecision::Millis))
@@ -375,7 +375,7 @@ cargo tauri info  # 查看环境信息
 cargo tauri dev --verbose  # 详细调试信息
 
 # PCAP处理问题
-RUST_LOG=pcap_io=trace cargo test pcap_tests -- --nocapture
+RUST_LOG=pcapfile_io=trace cargo test pcap_tests -- --nocapture
 ```
 
 ## 📚 文档和维护

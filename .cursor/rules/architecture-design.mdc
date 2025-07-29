@@ -64,7 +64,7 @@ src/
 └── lib.rs           # 模块声明
 
 crates/              # 独立模块
-└── pcap-io/         # PCAP处理模块
+└── pcapfile-io/         # PCAP处理模块
     ├── api/         # 用户接口层
     ├── business/    # 业务逻辑层
     ├── data/        # 数据访问层

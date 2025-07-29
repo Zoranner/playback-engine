@@ -98,7 +98,7 @@ pub enum PlaybackError {
     DatasetError {
         dataset: String,
         #[from]
-        source: pcap_io::PcapError,
+        source: pcapfile_io::PcapError,
     },
 
     #[error("I/O操作失败: {operation} - {source}")]
@@ -124,7 +124,7 @@ pub type Result<T> = std::result::Result<T, PlaybackError>;
 /// 错误处理辅助函数
 pub fn handle_pcap_error(
     operation: &str,
-    result: pcap_io::Result<impl std::fmt::Debug>,
+    result: pcapfile_io::Result<impl std::fmt::Debug>,
 ) -> Result<()> {
     result.map_err(|e| PlaybackError::DatasetError {
         dataset: operation.to_string(),
@@ -225,7 +225,7 @@ pub struct DatasetConfig {
     /// PCAP文件路径列表
     pub pcap_files: Vec<PathBuf>,
     /// 数据集配置参数
-    pub config: pcap_io::Configuration,
+    pub config: pcapfile_io::Configuration,
 }
 
 /// 数据集类型枚举
@@ -371,8 +371,8 @@ chrono = { version = "0.4", features = ["serde"] }
 # 加密和哈希
 sha2 = "0.10"
 
-# 本地pcap-io库
-pcap-io = { path = "./crates/pcap-io" }
+# 本地pcapfile-io库
+pcapfile-io = { path = "./crates/pcapfile-io" }
 
 [dev-dependencies]
 tokio-test = "0.4"

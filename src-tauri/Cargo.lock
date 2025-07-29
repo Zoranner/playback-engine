@@ -2513,7 +2513,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df94ce210e5bc13cb6651479fa48d14f601d9858cfe0467f43ae157023b938d3"
 
 [[package]]
-name = "pcap-io"
+name = "pcapfile-io"
 version = "0.1.0"
 dependencies = [
  "base64 0.21.7",
@@ -2703,7 +2703,7 @@ dependencies = [
  "dotenvy",
  "env_logger",
  "log",
- "pcap-io",
+ "pcapfile-io",
  "serde",
  "serde-xml-rs 0.6.0",
  "serde_json",

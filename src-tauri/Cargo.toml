@@ -30,7 +30,7 @@ env_logger = "0.10"
 chrono = { version = "0.4", features = ["serde"] }
 sha2 = "0.10"
 serde-xml-rs = "0.6"
-# 使用本地的 pcap-io 库
-pcap-io = { path = "./crates/pcap-io" }
+# 使用本地的 pcapfile-io 库
+pcapfile-io = { path = "./crates/pcapfile-io" }
 dotenvy = "0.15.7"
 

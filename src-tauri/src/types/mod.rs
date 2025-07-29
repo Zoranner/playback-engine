@@ -8,5 +8,5 @@ pub use common::*;
 pub use pcap::*;
 pub use pproj::*;
 
-// 重新导出 pcap-io 库中的索引相关类型
-pub use pcap_io::{PacketIndexEntry, PcapFileIndex, PidxIndex};
+// 重新导出 pcapfile-io 库中的索引相关类型
+pub use pcapfile_io::{PacketIndexEntry, PcapFileIndex, PidxIndex};
