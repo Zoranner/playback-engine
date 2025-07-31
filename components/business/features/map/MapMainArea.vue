@@ -62,6 +62,9 @@ onMounted(() => {
           maxzoom: 10,
         },
       ],
+      sky: {
+        'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 0.8, 5, 0.2, 7, 0],
+      },
     },
     // 交互控制
     dragRotate: false, // 禁用拖拽旋转（包括右键）
