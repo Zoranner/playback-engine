@@ -7,7 +7,6 @@ use crate::types::{TileCoord, TileProxyConfig, TileProxyStats};
 use log::{debug, error, info, warn};
 use std::convert::Infallible;
 use std::net::SocketAddr;
-use std::path::Path as StdPath;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tokio::time::{Duration, Instant};
@@ -49,7 +48,10 @@ impl TileService {
 
         let server_addr = SocketAddr::from(([127, 0, 0, 1], config.port));
 
-        info!("瓦片代理服务初始化完成，缓存目录: {}, 服务地址: {}", config.cache_dir, server_addr);
+        info!(
+            "瓦片代理服务初始化完成，缓存目录: {}, 服务地址: {}",
+            config.cache_dir, server_addr
+        );
         Ok(Self {
             config,
             stats,
@@ -73,8 +75,7 @@ impl TileService {
             .and(with_stats(stats.clone()))
             .and_then(handle_stats_request);
 
-        let health_route = warp::path("health")
-            .map(|| "OK");
+        let health_route = warp::path("health").map(|| "OK");
 
         let routes = tile_route
             .or(stats_route)
@@ -84,9 +85,7 @@ impl TileService {
         info!("启动瓦片代理服务器: http://{}", self.server_addr);
 
         // 启动服务器
-        warp::serve(routes)
-            .run(self.server_addr)
-            .await;
+        warp::serve(routes).run(self.server_addr).await;
 
         Ok(())
     }
@@ -107,7 +106,10 @@ fn with_deps(
     stats: Arc<Mutex<TileProxyStats>>,
     config: TileProxyConfig,
     client: reqwest::Client,
-) -> impl Filter<Extract = ((Arc<Mutex<TileProxyStats>>, TileProxyConfig, reqwest::Client),), Error = Infallible> + Clone {
+) -> impl Filter<
+    Extract = ((Arc<Mutex<TileProxyStats>>, TileProxyConfig, reqwest::Client),),
+    Error = Infallible,
+> + Clone {
     warp::any().map(move || (Arc::clone(&stats), config.clone(), client.clone()))
 }
 
@@ -134,7 +136,7 @@ async fn handle_tile_request(
         stats_guard.last_updated = chrono::Utc::now();
     }
 
-    // 首先尝试从本地缓存获取
+    // 首先检查本地缓存
     match get_from_cache(&coord, &config).await {
         Ok(cached_data) => {
             debug!("瓦片缓存命中: {:?}", coord);
@@ -145,12 +147,12 @@ async fn handle_tile_request(
             return Ok(create_tile_response(cached_data));
         }
         Err(_) => {
-            // 缓存未命中，继续处理
+            // 缓存不存在，从上游服务获取
+            debug!("瓦片缓存未命中，从上游获取: {:?}", coord);
         }
     }
 
-    // 缓存未命中，从上游服务获取
-    debug!("瓦片缓存未命中，从上游获取: {:?}", coord);
+    // 缓存不存在，从上游服务获取
     match fetch_from_upstream(&coord, &config, &client).await {
         Ok(tile_data) => {
             // 保存到本地缓存
@@ -177,16 +179,21 @@ async fn handle_tile_request(
 }
 
 /// 处理统计信息请求
-async fn handle_stats_request(
-    stats: Arc<Mutex<TileProxyStats>>,
-) -> Result<impl Reply, Rejection> {
+async fn handle_stats_request(stats: Arc<Mutex<TileProxyStats>>) -> Result<impl Reply, Rejection> {
     let stats_data = stats.lock().await.clone();
     let json = serde_json::to_string(&stats_data).map_err(|_| warp::reject::not_found())?;
-    Ok(warp::reply::with_header(json, "Content-Type", "application/json"))
+    Ok(warp::reply::with_header(
+        json,
+        "Content-Type",
+        "application/json",
+    ))
 }
 
 /// 从本地缓存获取瓦片
-async fn get_from_cache(coord: &TileCoord, config: &TileProxyConfig) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
+async fn get_from_cache(
+    coord: &TileCoord,
+    config: &TileProxyConfig,
+) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
     let cache_path = coord.path(&config.cache_dir);
 
     // 检查文件是否存在
@@ -194,14 +201,9 @@ async fn get_from_cache(coord: &TileCoord, config: &TileProxyConfig) -> Result<V
         return Err("缓存文件不存在".into());
     }
 
-    // 检查文件是否过期
-    if is_cache_expired(&cache_path, config.cache_ttl).await {
-        debug!("缓存文件已过期: {:?}", cache_path);
-        return Err("缓存文件已过期".into());
-    }
-
     // 读取文件
     let data = tokio::fs::read(&cache_path).await?;
+    debug!("使用本地缓存: {:?}", cache_path);
     Ok(data)
 }
 
@@ -225,7 +227,11 @@ async fn fetch_from_upstream(
 }
 
 /// 保存瓦片到本地缓存
-async fn save_to_cache(coord: &TileCoord, data: &[u8], config: &TileProxyConfig) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+async fn save_to_cache(
+    coord: &TileCoord,
+    data: &[u8],
+    config: &TileProxyConfig,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let cache_path = coord.path(&config.cache_dir);
 
     // 确保目录存在
@@ -240,26 +246,10 @@ async fn save_to_cache(coord: &TileCoord, data: &[u8], config: &TileProxyConfig)
     Ok(())
 }
 
-/// 检查缓存是否过期
-async fn is_cache_expired(cache_path: &StdPath, cache_ttl: u64) -> bool {
-    match tokio::fs::metadata(cache_path).await {
-        Ok(metadata) => {
-            if let Ok(modified) = metadata.modified() {
-                let modified_time: chrono::DateTime<chrono::Utc> = chrono::DateTime::from(modified);
-                let now = chrono::Utc::now();
-                let age = now.signed_duration_since(modified_time);
-                age.num_seconds() > cache_ttl as i64
-            } else {
-                true // 无法获取修改时间，认为已过期
-            }
-        }
-        Err(_) => true, // 无法获取元数据，认为已过期
-    }
-}
-
 /// 构建上游服务URL
 fn build_upstream_url(coord: &TileCoord, config: &TileProxyConfig) -> String {
-    config.upstream_url
+    config
+        .upstream_url
         .replace("{z}", &coord.z.to_string())
         .replace("{y}", &coord.y.to_string())
         .replace("{x}", &coord.x.to_string())
