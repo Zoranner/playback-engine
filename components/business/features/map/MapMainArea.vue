@@ -35,7 +35,7 @@ onMounted(() => {
 
   map = new maplibregl.Map({
     container: mapContainer.value,
-    zoom: 2, // 调整缩放级别以显示杭州区域
+    zoom: 4, // 调整缩放级别以显示杭州区域
     minZoom: 2,
     maxZoom: 10,
     center: [120.1551, 30.2741], // 杭州坐标
@@ -59,7 +59,7 @@ onMounted(() => {
           type: 'raster',
           source: 'arcgis-satellite',
           minzoom: 0,
-          maxzoom: 10,
+          maxzoom: 12,
         },
       ],
       sky: {
