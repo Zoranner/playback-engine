@@ -28,8 +28,6 @@ fn get_frontend_url() -> String {
 /// 启动瓦片代理服务
 async fn start_tile_service() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let tile_service = TileService::new()?;
-    let service_url = tile_service.get_service_url();
-    log::info!("启动瓦片代理服务: {}", service_url);
 
     // 启动服务器
     tile_service.start_server().await?;
