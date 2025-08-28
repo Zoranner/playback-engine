@@ -5,10 +5,21 @@
   "identifier": "com.kimotech.playback-engine",
   "build": {
     "beforeDevCommand": "bun run nuxt:dev",
-    "beforeBuildCommand": "bun run nuxt:build",
-    "frontendDist": "../.output/public"
+    "devUrl": "http://localhost:32030",
+    "beforeBuildCommand": "bun run nuxt:generate",
+    "frontendDist": "../dist"
   },
   "app": {
+    "windows": [
+      {
+        "title": "综合复盘软件",
+        "width": 960,
+        "height": 600,
+        "minWidth": 960,
+        "minHeight": 600,
+        "maximizable": true
+      }
+    ],
     "security": {
       "csp": null
     }

@@ -2,11 +2,11 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
   devtools: { enabled: false },
-  ssr: false,
+  ssr: true,
   modules: ['@nuxt/eslint', '@nuxt/icon', '@nuxt/image', '@nuxtjs/tailwindcss'],
   css: ['~/assets/css/main.css'],
   devServer: {
-    port: process.env.TAURI_FRONTEND_PORT ? parseInt(process.env.TAURI_FRONTEND_PORT) : 32030,
+    port: 32030,
     host: 'localhost',
   },
   vite: {
@@ -18,5 +18,8 @@ export default defineNuxtConfig({
         ignored: ['**/src-tauri/**'],
       },
     },
+  },
+  generate: {
+    exclude: [],
   },
 });

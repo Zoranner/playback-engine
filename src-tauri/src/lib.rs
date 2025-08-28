@@ -14,16 +14,8 @@ pub use state::playback_state::PlaybackState;
 pub use types::{AppDataPacket, PacketType, PlaybackError, Result};
 
 // Tauri相关导入
-use dotenvy::dotenv;
 use tauri::Manager;
-use tauri::{webview::WebviewWindowBuilder, WebviewUrl};
 use crate::geo::tile_service::TileService;
-
-/// 通过环境变量获取前端URL
-fn get_frontend_url() -> String {
-    let port = std::env::var("TAURI_FRONTEND_PORT").unwrap_or_else(|_| "32030".to_string());
-    format!("http://localhost:{}", port)
-}
 
 /// 启动瓦片代理服务
 async fn start_tile_service() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
@@ -38,8 +30,6 @@ async fn start_tile_service() -> std::result::Result<(), Box<dyn std::error::Err
 /// 初始化Tauri应用
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // 加载 .env 文件
-    dotenv().ok();
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
@@ -68,16 +58,6 @@ pub fn run() {
             // 初始化应用状态
             let app_state = std::sync::Mutex::new(AppState::new());
             app.manage(app_state);
-
-            // 动态创建窗口
-            let frontend_url = get_frontend_url().parse().unwrap();
-            log::info!("Load frontend from: {}", frontend_url);
-            WebviewWindowBuilder::new(app, "main", WebviewUrl::External(frontend_url))
-                .title("综合复盘软件")
-                .min_inner_size(960.0, 600.0)
-                .maximized(true)
-                .build()
-                .expect("创建窗口失败");
 
             // 在窗口创建后启动瓦片代理服务
             std::thread::spawn(move || {
