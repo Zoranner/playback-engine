@@ -9,6 +9,15 @@ export default defineNuxtConfig({
     port: 32030,
     host: 'localhost',
   },
+  icon: {
+    mode: 'local',
+    collections: ['heroicons'],
+    fallbackToApi: false,
+    clientBundle: {
+      scan: true,
+      sizeLimitKb: 256,
+    },
+  },
   vite: {
     clearScreen: false,
     envPrefix: ['VITE_', 'TAURI_'],
