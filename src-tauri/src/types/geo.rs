@@ -44,8 +44,6 @@ pub struct TileProxyConfig {
     pub upstream_url: String,
     /// 本地缓存目录
     pub cache_dir: String,
-    /// 缓存过期时间（秒）
-    pub cache_ttl: u64,
     /// 请求超时时间（秒）
     pub request_timeout: u64,
 }
@@ -55,7 +53,6 @@ impl Default for TileProxyConfig {
         Self {
             upstream_url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}".to_string(),
             cache_dir: "./tile_cache".to_string(),
-            cache_ttl: 86400, // 24小时
             request_timeout: 30,
             port: 8080,
         }
