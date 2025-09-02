@@ -1,6 +1,6 @@
 [package]
 name = "playback-engine"
-version = "0.1.0"
+version = "0.1.1"
 description = "A PCAP playback engine."
 authors = ["KimoTech"]
 edition = "2021"
