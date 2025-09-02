@@ -25,7 +25,7 @@ pub fn get_tile_config() -> TileProxyConfig {
     TileProxyConfig {
         port: env::var("TILE_SERVICE_PORT")
             .and_then(|s| s.parse().map_err(|_| env::VarError::NotPresent))
-            .unwrap_or(8080),
+            .unwrap_or(32031),
         upstream_url: env::var("UPSTREAM_TILE_URL")
             .unwrap_or_else(|_| "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}".to_string()),
         cache_dir: tile_data_dir,

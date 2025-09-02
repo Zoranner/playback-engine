@@ -26,7 +26,7 @@ const mapContainer = ref();
 // 获取瓦片服务端口
 const getTileServicePort = () => {
   // 从环境变量获取端口，默认8080
-  return import.meta.env.VITE_TILE_SERVICE_PORT ?? '8080';
+  return import.meta.env.VITE_TILE_SERVICE_PORT ?? '32031';
 };
 
 // 初始化地图
