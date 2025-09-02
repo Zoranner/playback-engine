@@ -58,7 +58,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
   modelValue: {
-    type: [String, Number, Boolean],
+    type: [String, Number, Boolean, Object],
     required: true,
   },
   options: {
@@ -150,7 +150,13 @@ const getOptionClasses = option => {
     baseClasses.push('hover:bg-background-tertiary');
   }
 
-  if (option.value === props.modelValue) {
+  // 比较选项值，支持对象和基本类型
+  const isSelected =
+    typeof props.modelValue === 'object' && props.modelValue !== null
+      ? option.value === props.modelValue.value
+      : option.value === props.modelValue;
+
+  if (isSelected) {
     baseClasses.push('bg-border text-text-accent');
   }
 
@@ -158,6 +164,12 @@ const getOptionClasses = option => {
 };
 
 const displayValue = computed(() => {
+  // 如果modelValue是对象，直接使用其label
+  if (typeof props.modelValue === 'object' && props.modelValue !== null) {
+    return props.modelValue.label ?? props.placeholder;
+  }
+
+  // 如果modelValue是基本类型，从options中查找对应的选项
   const selected = props.options.find(option => option.value === props.modelValue);
   return selected?.label ?? props.placeholder;
 });
