@@ -1,8 +1,8 @@
-use std::path::Path;
 use log::info;
+use std::path::Path;
 
-use crate::types::common::{PlaybackError, Result, ProjectInfo};
 use crate::project::structure::ProjectStructure;
+use crate::types::common::{PlaybackError, ProjectInfo, Result};
 
 /// 项目加载器
 pub struct ProjectLoader {
@@ -20,32 +20,31 @@ impl ProjectLoader {
     }
 
     /// 打开工程目录
-    pub async fn open_project<P: AsRef<Path>>(
-        &mut self,
-        project_path: P,
-    ) -> Result<ProjectInfo> {
+    pub async fn open_project<P: AsRef<Path>>(&mut self, project_path: P) -> Result<ProjectInfo> {
         let path = project_path.as_ref();
 
         if !path.exists() {
-            return Err(PlaybackError::ProjectError(
-                format!("工程目录不存在: {:?}", path)
-            ));
+            return Err(PlaybackError::ProjectError(format!(
+                "工程目录不存在: {:?}",
+                path
+            )));
         }
 
         if !path.is_dir() {
-            return Err(PlaybackError::ProjectError(
-                format!("指定路径不是目录: {:?}", path)
-            ));
+            return Err(PlaybackError::ProjectError(format!(
+                "指定路径不是目录: {:?}",
+                path
+            )));
         }
 
         info!("正在打开工程目录: {:?}", path);
 
         // 1. 构建工程结构
         let structure = ProjectStructure::from_path(path)?;
-        
+
         // 2. 创建工程信息
         let project_info = structure.to_project_info()?;
-        
+
         // 3. 保存状态
         self.project_structure = Some(structure);
         self.current_project = Some(project_info.clone());

@@ -1,6 +1,6 @@
-use tauri::{AppHandle, Manager};
-use log::{info, error};
+use log::{error, info};
 use serde_json::json;
+use tauri::{AppHandle, Manager};
 
 use crate::project::loader::ProjectLoader;
 use crate::project::structure::ProjectStructure;
@@ -18,16 +18,14 @@ pub async fn select_project_directory(
     let (tx, rx) = oneshot::channel();
 
     let dialog = app.dialog().file();
-    dialog.pick_folder(move |folder_path| {
-        match folder_path {
-            Some(path) => {
-                info!("用户选择了目录: {:?}", path);
-                let _ = tx.send(Some(path.to_string()));
-            }
-            None => {
-                info!("用户取消了选择");
-                let _ = tx.send(None);
-            }
+    dialog.pick_folder(move |folder_path| match folder_path {
+        Some(path) => {
+            info!("用户选择了目录: {:?}", path);
+            let _ = tx.send(Some(path.to_string()));
+        }
+        None => {
+            info!("用户取消了选择");
+            let _ = tx.send(None);
         }
     });
 
@@ -68,9 +66,7 @@ pub async fn open_project(
 
 /// 获取当前工程信息
 #[tauri::command]
-pub fn get_project_info(
-    app: AppHandle,
-) -> std::result::Result<Option<ProjectInfo>, String> {
+pub fn get_project_info(app: AppHandle) -> std::result::Result<Option<ProjectInfo>, String> {
     let state = app.state::<std::sync::Mutex<AppState>>();
     let state_guard = state.lock().unwrap();
     Ok(state_guard.current_project())
@@ -78,9 +74,7 @@ pub fn get_project_info(
 
 /// 关闭当前工程
 #[tauri::command]
-pub fn close_project(
-    app: AppHandle,
-) -> std::result::Result<(), String> {
+pub fn close_project(app: AppHandle) -> std::result::Result<(), String> {
     let state = app.state::<std::sync::Mutex<AppState>>();
     {
         let mut state_guard = state.lock().unwrap();
@@ -100,7 +94,8 @@ pub async fn get_project_structure(
     match ProjectStructure::from_path(&project_path) {
         Ok(structure) => {
             // 转换为前端需要的数据格式
-            let datasets: Vec<serde_json::Value> = structure.datasets
+            let datasets: Vec<serde_json::Value> = structure
+                .datasets
                 .into_iter()
                 .map(|dataset| {
                     let mut all_files: Vec<serde_json::Value> = Vec::new();
@@ -131,7 +126,10 @@ pub async fn get_project_structure(
 
                     // 按文件名排序
                     all_files.sort_by(|a, b| {
-                        a["name"].as_str().unwrap_or("").cmp(b["name"].as_str().unwrap_or(""))
+                        a["name"]
+                            .as_str()
+                            .unwrap_or("")
+                            .cmp(b["name"].as_str().unwrap_or(""))
                     });
 
                     json!({

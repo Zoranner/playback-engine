@@ -6,10 +6,10 @@ use serde::{Deserialize, Serialize};
 /// 数据包类型枚举 - 应用特定的分类
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum PacketType {
-    Environment,  // 环境信息
-    Event,        // 事件信息
-    Target,       // 目标信息
-    Unknown,      // 未知类型
+    Environment, // 环境信息
+    Event,       // 事件信息
+    Target,      // 目标信息
+    Unknown,     // 未知类型
 }
 
 /// 应用级数据包结构 - 对 pcapfile-io 的 DataPacket 的包装

@@ -1,7 +1,7 @@
-use crate::types::common::ProjectInfo;
 use crate::playback::engine::PlaybackEngine;
-use std::sync::Arc;
 use crate::state::playback_state::PlaybackState;
+use crate::types::common::ProjectInfo;
+use std::sync::Arc;
 
 /// 应用全局状态
 #[derive(Debug)]
@@ -12,9 +12,7 @@ pub struct AppState {
 
 impl AppState {
     pub fn new() -> Self {
-        let playback_state = Arc::new(tokio::sync::Mutex::new(
-            PlaybackState::new()
-        ));
+        let playback_state = Arc::new(tokio::sync::Mutex::new(PlaybackState::new()));
 
         Self {
             current_project: None,
@@ -26,10 +24,7 @@ impl AppState {
         self.current_project.clone()
     }
 
-    pub fn set_current_project(
-        &mut self,
-        project: Option<ProjectInfo>
-    ) {
+    pub fn set_current_project(&mut self, project: Option<ProjectInfo>) {
         self.current_project = project;
     }
 }

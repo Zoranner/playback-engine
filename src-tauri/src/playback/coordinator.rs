@@ -4,8 +4,8 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 
 use crate::playback::scheduler::EventScheduler;
-use crate::streaming::udp_sender::UDPSender;
 use crate::state::config_state::DatasetConfigState;
+use crate::streaming::udp_sender::UDPSender;
 
 #[derive(Debug)]
 pub struct DataCoordinator {
@@ -22,7 +22,11 @@ impl DataCoordinator {
     }
 
     /// 加载数据集到调度器
-    pub async fn load_dataset(&self, _dataset_name: &str, _config: &DatasetConfigState) -> Result<(), String> {
+    pub async fn load_dataset(
+        &self,
+        _dataset_name: &str,
+        _config: &DatasetConfigState,
+    ) -> Result<(), String> {
         // TODO: 实现数据集加载逻辑
         Ok(())
     }
@@ -30,15 +34,16 @@ impl DataCoordinator {
     /// 发送当前时间点的数据
     pub async fn send_current_data(&mut self, current_time: u64) -> Result<(), String> {
         let mut scheduler = self.scheduler.lock().await;
-        
+
         while let Some(event) = scheduler.get_next_event(current_time) {
             // 发送事件数据
             if let Some(sender) = &*self.sender.lock().await {
-                sender.send_data(&event.data)
+                sender
+                    .send_data(&event.data)
                     .map_err(|e| format!("发送失败: {}", e))?;
             }
         }
-        
+
         Ok(())
     }
 }

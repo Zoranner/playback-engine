@@ -6,7 +6,7 @@ use std::collections::HashMap;
 /// UDP发送配置
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UDPConfig {
-    pub mode: String,           // "broadcast", "multicast", "unicast"
+    pub mode: String, // "broadcast", "multicast", "unicast"
     pub target_ip: String,
     pub target_port: u16,
     pub interface: Option<String>,
@@ -33,18 +33,11 @@ impl ConfigState {
         }
     }
 
-    pub fn set_dataset_config(
-        &mut self,
-        name: String,
-        config: DatasetConfigState,
-    ) {
+    pub fn set_dataset_config(&mut self, name: String, config: DatasetConfigState) {
         self.dataset_configs.insert(name, config);
     }
 
-    pub fn get_dataset_config(
-        &self,
-        name: &str,
-    ) -> Option<&DatasetConfigState> {
+    pub fn get_dataset_config(&self, name: &str) -> Option<&DatasetConfigState> {
         self.dataset_configs.get(name)
     }
 

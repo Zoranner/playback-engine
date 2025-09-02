@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::types::common::PlaybackError;
+use serde::{Deserialize, Serialize};
 
 /// 网络传输类型
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -34,9 +34,7 @@ impl std::str::FromStr for NetworkType {
             "unicast" => Ok(NetworkType::Unicast),
             "multicast" => Ok(NetworkType::Multicast),
             "broadcast" => Ok(NetworkType::Broadcast),
-            _ => Err(PlaybackError::ParseError(
-                format!("未知的网络类型: {}", s)
-            )),
+            _ => Err(PlaybackError::ParseError(format!("未知的网络类型: {}", s))),
         }
     }
 }
@@ -97,25 +95,25 @@ impl NetworkConfig {
     pub fn validate(&self) -> crate::types::common::Result<()> {
         // 验证IP地址格式
         if let Err(_) = self.ip_address.parse::<std::net::IpAddr>() {
-            return Err(PlaybackError::ParseError(
-                format!("无效的IP地址: {}", self.ip_address)
-            ));
+            return Err(PlaybackError::ParseError(format!(
+                "无效的IP地址: {}",
+                self.ip_address
+            )));
         }
 
         // 验证端口范围
         if self.port == 0 {
-            return Err(PlaybackError::ParseError(
-                "端口号不能为0".to_string()
-            ));
+            return Err(PlaybackError::ParseError("端口号不能为0".to_string()));
         }
 
         // 验证组播地址范围
         if self.network_type == NetworkType::Multicast {
             if let Ok(ip) = self.ip_address.parse::<std::net::Ipv4Addr>() {
                 if !ip.is_multicast() {
-                    return Err(PlaybackError::ParseError(
-                        format!("非组播地址: {}", self.ip_address)
-                    ));
+                    return Err(PlaybackError::ParseError(format!(
+                        "非组播地址: {}",
+                        self.ip_address
+                    )));
                 }
             }
         }
@@ -162,15 +160,17 @@ impl DatasetConfig {
         // 验证路径是否存在
         let path = std::path::Path::new(&self.path);
         if !path.exists() {
-            return Err(PlaybackError::ProjectError(
-                format!("数据集路径不存在: {}", self.path)
-            ));
+            return Err(PlaybackError::ProjectError(format!(
+                "数据集路径不存在: {}",
+                self.path
+            )));
         }
 
         if !path.is_dir() {
-            return Err(PlaybackError::ProjectError(
-                format!("数据集路径不是目录: {}", self.path)
-            ));
+            return Err(PlaybackError::ProjectError(format!(
+                "数据集路径不是目录: {}",
+                self.path
+            )));
         }
 
         // 验证网络配置
@@ -248,9 +248,10 @@ impl PprojConfig {
         let mut names = std::collections::HashSet::new();
         for dataset in &self.datasets {
             if !names.insert(&dataset.name) {
-                return Err(PlaybackError::ProjectError(
-                    format!("重复的数据集名称: {}", dataset.name)
-                ));
+                return Err(PlaybackError::ProjectError(format!(
+                    "重复的数据集名称: {}",
+                    dataset.name
+                )));
             }
         }
 

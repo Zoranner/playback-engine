@@ -14,8 +14,8 @@ pub use state::playback_state::PlaybackState;
 pub use types::{AppDataPacket, PacketType, PlaybackError, Result};
 
 // Tauri相关导入
-use tauri::Manager;
 use crate::geo::tile_service::TileService;
+use tauri::Manager;
 
 /// 启动瓦片代理服务
 async fn start_tile_service() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {

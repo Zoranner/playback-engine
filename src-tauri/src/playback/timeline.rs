@@ -45,7 +45,7 @@ impl TimelineController {
     pub fn advance_time(&mut self, delta_ms: u64) -> bool {
         let advance_amount = (delta_ms as f64 * self.playback_speed) as u64;
         let new_time = self.current_time + advance_amount;
-        
+
         if new_time >= self.end_time {
             self.current_time = self.end_time;
             true // 表示播放结束

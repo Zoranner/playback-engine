@@ -1,8 +1,8 @@
-use std::path::{Path, PathBuf};
+use log::{debug, info, warn};
 use std::fs;
-use log::{warn, info, debug};
+use std::path::{Path, PathBuf};
 
-use crate::types::common::{Result, ProjectInfo};
+use crate::types::common::{ProjectInfo, Result};
 
 /// 工程结构表示
 pub struct ProjectStructure {
@@ -23,7 +23,8 @@ impl ProjectStructure {
     /// 从路径创建工程结构
     pub fn from_path<P: AsRef<Path>>(project_path: P) -> Result<Self> {
         let root_path = project_path.as_ref().to_path_buf();
-        let name = root_path.file_name()
+        let name = root_path
+            .file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("untitled")
             .to_string();
@@ -40,8 +41,12 @@ impl ProjectStructure {
                         debug!("发现目录: {:?}", path);
                         match Self::scan_dataset(&path) {
                             Ok(dataset) => {
-                                info!("扫描数据集 '{}': {} 个PCAP文件, {} 个索引文件",
-                                      dataset.name, dataset.pcap_files.len(), dataset.index_files.len());
+                                info!(
+                                    "扫描数据集 '{}': {} 个PCAP文件, {} 个索引文件",
+                                    dataset.name,
+                                    dataset.pcap_files.len(),
+                                    dataset.index_files.len()
+                                );
                                 // 显示所有数据集目录，不论是否包含文件
                                 datasets.push(dataset);
                             }
@@ -63,7 +68,11 @@ impl ProjectStructure {
 
         info!("工程扫描完成，共发现 {} 个数据集", datasets.len());
         for dataset in &datasets {
-            info!("  - {}: {} 个文件", dataset.name, dataset.pcap_files.len() + dataset.index_files.len());
+            info!(
+                "  - {}: {} 个文件",
+                dataset.name,
+                dataset.pcap_files.len() + dataset.index_files.len()
+            );
         }
 
         Ok(ProjectStructure {
@@ -76,7 +85,8 @@ impl ProjectStructure {
     /// 扫描单个数据集
     fn scan_dataset<P: AsRef<Path>>(dataset_path: P) -> Result<DatasetStructure> {
         let path = dataset_path.as_ref().to_path_buf();
-        let name = path.file_name()
+        let name = path
+            .file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("unknown")
             .to_string();
@@ -133,12 +143,16 @@ impl ProjectStructure {
         );
 
         // 设置文件计数
-        project_info.file_count = self.datasets.iter()
+        project_info.file_count = self
+            .datasets
+            .iter()
             .map(|d| d.pcap_files.len())
             .sum::<usize>();
 
         // 收集所有PCAP文件路径
-        project_info.pcap_files = self.datasets.iter()
+        project_info.pcap_files = self
+            .datasets
+            .iter()
             .flat_map(|d| d.pcap_files.iter())
             .map(|p| p.to_string_lossy().to_string())
             .collect();

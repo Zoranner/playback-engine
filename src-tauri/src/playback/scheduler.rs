@@ -1,7 +1,7 @@
 //! 事件调度器
 
-use std::collections::BinaryHeap;
 use std::cmp::Ordering;
+use std::collections::BinaryHeap;
 
 #[derive(Debug, Clone)]
 pub struct ScheduledEvent {

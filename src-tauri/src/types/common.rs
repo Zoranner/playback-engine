@@ -5,9 +5,9 @@ use serde::{Deserialize, Serialize};
 pub struct PlaybackState {
     pub is_playing: bool,
     pub is_paused: bool,
-    pub current_time: u64,      // 当前播放时间（纳秒）
-    pub total_duration: u64,    // 总时长（纳秒）
-    pub speed: f32,             // 播放倍速
+    pub current_time: u64,   // 当前播放时间（纳秒）
+    pub total_duration: u64, // 总时长（纳秒）
+    pub speed: f32,          // 播放倍速
 }
 
 impl Default for PlaybackState {
@@ -47,12 +47,12 @@ impl Default for ProjectMetadata {
 pub struct ProjectInfo {
     pub name: String,
     pub path: String,
-    pub total_duration: u64,        // 总时长（纳秒）
+    pub total_duration: u64, // 总时长（纳秒）
     pub file_count: usize,
-    pub start_time: String,         // ISO格式时间字符串
-    pub end_time: String,           // ISO格式时间字符串
+    pub start_time: String, // ISO格式时间字符串
+    pub end_time: String,   // ISO格式时间字符串
     pub metadata: ProjectMetadata,
-    pub pcap_files: Vec<String>,    // PCAP文件路径列表
+    pub pcap_files: Vec<String>, // PCAP文件路径列表
 }
 
 impl ProjectInfo {
