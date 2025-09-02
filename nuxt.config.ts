@@ -19,7 +19,4 @@ export default defineNuxtConfig({
       },
     },
   },
-  generate: {
-    exclude: [],
-  },
 });
