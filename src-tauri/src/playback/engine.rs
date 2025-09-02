@@ -33,9 +33,12 @@ impl PlaybackEngine {
     pub async fn start(&mut self, dataset_name: String) -> Result<(), String> {
         info!("开始回放数据集: {}", dataset_name);
 
-        let mut state = self.state.lock().await;
-        state.current_dataset = Some(dataset_name.clone());
-        state.status = PlaybackStatus::Playing;
+        // 首先释放状态锁，然后再调用其他方法
+        {
+            let mut state = self.state.lock().await;
+            state.current_dataset = Some(dataset_name.clone());
+            state.status = PlaybackStatus::Playing;
+        }
 
         // 加载数据集配置
         let _config = self
@@ -120,11 +123,26 @@ impl PlaybackEngine {
     }
 
     /// 启动回放循环
-    async fn start_playback_loop(&self, _dataset_name: String) -> Result<(), String> {
+    async fn start_playback_loop(&mut self, dataset_name: String) -> Result<(), String> {
         let is_running = self.is_running.clone();
         let state = self.state.clone();
 
+        // 加载数据集到协调器
+        let config = self
+            .config_manager
+            .get_config()
+            .get_dataset_config(&dataset_name)
+            .ok_or_else(|| format!("数据集配置不存在: {}", dataset_name))?;
+
+        self.coordinator.load_dataset(&dataset_name, config).await?;
+
         let mut interval = interval(Duration::from_millis(10)); // 10ms间隔
+
+        // 需要将coordinator移动到异步任务中
+        let coordinator = Arc::new(Mutex::new(std::mem::replace(
+            &mut self.coordinator,
+            DataCoordinator::new(),
+        )));
 
         tokio::spawn(async move {
             *is_running.lock().await = true;
@@ -132,12 +150,23 @@ impl PlaybackEngine {
             while *is_running.lock().await {
                 interval.tick().await;
 
-                let mut state_guard = state.lock().await;
+                let state_guard = state.lock().await;
                 if state_guard.status != PlaybackStatus::Playing {
                     continue;
                 }
 
+                let current_timestamp = state_guard.current_timestamp;
+                drop(state_guard); // 释放锁以避免死锁
+
+                // 使用协调器发送当前时间点的数据
+                if let Ok(mut coord) = coordinator.try_lock() {
+                    if let Err(e) = coord.send_current_data(current_timestamp).await {
+                        debug!("发送数据失败: {}", e);
+                    }
+                }
+
                 // 更新播放进度
+                let mut state_guard = state.lock().await;
                 state_guard.current_timestamp += 1; // 模拟进度
                 if state_guard.current_timestamp >= 1000 {
                     state_guard.current_timestamp = 1000;
